@@ -965,8 +965,11 @@ function gamePos(){if(window.GP_POS)return Promise.resolve(window.GP_POS);return
   const app=(()=>{try{const h=(0,eval)('S').spots.find(x=>x.here&&x.approx!==true);return h?{lat:+h.lat,lon:+h.lon}:null;}catch(e){return null;}})();
   // prima il GPS (aspetta fino a 2 secondi); se non arriva, la posizione dalla rete cellulare/Wi-Fi del telefono; poi quella da IP o già nota all'app
   fetch('https://get.geojs.io/v1/ip/geo.json').then(r=>r.json()).then(j=>{const la=+j.latitude,lo=+j.longitude;if(!isNaN(la)&&!isNaN(lo))net={lat:la,lon:lo};}).catch(()=>{});
-  const G0=navigator.geolocation,cell=()=>{if(done)return;if(!G0)return fin(net||app);G0.getCurrentPosition(p=>fin({lat:p.coords.latitude,lon:p.coords.longitude}),()=>fin(net||app),{enableHighAccuracy:false,timeout:3500,maximumAge:600000});setTimeout(()=>fin(net||app),4000);};
-  if(G0){G0.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>cell(),{enableHighAccuracy:true,timeout:2000,maximumAge:30000});setTimeout(cell,2100);}else cell();});}
+  // al massimo 2 secondi: GPS se arriva, altrimenti la posizione di rete del telefono (celle/Wi-Fi), poi IP o quella già nota
+  const G0=navigator.geolocation;let cellPos=null;
+  if(G0){G0.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>{},{enableHighAccuracy:true,timeout:2000,maximumAge:30000});
+    G0.getCurrentPosition(p=>{cellPos={lat:p.coords.latitude,lon:p.coords.longitude};},()=>{},{enableHighAccuracy:false,timeout:1900,maximumAge:900000});}
+  setTimeout(()=>fin(dev||cellPos||net||app),2000);});}
 // strada vera (OSRM, dati OpenStreetMap) da dove sei fino alla strada costiera; se non risponde, una strada diritta
 async function approachRoute(pos){const q=PJ(pos.lat,pos.lon),nr=nearRoad(q),dist=Math.hypot(q[0]-nr.t.x,q[1]-nr.t.y);
   if(dist<1.2)return {s:nr.s};if(dist>250)return null;
@@ -1131,7 +1134,7 @@ G.turnSig=side=>{if(st.phase!=='map'||!MP.car||!side)return;const c=MP.car,msg=t
   if(MP.arm!=null){if(side!==exitSide){MP.arm=null;MP.key='';}return;}
   if(d>3){msg(`Nessuna uscita vicina: la prossima (<b>${MP.spots[nx].sp.name}</b>) è tra ${d.toFixed(1).replace('.',',')} km`);return;}
   if(side!==exitSide){msg(`L'uscita per <b>${MP.spots[nx].sp.name}</b> è a ${exitSide>0?'destra ➡️':'sinistra ⬅️'}`);return;}
-  G.takeExit(nx);};
+  {const R0=MP.spots[nx].ramps[c.dir];c.s=R0.rs;c.ramp={i:nx,r:R0,u:0};c.v=Math.min(c.v,.6);MP.arm=null;MP.key='ramp';const e=document.getElementById('gpark');if(e)e.innerHTML=`↘ Esci per <b>${MP.spots[nx].sp.name}</b>…`;}};
 if(!window.__lzArrows){window.__lzArrows=1;addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){window.GAME?.turnSig?.(e.key==='ArrowLeft'?-1:1);}});}
 G._mp=()=>({MP,M3});
 function draw3D(dt){const c=MP.car,P=carPose(),car=M3.car;M3.t+=dt;const t=M3.t;
@@ -1392,7 +1395,7 @@ function skinRod(obj,rodId,reelId){const g=st.gear,U=obj.userData;if(!U.sk){U.sk
 function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>reelN(id);
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
-    <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
+    <div class="gs">🎒 ${[g.braidN>0&&'trecciato ×'+g.braidN,g.leader>0&&'shock leader '+g.leader,g.termF>0&&'fluorocarbon '+g.termF*2+' m',g.term>0&&'nylon per terminali '+g.term*2+' m',g.starlight>0&&'starlight '+g.starlight,beadsN()>0&&'perline '+beadsN(),g.elastic&&'elastico',g.torch>0&&'frontale',g.spikes>0&&'picchetti '+g.spikes,b.tripod&&'tripode',b.box?'cassetta':'busta per la minuteria',b.bucket&&'secchio esche'].filter(Boolean).join(' · ')}</div>
     <div class="gs" style="color:${q<.5?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.5?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':(q>=.99?'🏆 Attrezzatura al top: 100% di efficacia.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia. Per il 100% serve tutto al top: canna, mulinello, esche, accessori, vestiario, tenda, sedia, frontale e scorte.')}</div>`;}
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
