@@ -431,7 +431,7 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   const bell=new T.Mesh(new T.SphereGeometry(.018,8,8),MAT.spool);bell.position.set(0,-.08,.02);segs[SEG-1].add(bell);
   const glow=new T.Sprite(new T.SpriteMaterial({map:glowTex('rgba(150,255,130,1)'),transparent:true,depthWrite:false,blending:T.AdditiveBlending}));glow.scale.set(.5,.5,.5);glow.position.y=ROD_LEN/SEG;segs[SEG-1].add(glow);g.userData.glow=glow;
   return g;}
-function bendRod(rod,b){const s=rod.userData.segs;for(let i=0;i<SEG;i++){const u=i/SEG;s[i].rotation.x=-b*u*u*.32;}}
+function bendRod(rod,b){b=Math.max(0,b);const s=rod.userData.segs;for(let i=0;i<SEG;i++){const u=i/SEG;s[i].rotation.x=-b*u*u*.32;}}
 // picchetto da surfcasting: barra piatta in alluminio a punta, forcella in alto e portacalcio a metà (in plastica verde), piantato un po' inclinato verso il mare
 const SPIKE_TILT=-8,SPIKE_CUP=.7;
 function makeSpike(kind){const g=new T.Group(),inner=new T.Group();inner.rotation.x=SPIKE_TILT*R;g.add(inner);
@@ -608,7 +608,7 @@ function updNpcs(dt,t){const w=wxAt(st.gt);
     if(!a.sand){a.sand=new T.Mesh(new T.BoxGeometry(.09,.04,.06),new T.MeshStandardMaterial({color:'#d9b27a'}));a.sand.position.set(0,-.05,-.03);a.obj.userData.J.rHand.add(a.sand);}a.sand.visible=a.eating>0;
     if(a.eating>0&&a.target==='sit'){const J=a.obj.userData.J,k=Math.max(0,Math.sin(t*1.3+ai));J.rSh.rotation.x=.35+k*1.25;J.rSh.rotation.z=-.35*k;J.rEl.rotation.x=.9+k*1.2;J.head.rotation.x=-.1+k*.1;}
     if(a.reelSpin){a.crank+=dt*7;}
-    for(const r of a.rods){const swell=Math.sin(t*2*Math.PI/Math.max(3,w.wper||5)+r.x)*(w.wave||.3)*.12;r.bend=lerp(r.bend,(r.held?.5+Math.sin(t*3)*.15:.12)+swell,.2);bendRod(r.obj,r.bend);
+    for(const r of a.rods){const swell=Math.pow(Math.max(0,Math.sin(t*2*Math.PI/Math.max(3,w.wper||5)/2.3+r.x)),6)*Math.max(0,(w.wave||.3)-.7)*.08;r.bend=lerp(r.bend,(r.held?.5+Math.sin(t*3)*.15:.12)+swell,.2);bendRod(r.obj,r.bend);
       if(r.held){rodInHand(r,a);r.obj.userData.rotor.rotation.y+=dt*22;r.obj.userData.lineOn.rotation.y+=dt*22;r.dist=Math.max(5,r.dist-dt*6);}
       r.obj.userData.glow.visible=night()>.25;
       const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const L=r.line.geometry.attributes.position;
@@ -2283,8 +2283,8 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
         r.state='fishing';r.baitLeft-=pl.steal?999:10;st.msg=`Canna ${r.i+1}: ha smesso di battere${pl.steal?' (forse ti hanno rubato l\'esca)':''}.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}}
     if(r.state==='hooked'){r.hookT+=dt;if(Math.random()<dt*.0015*(1-gearTier(r).all*.6)||r.hookT>600+gearTier(r).all*300){r.state='fishing';r.baitLeft=0;r.bitePlan=null;st.msg=`Canna ${r.i+1}: il pesce si è slamato. Controlla l'esca.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
       else if(Math.random()<dt*.25)bell(1,.15);}
-    const swell=r.dist>0?Math.sin(t*2*Math.PI/Math.max(3,w.wper||5)+r.i)*(w.wave||.3)*.12:0;let bite=r.state==='tangled'?.3+.2*Math.max(0,Math.sin(t*1.7+r.i*2)):r.state==='bite'?r.bitePlan.pattern(r.biteT):r.state==='hooked'?.55+.35*Math.max(0,Math.sin(t*2.3+r.i))*Math.max(0,Math.sin(t*.7)):0;if(st.fight?.r===r)bite=st.fight.ten*1.1;if(r.state==='flying')bite=0;
-    r.bend=lerp(r.bend,(r.dist>0?.12:0)+swell+bite,.25);bendRod(r.obj,clamp(r.bend,0,1.3)*(r.held?.8:1));
+    const swell=r.dist>0?Math.pow(Math.max(0,Math.sin(t*2*Math.PI/Math.max(3,w.wper||5)/2.3+r.i)),6)*Math.max(0,(w.wave||.3)-.7)*.08+Math.max(0,(w.ws||0)-25)*.0012:0;let bite=r.state==='tangled'?.3+.2*Math.max(0,Math.sin(t*1.7+r.i*2)):r.state==='bite'?r.bitePlan.pattern(r.biteT):r.state==='hooked'?.55+.35*Math.max(0,Math.sin(t*2.3+r.i))*Math.max(0,Math.sin(t*.7)):0;if(st.fight?.r===r)bite=st.fight.ten*1.1;if(r.state==='flying')bite=0;
+    r.bend=Math.max(0,lerp(r.bend,(r.dist>0?.06:0)+swell+bite,.12));bendRod(r.obj,clamp(r.bend,0,1.3)*(r.held?.8:1));
     if(r.held)rodInHand(r);
     // mulinello: rotore e manovella girano quando si recupera
     if(r.held&&AN.holding===r.i&&AN.reelSpin>0){AN.tick=(AN.tick||0)+dt*AN.reelSpin*7;while(AN.tick>.75){AN.tick-=.75;reelTick();}}
