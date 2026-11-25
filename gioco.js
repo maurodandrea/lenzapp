@@ -1490,7 +1490,7 @@ function sellList(){const g=st.gear,b=g.bought||{},L=[],pr=it=>it?Math.round(it.
   for(const id of g.chairs||[])L.push({k:'chair',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
   for(const id of g.shelters||[])L.push({k:'shelter',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
   for(const id of SELL_FLAGS){const has=id==='needle'?g.needle:id==='elastic'?g.elastic:b[id];if(has&&ITEM[id])L.push({k:'flag',id,n:ITEM[id].n,c:1,v:pr(ITEM[id])});}
-  return L.filter(x=>x.v>0);}
+  return L.filter(x=>x.v>0).sort((a,b)=>b.v-a.v||a.n.localeCompare(b.n));}
 function sellHtml(){const L=sellList();return `<div class="gs" style="margin-top:10px"><b>💰 Vendi usato</b> · ti diamo il 30% del prezzo d'acquisto, accreditato sul conto</div><div class="glist">${L.map((x,i)=>`<div style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span>${escH(x.n)}${x.c>1?' ×'+x.c:''}</span><button class="gc" onclick="GAME.sellUsed(${i})">Vendi ${eur(x.v)}</button></div>`).join('')||'<div class="gs">Niente da vendere.</div>'}</div>`;}
 G.sellUsed=i=>{const x=sellList()[i];if(!x)return;const g=st.gear,b=g.bought=g.bought||{};
   if(x.k==='rod')loseGear('rod',x.id);else if(x.k==='reel')loseGear('reel',x.id);
