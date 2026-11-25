@@ -106,8 +106,10 @@ function altAz(d,ra,dec,lat,lon){
 /* ---------- audio (sintetizzato, niente file) ---------- */
 const AU={on:LSG('audio',true),ctx:null,sea:null};
 function ac(){if(!AU.on)return null;if(!AU.ctx){try{AU.ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(AU.ctx.state==='suspended')AU.ctx.resume();return AU.ctx;}
-function bell(n=1,vol=.25){const c=ac();if(!c)return;for(let i=0;i<n;i++){const t=c.currentTime+i*.16;
-  for(const [f,g] of [[2350,1],[3520,.5],[5150,.25]]){const o=c.createOscillator(),v=c.createGain();o.frequency.value=f*(1+Math.random()*.01);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(vol*g,t+.005);v.gain.exponentialRampToValueAtTime(.0001,t+1.1);o.connect(v).connect(c.destination);o.start(t);o.stop(t+1.2);}}}
+// campanellino da pecora: suono di latta basso, sordo e irregolare, a basso volume
+function bell(n=1,vol=.25){const c=ac();if(!c)return;vol*=.35;let t=c.currentTime;for(let i=0;i<n;i++){t+=i?.17+Math.random()*.2:0;const k=.5+Math.random()*.5,base=600+Math.random()*60;
+  for(const [m,g] of [[1,1],[1.93,.45],[2.81,.28],[3.97,.12]]){const o=c.createOscillator(),v=c.createGain();o.type='triangle';o.frequency.value=base*m*(1+(Math.random()-.5)*.012);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(vol*g*k,t+.004);v.gain.exponentialRampToValueAtTime(.0001,t+.55);o.connect(v).connect(c.destination);o.start(t);o.stop(t+.6);}
+  const s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1400;f.Q.value=3;const v=c.createGain();v.gain.setValueAtTime(vol*.6*k,t);v.gain.exponentialRampToValueAtTime(.0001,t+.06);s.connect(f).connect(v).connect(c.destination);s.start(t);s.stop(t+.08);}}
 function noiseBuf(c){const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.5;}return b;}
 function splash(vol=.35){const c=ac();if(!c)return;const s=c.createBufferSource();s.buffer=noiseBuf(c);const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=900;const v=c.createGain();v.gain.setValueAtTime(vol,c.currentTime);v.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6);s.connect(f).connect(v).connect(c.destination);s.start();s.stop(c.currentTime+.7);}
 function reelTick(){const c=ac();if(!c)return;const t=c.currentTime,o=c.createOscillator(),v=c.createGain(),f=c.createBiquadFilter();o.type='square';o.frequency.value=2600+Math.random()*400;f.type='bandpass';f.frequency.value=3000;
