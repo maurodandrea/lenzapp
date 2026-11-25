@@ -617,7 +617,7 @@ const Y0=()=>CHAIR.z*.035;let CAMPX=[];function styleCamp(){const g=st.gear,ch=C
   // ago, elastico, perline, forbici
   if(g.needle){const nd=new T.Mesh(new T.CylinderGeometry(.002,.002,.14,6),M('#d0d4d8',{metalness:.8,roughness:.2}));nd.rotation.z=Math.PI/2;nd.position.y=.004;const gg=new T.Group();gg.add(nd);put(gg,.5,.3,.3);}
   if(g.elastic)spool('#f39c12',.016,.62,.3);
-  if(g.bought?.beads){for(let k=0;k<6;k++){const bd=new T.Mesh(new T.SphereGeometry(.006,8,6),new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.4}));bd.position.y=.006;const gg=new T.Group();gg.add(bd);put(gg,.7+k*.015,.32);}}
+  if(beadsN()>0){for(let k=0;k<6;k++){const bd=new T.Mesh(new T.SphereGeometry(.006,8,6),new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.4}));bd.position.y=.006;const gg=new T.Group();gg.add(bd);put(gg,.7+k*.015,.32);}}
   // mulinelli e canne di scorta (quelli che non sono montati), picchetti in più piantati nella sabbia
   const used=st.rods?.length||st.nRods||1,spareR=Math.max(0,Object.values(g.reelCnt||{}).reduce((a,b)=>a+b,0)-used),spareC=Math.max(0,Object.values(g.rodCnt||{}).reduce((a,b)=>a+b,0)-used),spareS=Math.max(0,(g.spikes||0)-used-(g.spikeT==='tripod'?2:0));
   for(let k=0;k<Math.min(3,spareR);k++){const rl=new T.Group(),b=new T.Mesh(new T.CylinderGeometry(.045,.05,.07,14),M('#3d4550',{metalness:.6}));b.rotation.z=Math.PI/2;b.position.y=.05;rl.add(b);const sp=new T.Mesh(new T.CylinderGeometry(.04,.04,.05,14),M('#c9a24a',{metalness:.7}));sp.rotation.z=Math.PI/2;sp.position.set(-.06,.05,0);rl.add(sp);put(rl,.85,.2+k*.13,.5);}
@@ -749,7 +749,7 @@ async function startMap(){st.phase='map';
   MP.skipAsk=false;
   ['#gspd','#glamp','#gjoy'].forEach(q=>{const e=root.querySelector(q);if(e)e.style.display='none';});hud.innerHTML='';
   const c=document.createElement('canvas');c.id='gmapc';root.insertBefore(c,root.firstChild);MP.c=c;MP.g=c.getContext('2d');
-  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">Carico la costa…</div></div>';
+  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">Carico la costa e cerco la tua posizione GPS (fino a 5 s, poi dalla rete)…</div></div>';
   const r0=root,from=MP.from;MP.from=null;const posP=from?Promise.resolve(null):gamePos();let C=null;try{C=await window.costa();}catch(e){}if(root!==r0)return;
   if(!C){ui.innerHTML=`<div class="gpanel"><b>Mappa non disponibile</b><div class="gs">Scegli direttamente lo spot.</div><div class="gtalk">${SPOTS.map((sp,i)=>`<button class="gc" onclick="GAME.arrive(${i})">${sp.name}</button>`).join('')}</div></div>`;return;}
   const pts=[],segs=[];
@@ -952,10 +952,10 @@ function nearRoad(q){let bi=0,bd=1e9;const r=MP.road;for(let i=0;i<r.length;i+=2
 // posizione attuale: GPS del telefono, altrimenti quella già nota all'app
 function gamePos(){if(window.GP_POS)return Promise.resolve(window.GP_POS);return new Promise(res=>{let done=false,net=null,dev=null;const fin=v=>{if(!done){done=true;res(v);}};
   const app=(()=>{try{const h=(0,eval)('S').spots.find(x=>x.here&&x.approx!==true);return h?{lat:+h.lat,lon:+h.lon}:null;}catch(e){return null;}})();
-  // posizione veloce: quella del telefono se è già pronta (anche di qualche minuto fa), altrimenti quella approssimata dalla rete (in pochi decimi di secondo)
-  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>{},{enableHighAccuracy:false,timeout:4000,maximumAge:3600000});
+  // prima il GPS (aspetta fino a 5 secondi); se non arriva, la posizione dalla rete cellulare/Wi-Fi del telefono; poi quella da IP o già nota all'app
   fetch('https://get.geojs.io/v1/ip/geo.json').then(r=>r.json()).then(j=>{const la=+j.latitude,lo=+j.longitude;if(!isNaN(la)&&!isNaN(lo))net={lat:la,lon:lo};}).catch(()=>{});
-  const t0=Date.now(),iv=setInterval(()=>{const el=Date.now()-t0;if(done){clearInterval(iv);return;}if(net&&el>1500){clearInterval(iv);fin(net);}else if(el>5000){clearInterval(iv);fin(net||app);}},150);});}
+  const G0=navigator.geolocation,cell=()=>{if(done)return;if(!G0)return fin(net||app);G0.getCurrentPosition(p=>fin({lat:p.coords.latitude,lon:p.coords.longitude}),()=>fin(net||app),{enableHighAccuracy:false,timeout:3500,maximumAge:600000});setTimeout(()=>fin(net||app),4000);};
+  if(G0){G0.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>cell(),{enableHighAccuracy:true,timeout:5000,maximumAge:30000});setTimeout(cell,5100);}else cell();});}
 // strada vera (OSRM, dati OpenStreetMap) da dove sei fino alla strada costiera; se non risponde, una strada diritta
 async function approachRoute(pos){const q=PJ(pos.lat,pos.lon),nr=nearRoad(q),dist=Math.hypot(q[0]-nr.t.x,q[1]-nr.t.y);
   if(dist<1.2)return {s:nr.s};if(dist>250)return null;
@@ -1261,7 +1261,7 @@ const CAT=[
     {id:'snap',n:'Moschettoni rapidi · busta da 15',d:'Per agganciare il piombo al volo; servono per rifare il terminale.',p:()=>2.9},
     {id:'needle',n:'Aghi da innesco · set da 3',d:'Indispensabili per innescare bibi, coreani e arenicole.',p:()=>4.5},
     {id:'elastic',n:'Filo elastico per esche · bobina',d:'Avvolto sull\'esca morbida la fa durare il 30% in più.',p:()=>3.9},
-    {id:'beads',n:'Perline fosforescenti e salvanodo',d:'Proteggono i nodi e attirano il pesce di notte.',p:()=>2},
+    {id:'beads',n:'Perline fosforescenti e salvanodo · busta da 20',d:'Proteggono i nodi e attirano il pesce di notte. Se il terminale si spezza ne perdi una.',p:()=>2},
     {id:'box',n:'Cassetta portaminuteria',d:'Tutto in ordine: ami, girelle, moschettoni, starlight.',p:()=>12.9},
     {id:'bucket',n:'Secchio portaesche con coperchio',d:'Tiene vive e fresche le esche.',p:()=>9.9},
     {id:'cooler',n:'Frigo portatile 25 l e thermos',d:'Bibite fresche e caffè caldo in postazione.',p:()=>39},
@@ -1329,7 +1329,7 @@ function giveItem(it,o){const g=st.gear;(g.bought=g.bought||{})[it.id]=true;swit
   case 'leader':g.leader+=5;break;
   case 'braid':g.braid=[.10,.12,.14,.16][o.d||0];g.braidN=(g.braidN||0)+1;break;
   case 'fluo':g.fluo=[.25,.3,.35,.4][o.d||0];g.term=(g.term||0)+10;break;
-  case 'star':g.starlight+=10;break;case 'swiv':g.swivels+=15;break;case 'snap':g.snaps+=15;break;
+  case 'star':g.starlight+=10;break;case 'beads':g.beadsN=(g.beadsN||0)+20;break;case 'swiv':g.swivels+=15;break;case 'snap':g.snaps+=15;break;
   default:if(it.rod){if(!g.rods.includes(it.id))g.rods.push(it.id);g.rodCnt[it.id]=(g.rodCnt[it.id]||0)+1;g.rod=it.id;break;}
     if(it.reel){if(!g.reels.includes(it.reel))g.reels.push(it.reel);g.reelCnt[it.reel]=(g.reelCnt[it.reel]||0)+1;g.reel=it.reel;g.drag=reelDrag(it.reel);break;}
     if(it.chair){g.chairs=g.chairs||['chairStd'];if(!g.chairs.includes(it.id))g.chairs.push(it.id);g.chair=it.id;break;}
@@ -1339,7 +1339,7 @@ function giveItem(it,o){const g=st.gear;(g.bought=g.bought||{})[it.id]=true;swit
 // premi: un bonus al giorno e un compenso per ogni cattura
 function gearQuality(){const g=st.gear,b=g.bought||{},w=wxAt(st.gt);let q=.7;
   q+={surf420:0,surf420s:(w.wave||0)<.6?.12:.04,surf450:.1,surf480:.14}[g.rod]||0;q+={r6000:.02,r8000:0,r10000:.05,r14000:.06,rT:.09}[g.reel]||0;
-  if(b.fluo)q+=g.fluo<=.25?.07:g.fluo<=.3?.05:.03;if(b.line)q+=.02;if(b.hook)q+=.03;if(b.beads&&night()>.3)q+=.05;if(g.red&&night()>.3)q+=.04;if(b.bucket)q+=.03;if(Object.keys(b).some(k=>k.startsWith('b_')))q+=.04;
+  if(b.fluo)q+=g.fluo<=.25?.07:g.fluo<=.3?.05:.03;if(b.line)q+=.02;if(b.hook)q+=.03;if(beadsN()>0&&night()>.3)q+=.05;if(g.red&&night()>.3)q+=.04;if(b.bucket)q+=.03;if(Object.keys(b).some(k=>k.startsWith('b_')))q+=.04;
   return Math.min(1.2,q);}
 const rdot=id=>{const c=ROD_COL[id]||ROD_COL.surf420;return `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;background:linear-gradient(90deg,${c[0]} 50%,${c[1]} 50%);border:1px solid #0006"></span>`;};
 const ROD_COL={beach390:['#c9ccd0','#e6e8ea','grigio'],surf420:['#ff7a00','#ff7a00','arancio fluo'],tele420:['#ffe600','#ffe600','giallo fluo'],surf420s:['#39ff14','#39ff14','verde fluo'],surf420c:['#ff1a1a','#ff1a1a','rosso fluo'],surf420c2:['#1f5bff','#1f5bff','blu'],surf450:['#00d4ff','#00d4ff','azzurro fluo'],surf450_2:['#ff2bd6','#ff2bd6','fucsia fluo'],surf450h:['#c6ff00','#c6ff00','lime fluo'],surf470:['#9b3dff','#9b3dff','viola'],surf480:['#ff7a00','#101010','arancio/nero'],surf480_2:['#ffe600','#101010','giallo/nero'],surf500:['#39ff14','#101010','verde/nero'],surf500_2:['#00d4ff','#101010','azzurro/nero']},REEL_COL={r5000:'#6b7480',r6000:'#2b2f36',r8000:'#3d4550',r10000:'#b8352a',r14000:'#c9a24a',rRear:'#2f6fb5',rLC:'#d4d8dc',rMult:'#8a1c20',rT:'#d9dde2'};
@@ -1348,11 +1348,11 @@ function skinRod(obj,rodId,reelId){const g=st.gear,U=obj.userData;if(!U.sk){U.sk
     obj.traverse(o=>{if(!o.isMesh)return;if(o.material===MAT.blank)o.material=U.sk.m1;else if(o.material===MAT.blank2)o.material=U.sk.m2;else if(o.material===MAT.reel)o.material=U.sk.mr;});}
   const rc=ROD_COL[rodId]||ROD_COL.surf420;U.sk.m1.color.set('#121212');U.sk.m2.color.set(rc[0]);const fl=rodId!=='beach390';U.sk.m2.emissive.set(fl?rc[0]:'#000');U.sk.m1.emissiveIntensity=.35;U.sk.m1.emissive.set('#000');U.sk.m2.emissiveIntensity=.35;U.sk.m1.metalness=U.sk.m2.metalness=fl?.1:.35;U.sk.mr.color.set(REEL_COL[reelId]||'#3d4550');
   U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));
-  if(g.bought?.beads){const bm=new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.5});obj.userData.beads=bm;}}
+  if(beadsN()>0){const bm=new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.5});obj.userData.beads=bm;}}
 function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>id==='rT'?'Tournament 14000':id.slice(1);
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+ROD[id].n}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
-    <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${b.beads?' · perline':''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
+    <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
     <div class="gs" style="color:${q<.8?'#ffb547':'#5ee08a'}">${q<.8?'⚠️ Attrezzatura di base: pescherai meno. Al negozio trovi di meglio.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia.'}</div>`;}
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
@@ -1380,6 +1380,7 @@ G.planPick=k=>{st.pi=k;setUI();};
 G.planSet=(key,v)=>{planFix();const i=Math.min(st.pi||0,st.plan.length-1),q=st.plan[i];if(q[key]!==v&&planAvail(key,v,i)<=0){st.msg='Non ne hai altri liberi: '+(key==='rodId'||key==='reelId'?'compra un altro pezzo al negozio.':'cambia scelta o passa dal negozio.');setUI();return;}q[key]=v;if(key==='lead'&&!leadOk(v,q.leadT))q.leadT='piramidale';if(key==='hook'&&!(st.gear.forged?.[v]>0))q.hookT='aberdeen';st.msg='';click();setUI();};
 function holder(){const g=st.gear,b=g.bought||{},tri=!!b.tripod,sp=(g.spikes||0)-(tri?3:0),k=b.spikeLong?'long':b.spike?'alu':'pvc';if(tri&&(st.holder==='tripod'||sp<=0))return {k:'tripod',n:3,tri,sp};return {k,n:Math.max(0,sp),tri,sp};}
 G.holder=k=>{st.holder=k;LSS('holder',k);st.nRods=Math.min(st.nRods,Math.max(1,maxRods()));planFix();click();setUI();};
+const beadsN=()=>{const g=st.gear;if(g.beadsN==null)g.beadsN=g.bought?.beads?20:0;return g.beadsN;};
 function maxRods(){const g=st.gear,rc=Object.values(g.rodCnt||{}).reduce((a,b)=>a+b,0),lc=Object.values(g.reelCnt||{}).reduce((a,b)=>a+b,0);return Math.max(0,Math.min(3,rc,lc,holder().n));}
 function loseGear(kind,id){const g=st.gear,C=kind==='rod'?g.rodCnt:g.reelCnt,L=kind==='rod'?g.rods:g.reels;if(!C[id])return;C[id]--;if(C[id]<=0){delete C[id];const k=L.indexOf(id);if(k>=0)L.splice(k,1);}
   if(kind==='rod'&&g.rod===id)g.rod=L[0]||'';if(kind==='reel'&&g.reel===id){g.reel=L[0]||'';g.drag=reelDrag(g.reel);}st.nRods=Math.min(st.nRods,Math.max(1,maxRods()));LSS('nrods',st.nRods);gearSave();}
@@ -1502,7 +1503,7 @@ G.arrive=async i=>{cancelAnimationFrame(MP.raf);motor(false);dispose3D();removeE
     st.phase='setup';setUI();raf=requestAnimationFrame(loop);rpStart();}
   catch(e){ui.innerHTML=`<div class="gpanel"><b>Il gioco 3D non si è caricato</b><div class="gs">${escH(e.message||e)}</div>${btn('↻ Riprova','mount()','big')}</div>`;}};
 G.toMap=()=>{stop();mount(null);};
-function stop(){rpStop();st.bolt=null;st.castAnim=null;st.castLead=null;st.castCam=false;cancelAnimationFrame(MP.raf);dispose3D();removeEventListener('resize',sizeMap);windSound(0);motor(false);reelWhir(0);cancelAnimationFrame(raf);raf=0;removeEventListener('resize',size);try{renderer?.dispose();renderer?.forceContextLoss?.();}catch(e){}renderer=null;foams=[];clouds=[];st.rods=[];NPCS=[];MYG=[];CRABS=[];LANTERNS=[];CAM.p=null;document.getElementById('gamebox')?.remove();document.body.classList.remove('gaming');seaSound(0);}
+function stop(){rpStop();st.bolt=null;st.castAnim=null;st.castLead=null;st.castCam=false;st.camYaw=null;cancelAnimationFrame(MP.raf);dispose3D();removeEventListener('resize',sizeMap);windSound(0);motor(false);reelWhir(0);cancelAnimationFrame(raf);raf=0;removeEventListener('resize',size);try{renderer?.dispose();renderer?.forceContextLoss?.();}catch(e){}renderer=null;foams=[];clouds=[];st.rods=[];NPCS=[];MYG=[];CRABS=[];LANTERNS=[];CAM.p=null;document.getElementById('gamebox')?.remove();document.body.classList.remove('gaming');seaSound(0);}
 addEventListener('hashchange',()=>{if(location.hash!=='#gioco'&&document.getElementById('gamebox'))stop();});
 G.mount=mount;G.exit=()=>{if(st.phase!=='map'&&st.phase!=='parking'&&renderer&&SPOT){MP.from=String(SPOT.id||'').replace(/^g_/,'');stop();mount(null);return;}MP.from=null;stop();if(window.go)go('home');};
 function size(){if(!renderer)return;const w=root.clientWidth,h=root.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.fov=w<h?68:50;camera.updateProjectionMatrix();}
@@ -1649,7 +1650,7 @@ G.rig=()=>{st.phase='rig';setUI();};
 G.setRig=(k,v)=>{const r=st.rods[st.sel],g=st.gear;if((k==='rodId'||k==='reelId'||k==='lineT')&&r[k]!==v){const tot=k==='rodId'?g.rodCnt?.[v]||0:k==='reelId'?g.reelCnt?.[v]||0:v==='braid'?g.braidN||(g.braid?1:0):99,used=st.rods.filter(o=>o!==r&&o[k]===v).length;if(used>=tot){st.msg='Non ne hai altri liberi: sono già montati sulle altre canne.';setUI();return;}}if(!r.broken&&k==='lead'&&v!==r.lead){if(!(g.leads[v]>0))return;g.leads[r.lead]=(g.leads[r.lead]||0)+1;g.leads[v]--;gearSave();}if(!r.broken&&k==='hook'&&v!==hookNum(r.hook)){if(!(g.hooks[v]>0))return;const o=hookNum(r.hook);g.hooks[o]=(g.hooks[o]||0)+1;g.hooks[v]--;gearSave();}r[k]=v;if(k==='leadT')r.grip=v==='ragno';if(k==='rodId'||k==='reelId')skinRod(r.obj,r.rodId,r.reelId);if(k==='lead'&&!leadOk(r.lead,r.leadT)){r.leadT='piramidale';r.grip=false;}if(k==='hook'&&r.hookT==='forgiato'&&!((st.gear.forged||{})[v]>0))r.hookT='aberdeen';click();setUI();};
 function leadOk(w,t){const g=st.gear;return t==='ragno'?g.grip[w]>0:t==='ogiva'?(g.ogiva||{})[w]>0:true;}
 G.rigDone=()=>seq(async()=>{const r=st.rods[st.sel],g=st.gear;if(r.broken){const h=hookNum(r.hook),miss=[!(g.leads[r.lead]>0)&&'piombo da '+r.lead+' g',!(g.hooks[h]>0)&&'amo n. '+h,!(g.swivels>0)&&'girelle',!(g.snaps>0)&&'moschettoni',!(g.term>0)&&'filo per terminali'].filter(Boolean);
-    if(miss.length){st.msg='🧰 Ti mancano: '+miss.join(', ')+'. Cambia misura o vai al negozio.';st.needShop=true;setUI();return;}g.leads[r.lead]--;g.hooks[h]--;g.swivels--;g.snaps--;g.term--;st.needShop=false;if(r.leadT==='ragno'&&g.grip[r.lead]>0)g.grip[r.lead]--;if(r.leadT==='ogiva'&&g.ogiva?.[r.lead]>0)g.ogiva[r.lead]--;if(r.hookT==='forgiato'&&g.forged?.[h]>0)g.forged[h]--;if(!leadOk(r.lead,r.leadT)){r.leadT='piramidale';r.grip=false;}if(r.hookT==='forgiato'&&!(g.forged?.[h]>0))r.hookT='aberdeen';gearSave();}st.phase='busy';st.msg=r.broken?'🔧 Rifà il terminale…':'🔧 Cambia la montatura…';setUI();pose('bend');await sleep(r.broken?2.2:1.4);r.broken=false;pose('hold');st.msg='';st.phase='bait';setUI();});
+    if(miss.length){st.msg='🧰 Ti mancano: '+miss.join(', ')+'. Cambia misura o vai al negozio.';st.needShop=true;setUI();return;}g.leads[r.lead]--;g.hooks[h]--;g.swivels--;g.snaps--;g.term--;if(beadsN()>0)g.beadsN--;st.needShop=false;if(r.leadT==='ragno'&&g.grip[r.lead]>0)g.grip[r.lead]--;if(r.leadT==='ogiva'&&g.ogiva?.[r.lead]>0)g.ogiva[r.lead]--;if(r.hookT==='forgiato'&&g.forged?.[h]>0)g.forged[h]--;if(!leadOk(r.lead,r.leadT)){r.leadT='piramidale';r.grip=false;}if(r.hookT==='forgiato'&&!(g.forged?.[h]>0))r.hookT='aberdeen';gearSave();}st.phase='busy';st.msg=r.broken?'🔧 Rifà il terminale…':'🔧 Cambia la montatura…';setUI();pose('bend');await sleep(r.broken?2.2:1.4);r.broken=false;pose('hold');st.msg='';st.phase='bait';setUI();});
 G.bait=k=>{const r=st.rods[st.sel],g=st.gear;if(B[k].lim){if(!(st.inv[k]>0))return;st.inv[k]--;}else{if(!(g.baits[k]>0))return;if(['bibi','koreano','arenicola','americano'].includes(k)&&!g.needle){st.msg='🪡 Per innescare i vermi serve l\'ago da innesco: lo trovi al negozio.';setUI();return;}g.baits[k]--;gearSave();}r.bait=k;r.baitLeft=B[k].life*(k==='cozza'&&hookCat(st.hook)==='piccolo'?1.2:1)*(g.elastic&&['cozza','bibi','arenicola','sarda','gambero'].includes(k)?1.3:1);click();pose('hold');st.phase='cast';setUI();};
 // stili di lancio a mano: zona verde, gittata massima, precisione e rischio di rottura del filo
 const CSTY={above:{n:'Above',it:'dall\'alto',g:[.76,.92],max:115,spr:2,crack:0,load:'castBack',fwd:'castFwd',d:'Dall\'alto sopra la testa: facile e preciso, fino a 115 m.'},
@@ -1662,10 +1663,12 @@ const CSEQ={above:{drop:1.2,load:[['castBack',.5]],fire:[['castOverTop',.13],['c
   side:{drop:1.6,load:[['castSide',.6]],fire:[['sideSweep',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3},
   ground:{drop:2,load:[['otgAddress',.7]],fire:[['otgTurn',.16],['castOverTop',.12],['castFwd',.1],['castFollow',.7]],hit:.34},
   pendulum:{drop:1.5,load:[['pendStart',.45],['pendOut',.45],['castPend',.5]],fire:[['otgTurn',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3}};
-function castAnimStart(phase){st.castCam=true;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
+function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=AN.faceTo??AN.rotY;if(st.castStyle==='ground'){AN.faceTo=st.camYaw+Math.PI/2;AN.rotY=AN.faceTo;}}if(phase==='fire'&&st.camYaw!=null)AN.faceTo=st.camYaw;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
   const r=st.rods[st.sel];if(phase==='load'&&r){const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const p=tip.clone();p.y-=q.drop;
-    if(st.castStyle==='ground'){const back=new T.Vector3(Math.sin(AN.rotY)*1.6+1.2,0,Math.cos(AN.rotY)*1.6);p.set(tip.x+back.x,.05,tip.z+back.z);}
-    st.castLead={r,p,q:p.clone(),drop:q.drop};r.sinker.visible=true;r.sinker.position.copy(p);}}
+    // ground: piombo appoggiato sulla sabbia a ore 3 (ore 6 = mare, ore 12 = spiaggia); side: a ore 12, dietro al pescatore
+    let drop=q.drop;if(st.castStyle==='ground'||st.castStyle==='side'){const a=st.camYaw??AN.rotY,fx=-Math.sin(a),fz=-Math.cos(a),rx=-fz,rz=fx,P=AN.pos,D=3.2;
+      if(st.castStyle==='ground')p.set(P.x+rx*D-fx*.4,0,P.z+rz*D-fz*.4);else p.set(P.x-fx*D,0,P.z-fz*D);p.y=sandY(p.z)+.04;drop=Math.max(q.drop,p.distanceTo(tip)+.15);}
+    st.castLead={r,p,q:p.clone(),drop};r.sinker.visible=true;r.sinker.position.copy(p);}}
 function updCastAnim(dt){const A=st.castAnim;if(A){const seq=A.q[A.phase];A.t+=dt;while(A.i<seq.length-1&&A.t>=seq[A.i][1]){A.t-=seq[A.i][1];A.i++;AN.target=seq[A.i][0];
     if(A.phase==='load'&&seq[A.i][0]==='pendOut'&&st.castLead){st.castLead.q.z+=.09;}}
     if(A.phase==='fire'&&A.i===seq.length-1&&A.t>=seq[A.i][1])st.castAnim=null;}
@@ -1681,7 +1684,7 @@ function riskOf(){const w=wxAt(st.gt),rk=SPOT.rocks||0,wv=w.wave||0;return {rock
 function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.gt),S=cSty();
   const p=c.p,[g0,g1]=S.g,gm=(g0+g1)/2,green=p>=g0&&p<=g1,q=green?1:p<g0?p/g0*.9:.7;
   // troppa forza con ground e pendulum: il filo si rompe al lancio (crack-off) e il piombo vola via
-  const rnd2=Math.random(),lk=(st.gear.leader>0?.3:1)*(r.lineT==='braid'?.5:1);if((S.crack&&p>g1+.03&&rnd2<S.crack*lk)||rnd2<(.02+((r.lead||st.lead)>175?.015:0))*lk){if(st.gear.leader>0){st.gear.leader--;gearSave();}st.cast=null;seq(async()=>{st.phase='busy';setUI();castAnimStart('fire');await sleep(.3);whoosh();st.castLead=null;await sleep(.4);st.castAnim=null;st.castCam=false;CAM.cl=null;click();vib([60,30,60]);r.broken=true;r.bait=null;r.state='idle';r.dist=0;r.sinker.visible=false;pose('hold');
+  const rnd2=Math.random(),lk=(st.gear.leader>0?.3:1)*(r.lineT==='braid'?.5:1);if((S.crack&&p>g1+.03&&rnd2<S.crack*lk)||rnd2<(.02+((r.lead||st.lead)>175?.015:0))*lk){if(st.gear.leader>0){st.gear.leader--;gearSave();}st.cast=null;seq(async()=>{st.phase='busy';setUI();castAnimStart('fire');await sleep(.3);whoosh();st.castLead=null;await sleep(.4);st.castAnim=null;st.castCam=false;st.camYaw=null;CAM.cl=null;click();vib([60,30,60]);r.broken=true;r.bait=null;r.state='idle';r.dist=0;r.sinker.visible=false;pose('hold');
     st.msg=p>g1+.03?'💥 Crack-off! Troppa forza: il filo si è rotto al lancio e il piombo è volato via. Rifai il terminale.':'💥 La lenza si è spezzata al lancio (nodo indebolito): piombo perso, rifai il terminale.';st.phase='rig';setUI();});return;}
   // zona verde: fino al massimo dello stile; con poca potenza anche solo 10 m; oltre la zona verde il lancio si sporca
   const GR=st.gear,M=S.max*(ROD[r.rodId||GR.rod]?.mul||1)*(REELS[r.reelId||GR.reel]?.cast||1)*(1+gearTier(r).all*.08)*(1+(.25-GR.line)*.8)*(r.leadT==='ogiva'?1.05:1),base=green?M*(1-Math.abs(p-gm)*.45):p<g0?lerp(10,M*.92,Math.pow(p/g0,1.15)):lerp(M*.92,M*.4,(p-g1)/(1-g1));
@@ -1692,7 +1695,7 @@ function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.g
     // il piombo vola: parabola dalla cima al punto d'arrivo
     const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);if(L0)tip.copy(L0.p);const drift=(Math.sin((w.wd-FACE)*R))*w.ws/40*3;const dir=(st.castDir||0)*.21*dist,end=new T.Vector3(r.x+dir+drift*dist/120,0,-dist);
     r.flight={a:tip.clone(),b:end,t:0,dur:1.1+dist/120,low:st.castStyle==='side'};r.sinker.visible=true;r.dist=0.01;r.state='flying';
-    await sleep(r.flight.dur);splash();burst(end,1);r.flight=null;setTimeout(()=>{st.castCam=false;st.replayCam=false;CAM.cl=null;},700);r.dist=dist;r.sx=end.x;r.sz=end.z;r.state='fishing';r.landT=st.gt;r.drifting=0;
+    await sleep(r.flight.dur);splash();burst(end,1);r.flight=null;setTimeout(()=>{st.castCam=false;st.replayCam=false;st.camYaw=null;CAM.cl=null;},700);r.dist=dist;r.sx=end.x;r.sz=end.z;r.state='fishing';r.landT=st.gt;r.drifting=0;
     st.msg=(q>=1?`Lancio ${S.n} perfetto: ${Math.round(dist)} m!`:q>.8?`Buon lancio ${S.n}: ${Math.round(dist)} m`:`Lancio ${S.n} corto: ${Math.round(dist)} m`);checkTangle(r);setUI();
     st.castAnim=null;pose('hold');await sleep(.6);await putRod(st.sel);await stepBack(st.sel);st.phase='wait';if(r.state!=='tangled')st.msg='Tocca la sedia per sederti, o un\'altra canna per andarci.';setUI();});}
 
@@ -2047,7 +2050,7 @@ function moveActor(a,dt){
   if(a.moving&&a.walkTarget){const wt=a.walkTarget,dx=wt.x-a.pos.x,dz=wt.z-a.pos.z,d=Math.hypot(dx,dz);
     if(d<.05){a.moving=false;a.walkTarget=null;wt.res();}else{const s=Math.min(d,a.speed*dt);a.pos.x+=dx/d*s;a.pos.z+=dz/d*s;a.walk+=dt*a.speed*5.2;const ty=Math.atan2(-dx,-dz);a.rotY=lerpAng(a.rotY,ty,1-Math.exp(-10*dt));}
     if(a===AN){const dp=sandY(a.pos.z);a.swim=dp<-1;a.pos.y=a.swim?(a.dive?-1.1:-.2):dp;}else a.pos.y=Math.max(0,a.pos.z*.035);if(a.target==='sit'||a.target==='bend')a.target=a.holding>=0?'hold':'stand';}
-  else if(a.faceTo!=null){a.rotY=lerpAng(a.rotY,a.faceTo,1-Math.exp(-8*dt));}}
+  else if(a.faceTo!=null){a.rotY=lerpAng(a.rotY,a.faceTo,1-Math.exp(-(a===AN&&st.castAnim?6*(st.slow||1):8)*dt));}}
 function joyMove(dt,t){const m=Math.hypot(JOY.x,JOY.y);const free=st.phase==='wait'&&!st.busy;
   if(!JOY.on||m<.15||!free){if(AN.joying){AN.joying=false;AN.moving=false;}return;}
   if(AN.target==='sit'){pose('stand');AN.pos.z-=.35;}
@@ -2119,7 +2122,7 @@ function updEnv(w,t,dt){const d=gameDate(),s0=sunPos(d,SPOT.lat,SPOT.lon),sun=su
 const CAM={p:null,l:null};
 function updCam(dt,t){let p,l;const a=AN.pos;
   if(G.camOv){camera.position.set(...G.camOv.p);camera.lookAt(...G.camOv.l);return;}
-  if((st.castCam||st.replayCam)&&AN.obj){const a=AN.rotY,fx=-Math.sin(a),fz=-Math.cos(a),rx=-fz,rz=fx,P=AN.pos;
+  if((st.castCam||st.replayCam)&&AN.obj){const a=st.camYaw??AN.rotY,fx=-Math.sin(a),fz=-Math.cos(a),rx=-fz,rz=fx,P=AN.pos;
     // di lato e un po' davanti, a circa 22 m: si vede tutto il pescatore con la canna; quando il piombo vola lo segue verso il mare
     const RD=st.replayCam?28:21,RF=st.replayCam?1:5,tp=new T.Vector3(P.x+rx*RD+fx*RF,P.y+3.2,P.z+rz*RD+fz*RF),r=st.rods[st.sel];let look=new T.Vector3(P.x+fx*.8,P.y+2.3,P.z+fz*.8);
     // da lontano ma con il teleobiettivo: pescatore e canna riempiono l'inquadratura senza la deformazione del grandangolo
