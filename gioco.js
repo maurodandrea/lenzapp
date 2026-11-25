@@ -159,11 +159,14 @@ let CHARS=null;
 function loadChars(){if(CHARS)return CHARS;const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';CHARS=(async()=>{await loadScript(B+'examples/js/loaders/GLTFLoader.js');await loadScript(B+'examples/js/utils/SkeletonUtils.js');
   const gl=u=>new Promise((res,rej)=>new T.GLTFLoader().load(GBASE+u,res,undefined,rej));const [A,remy,boss]=await Promise.all([fetch(GBASE+'chars/anims.json').then(r=>r.json()),gl('chars/remy.glb'),gl('chars/boss.glb')]);
   const clips={};for(const k in A){const c=T.AnimationClip.parse(A[k]);for(const t of c.tracks)if(/Hips\.position$/.test(t.name)){const v=t.values,x0=v[0],z0=v[2];for(let i=0;i<v.length;i+=3){v[i]=x0;v[i+2]=z0;}}clips[k]=c;}
-  return {clips,models:{remy:remy.scene,boss:boss.scene}};})().catch(e=>{console.warn('personaggi',e);return null;});return CHARS;}
+  // l'altezza dei fianchi nelle animazioni va riportata alla scala di ogni personaggio
+  const per={};for(const [nm,sc] of [['remy',remy.scene],['boss',boss.scene]]){let hy=null;sc.traverse(o=>{if(o.isBone&&o.name==='mixamorigHips'&&hy==null)hy=o.position.y;});per[nm]={};
+    for(const k in clips){const c=clips[k].clone(),t=c.tracks.find(t=>/Hips\.position$/.test(t.name));if(t&&hy){const r0=hy/(t.values[1]||1);t.values=Float32Array.from(t.values,v=>v*r0);}per[nm][k]=c;}}
+  return {clips:per,models:{remy:remy.scene,boss:boss.scene}};})().catch(e=>{console.warn('personaggi',e);return null;});return CHARS;}
 // le mesh esportate hanno copie dello scheletro: le ricollego tutte alle ossa principali così l'animazione muove tutto il corpo
 function charFix(root){const prim={};root.traverse(o=>{if(o.isBone&&!/_\d+$/.test(o.name)&&!prim[o.name])prim[o.name]=o;});root.traverse(m=>{if(m.isSkinnedMesh){const sk=m.skeleton,nb=sk.bones.map(b=>prim[b.name.replace(/_\d+$/,'')]||b);m.bind(new T.Skeleton(nb,sk.boneInverses),m.bindMatrix);m.frustumCulled=false;m.castShadow=true;}});}
 function makeChar(C,which,h){const o=T.SkeletonUtils.clone(C.models[which]);charFix(o);const b=new T.Box3().setFromObject(o),s=b.getSize(new T.Vector3());o.scale.setScalar(h/s.y);const g=new T.Group();g.add(o);const b2=new T.Box3().setFromObject(o);o.position.y=-b2.min.y;
-  const mx=new T.AnimationMixer(o);g.userData.mixer=mx;g.userData.play=(k,ts=1)=>{const c=C.clips[k];if(!c)return;if(g.userData.cur===k)return;const a=mx.clipAction(c);a.reset().setEffectiveTimeScale(ts).fadeIn(.3).play();if(g.userData.act)g.userData.act.fadeOut(.3);g.userData.act=a;g.userData.cur=k;};return g;}
+  const mx=new T.AnimationMixer(o);g.userData.mixer=mx;g.userData.play=(k,ts=1)=>{const c=C.clips[which][k];if(!c)return;if(g.userData.cur===k)return;const a=mx.clipAction(c);a.reset().setEffectiveTimeScale(ts).fadeIn(.3).play();if(g.userData.act)g.userData.act.fadeOut(.3);g.userData.act=a;g.userData.cur=k;};return g;}
 
 /* ---------- texture generate al volo ---------- */
 function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;t.anisotropy=4;if(rep){t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(rep[0],rep[1]);}return t;}
@@ -2368,7 +2371,7 @@ function updCam(dt,t){let p,l;const a=AN.pos;
 function drawHud(w){const d=gameDate(),mp=moonPosG(d,SPOT.lat,SPOT.lon);
   const wi=w.code>=95?'⛈️':w.code>=80?'🌦️':w.code>=51?'🌧️':w.code>=45?'🌫️':w.cc>75?'☁️':w.cc>35?'⛅':sunPos(d,SPOT.lat,SPOT.lon).alt>0?'☀️':'🌙';
   const h=`<div>📍 ${escH(SPOT.name.split(' · ')[0])} · <b>${d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</b>${st.speed>1&&st.phase==='wait'&&!st.busy?' ⏩':''}</div><div>${wi} ${Math.round(w.temp)}° ${['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.round(mp.ph/45)%8]} 🎣${w.idx}${st.sim?' ⚠️':''}</div><br><div>🌬️ ${Math.round(w.ws)} ${windName(w.wd)}</div><div>🌊 ${(w.wave||0).toFixed(1).replace('.',',')} m · ${Math.round(w.sst)}°</div><div>💶 ${eur(st.money)}</div>`;if(hud.innerHTML!==h)hud.innerHTML=h;}
-G._bite=i=>startBite(st.rods[i]);G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
+G._bite=i=>startBite(st.rods[i]);G._walkers=()=>WALKERS;G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
 /* ---------- meteo reale per l'ora di gioco ---------- */
 async function loadWx(){
   try{const r=await window.fetchRaw(SPOT);st.sim=!!r.sim;st.X=window.build(r.w,r.m,SPOT,'coast');}catch(e){st.X=null;st.sim=true;}
