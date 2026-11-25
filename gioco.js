@@ -456,7 +456,7 @@ function buildWorld(){
   const pm=new T.MeshStandardMaterial({color:'#2b4024',roughness:1}),tm=new T.MeshStandardMaterial({color:'#5a4030',roughness:1});
   for(let i=0;i<Math.round(26*(SPOT.pines??0));i++){const x=rnd(-220,220),z=rnd(62,90),h=rnd(9,15),p=new T.Group();const tr=new T.Mesh(new T.CylinderGeometry(.25,.4,h,6),tm);tr.position.y=h/2;p.add(tr);
     const cr=new T.Mesh(new T.SphereGeometry(1,10,8),pm);cr.scale.set(rnd(4,6.5),rnd(1.4,2),rnd(4,6));cr.position.y=h;p.add(cr);p.position.set(x,2,z);scene.add(p);}
-  buildLandmarks();
+  buildLandmarks();buildBeachLife();
   // frangenti: strisce di schiuma che avanzano verso riva, e risacca sulla sabbia
   const ft=foamTex();for(let i=0;i<9;i++){const g=new T.PlaneGeometry(420,3.4,160,2);g.rotateX(-Math.PI/2);const base=Float32Array.from(g.attributes.position.array);
     const tx=foamTex2();const m=new T.Mesh(g,new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,opacity:0}));m.position.y=.06;m.userData={base,cyc:Math.random(),rate:rnd(.75,1.35)};newWave(m);scene.add(m);foams.push(m);}
@@ -664,7 +664,8 @@ const LMK=[
   {t:'castle',n:'Castello Odescalchi',lat:42.0347,lon:11.8527},
   {t:'castle',n:'Castello di Santa Severa',lat:42.0172,lon:11.9622},
   {t:'tower',n:'Torre Flavia',lat:41.9586,lon:12.0452,sea:1},
-  {t:'lighthouse',n:'Vecchio Faro di Fiumicino',lat:41.7688,lon:12.2357},
+  {t:'lighthouse',n:'Vecchio Faro di Fiumicino',lat:41.7688,lon:12.2357,near:2500},
+  {t:'canal',n:'Porto Canale di Fiumicino',lat:41.7712,lon:12.2262},
   {t:'port',n:'Porto di Roma',lat:41.7392,lon:12.2493},
   {t:'pier',n:'Pontile di Ostia',lat:41.7324,lon:12.2773},
   {t:'dune',n:'Dune di Castel Porziano',lat:41.6765,lon:12.3832},
@@ -693,8 +694,26 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
     if(t==='castle'){add(new T.BoxGeometry(14,26,14),c,4,13,4);add(new T.BoxGeometry(14.5,1.2,14.5),m('#9c8a6c'),4,26.6,4);}else add(new T.BoxGeometry(S2-6,.8,S2-6),m('#8a7a5e'),0,H-1,0);}
   else if(t==='temple'){add(new T.ConeGeometry(260,150,9),m('#6f7d4c'),0,75,90);const top=150;add(new T.BoxGeometry(70,8,26),stone,0,top+2,20);
     for(let i=0;i<12;i++){add(new T.BoxGeometry(3.2,14,3.2),stone,-30+i*5.45,top+13,10);}add(new T.BoxGeometry(68,3,6),stone,0,top+21.5,10);}
-  else if(t==='pier'){const pm=m('#a39c90');add(new T.BoxGeometry(7,1,320),pm,0,2.2,-160);for(let i=0;i<16;i++)add(new T.CylinderGeometry(.5,.5,6,8),pm,0,-.5,-i*20);add(new T.CylinderGeometry(16,16,1.2,24),pm,0,2.3,-326);
-    for(let i=0;i<8;i++)add(new T.CylinderGeometry(.12,.12,4,5),m('#333'),3.2*(i%2?1:-1),4.5,-i*40);}
+  else if(t==='pier'){const pm=m('#c9c4b8'),dk=m('#b5ad9f'),rail=m('#e9ecef',{metalness:.5,roughness:.4}),L0=320,inst=(geo,mat,arr)=>{const im=new T.InstancedMesh(geo,mat,arr.length),mt=new T.Matrix4();arr.forEach((p,i)=>{mt.makeTranslation(p[0],p[1],p[2]);im.setMatrixAt(i,mt);});g.add(im);};
+    // impalcato in cemento largo 9 m con cordolo, piloni a coppie, ringhiere bianche, lampioni e piazzale circolare in fondo (come il pontile di Ostia)
+    add(new T.BoxGeometry(9,.6,L0),dk,0,3,-L0/2);add(new T.BoxGeometry(9.6,.9,L0),pm,0,2.4,-L0/2);
+    const piles=[];for(let z=-6;z>-L0;z-=12)for(const x of[-3.6,3.6])piles.push([x,-.6,z]);inst(new T.CylinderGeometry(.55,.65,6,10),pm,piles);
+    const posts=[];for(let z=0;z>-L0;z-=2.5)for(const x of[-4.4,4.4])posts.push([x,3.85,z]);inst(new T.BoxGeometry(.08,1.1,.08),rail,posts);
+    for(const x of[-4.4,4.4]){add(new T.BoxGeometry(.1,.08,L0),rail,x,4.4,-L0/2);add(new T.BoxGeometry(.05,.05,L0),rail,x,3.85,-L0/2);}
+    for(let z=-12;z>-L0;z-=24)for(const x of[-4.1,4.1]){add(new T.CylinderGeometry(.09,.12,5,8),m('#2b2f36'),x,5.8,z);add(new T.SphereGeometry(.35,10,8),m('#fff6d8',{emissive:'#ffe9a8',emissiveIntensity:.9}),x,8.4,z);}
+    add(new T.CylinderGeometry(18,18,.6,32),dk,0,3,-L0-16);add(new T.CylinderGeometry(18.4,18.4,.9,32),pm,0,2.4,-L0-16);
+    const ring=[];for(let k=0;k<64;k++){const a=k/64*Math.PI*2;if(Math.abs(Math.sin(a/2))<.12)continue;ring.push([Math.sin(a)*18,3.85,-L0-16+Math.cos(a)*18]);}inst(new T.BoxGeometry(.08,1.1,.08),rail,ring);
+    add(new T.TorusGeometry(18,.06,6,48),rail,0,4.4,-L0-16).rotation.x=Math.PI/2;
+    for(let k=0;k<10;k++){const a=k/10*Math.PI*2;add(new T.CylinderGeometry(.6,.7,6,10),pm,Math.sin(a)*12,-.6,-L0-16+Math.cos(a)*12);}
+    add(new T.BoxGeometry(6,3.2,4),m('#f2efe6'),0,4.9,-L0-22);add(new T.BoxGeometry(6.6,.3,4.6),m('#7a8a96'),0,6.6,-L0-22);}
+  else if(t==='canal'){const bw=m('#9a958c'),qy=m('#b3ab9c'),wat=m('#2f5d6e',{roughness:.2,metalness:.3});
+    // porto canale di Fiumicino: due moli paralleli che entrano in mare, canale largo 40 m con barche ormeggiate, fanali rosso e verde in punta
+    for(const sx of[-1,1]){add(new T.BoxGeometry(10,3,260),bw,sx*25,.8,-80);add(new T.BoxGeometry(8,.4,300),qy,sx*24,2.5,40);
+      for(let i=0;i<9;i++)add(new T.DodecahedronGeometry(3.2,0),bw,sx*(25+rnd(4,7)),-.4,-200+i*16);
+      add(new T.CylinderGeometry(1,1.2,7,10),sx<0?red:m('#2e9b4f'),sx*25,5.3,-208);add(new T.CylinderGeometry(.6,.6,1.2,8),m('#fff6c0',{emissive:sx<0?'#ff3a2a':'#3aff6a',emissiveIntensity:1}),sx*25,9.4,-208);}
+    add(new T.BoxGeometry(40,.2,330),wat,0,-.05,-40);
+    const hull=m('#f7f7f2');for(let i=0;i<14;i++){const sx=i%2?1:-1,z=150-i*22;add(new T.BoxGeometry(4,2,13),i%4?hull:m('#2b62c9'),sx*15.5,.9,z);add(new T.BoxGeometry(2.8,1.6,4),m('#e9eef2'),sx*15.5,2.6,z+1.5);add(new T.CylinderGeometry(.12,.12,7,4),m('#ddd'),sx*15.5,5,z-2);}
+    for(let i=0;i<8;i++){const sx=i%2?1:-1;add(new T.BoxGeometry(14,rnd(6,12),10),m(['#e8dcc4','#d9c6a6','#c98d6a','#efe6d6'][i%4]),sx*rnd(40,48),4,180-i*30);}}
   else if(t==='port'){const bw=m('#9a958c');add(new T.BoxGeometry(14,5,300),bw,-170,1.5,-150);add(new T.BoxGeometry(220,5,14),bw,-60,1.5,-300);add(new T.BoxGeometry(14,5,200),bw,170,1.5,-100);
     add(new T.CylinderGeometry(2,2,10,10),red,50,6,-300);add(new T.CylinderGeometry(2,2,10,10),m('#2e9b4f'),170,6,-200);
     const hull=m('#f7f7f2');for(let i=0;i<16;i++){const x=-140+(i%8)*36,z=-40-Math.floor(i/8)*60;add(new T.BoxGeometry(4,2.2,12),i%3?hull:m('#2b62c9'),x,1,z);add(new T.CylinderGeometry(.15,.15,13,4),m('#ddd'),x,8,z);}
@@ -705,6 +724,41 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
       for(let k=0;k<4;k++)add(new T.SphereGeometry(rnd(1.5,3),6,4),gr,d.position.x+rnd(-15,15),d.scale.y*.8,d.position.z+rnd(-8,8));}}
   return g;}
 function azPos(lat,lon){const dy=(lat-SPOT.lat)*110570,dx=(lon-SPOT.lon)*111320*Math.cos(SPOT.lat*R),d=Math.hypot(dx,dy),az=(Math.atan2(dx,dy)/R+360)%360,a=(az-FACE)*R;return {x:Math.sin(a)*d,z:-Math.cos(a)*d,d};}
+// spiaggia vera: conchiglie, legni e tronchetti, alghe sulla linea del bagnasciuga, pozzanghere e buche, chioschi; di giorno gente che passeggia, corre o porta a spasso il cane
+let WALKERS=[];
+function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMaterial({color:c,roughness:.9,...o}),mtx=new T.Matrix4(),q=new T.Quaternion(),sv=new T.Vector3(),pv=new T.Vector3(),eu=new T.Euler();
+  const inst=(geo,mat,n,f)=>{const im=new T.InstancedMesh(geo,mat,n);for(let i=0;i<n;i++){const [x,y,z,sx,sy,sz,rx,ry,rz]=f(i);pv.set(x,y,z);eu.set(rx,ry,rz);q.setFromEuler(eu);sv.set(sx,sy,sz);mtx.compose(pv,q,sv);im.setMatrixAt(i,mtx);}im.receiveShadow=true;scene.add(im);return im;};
+  // conchiglie
+  inst(new T.SphereGeometry(1,7,5),M('#efe6d6',{roughness:.6}),520,()=>{const z=rnd(-.3,14),s0=rnd(.012,.03);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.35,s0*.8,0,rnd(0,6),0];});
+  inst(new T.SphereGeometry(1,7,5),M('#c9a98a',{roughness:.6}),220,()=>{const z=rnd(0,12),s0=rnd(.01,.022);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.4,s0,0,rnd(0,6),0];});
+  // alghe e detriti sulla linea dell'ultima mareggiata
+  inst(new T.BoxGeometry(1,1,1),M('#3b3326'),900,()=>{const z=1.2+Math.sin(rnd(0,99))*.35+rnd(-.25,.25);return [rnd(-210,210),sandY(z)+.005,z,rnd(.05,.25),.012,rnd(.02,.06),0,rnd(0,6),0];});
+  // legni, rametti e tronchetti portati dal mare
+  inst(new T.CylinderGeometry(1,1,1,7),M('#9c8f7c'),70,i=>{const z=rnd(.8,20),big=i<14,L=big?rnd(1.2,3.2):rnd(.25,.9),r=big?rnd(.06,.16):rnd(.012,.03);return [rnd(-200,200),sandY(z)+r*.7,z,r,L,r,Math.PI/2,rnd(0,6),rnd(-.1,.1)];});
+  // pozzanghere vicino alla riva
+  const pm=new T.MeshStandardMaterial({color:'#7f97a6',roughness:.08,metalness:.5,transparent:true,opacity:.75});for(let i=0;i<16;i++){const z=rnd(.4,2.6),p=new T.Mesh(new T.CircleGeometry(1,18),pm);p.rotation.x=-Math.PI/2;p.scale.set(rnd(.5,2.2),rnd(.3,1.1),1);p.position.set(rnd(-190,190),sandY(z)+.008,z);scene.add(p);}
+  // buche scavate e castelli di sabbia smontati
+  const hm=M('#8f7a58'),rm=new T.MeshStandardMaterial({map:sandTex(),color:'#d8c49a',roughness:1});for(let i=0;i<14;i++){const z=rnd(3,16),x=rnd(-190,190);if(Math.abs(x)<12)continue;const r=rnd(.25,.6),h=new T.Mesh(new T.CircleGeometry(r,16),hm);h.rotation.x=-Math.PI/2;h.position.set(x,sandY(z)+.006,z);scene.add(h);const rg=new T.Mesh(new T.TorusGeometry(r+.08,.08,6,18),rm);rg.rotation.x=-Math.PI/2;rg.scale.z=.5;rg.position.set(x,sandY(z)+.02,z);scene.add(rg);}
+  // chioschi sulla spiaggia, ogni tanto
+  const wood=M('#8a6a48'),wood2=M('#6b4f35'),roofM=M('#c9b18a');for(let i=0;i<3;i++){const x=(i-1)*130+rnd(-15,15)+(i===1?75:0),z=26;const g=new T.Group();g.position.set(x,sandY(z),z);scene.add(g);
+    const deck=new T.Mesh(new T.BoxGeometry(9,.25,6),wood2);deck.position.y=.35;g.add(deck);const hut=new T.Mesh(new T.BoxGeometry(5,2.8,3.4),wood);hut.position.set(0,1.85,.8);g.add(hut);
+    const rf=new T.Mesh(new T.ConeGeometry(4.2,1.4,4),roofM);rf.rotation.y=Math.PI/4;rf.scale.z=.8;rf.position.set(0,3.95,.8);g.add(rf);const bar=new T.Mesh(new T.BoxGeometry(5,.9,.5),wood2);bar.position.set(0,.95,-1.1);g.add(bar);
+    const sign=new T.Mesh(new T.PlaneGeometry(2.6,.6),new T.MeshBasicMaterial({map:canvasTex(256,64,(c,w,h)=>{c.fillStyle='#f4e9d0';c.fillRect(0,0,w,h);c.fillStyle='#2b4a6a';c.font='800 34px Outfit,sans-serif';c.textAlign='center';c.fillText(['CHIOSCO','BAR SPIAGGIA','LIDO'][i],w/2,44);})}));sign.position.set(0,3,-.92);sign.rotation.y=Math.PI;g.add(sign);
+    for(let k=0;k<4;k++){const tb=new T.Group();tb.position.set(-3.3+k*2.2,.48,-2.2);g.add(tb);const top=new T.Mesh(new T.CylinderGeometry(.4,.4,.05,12),M('#f2f2f2'));top.position.y=.72;tb.add(top);const leg=new T.Mesh(new T.CylinderGeometry(.04,.04,.72,6),M('#9aa3ad'));leg.position.y=.36;tb.add(leg);
+      const um=new T.Mesh(new T.ConeGeometry(1.1,.45,10,1,true),new T.MeshStandardMaterial({color:['#f2f2f2','#2f6fb5'][k%2],side:T.DoubleSide}));um.position.y=2.3;tb.add(um);const up=new T.Mesh(new T.CylinderGeometry(.025,.025,2.3,6),M('#d8d8d8'));up.position.y=1.15;tb.add(up);}}
+  // gente sulla spiaggia: passeggiano, corrono, col cane (solo di giorno)
+  const looks=[{j:'#e8e2d0',j2:'#d8d0bc',p:'#2b3a55',suit:'tracksuit',hat:'cap',hair:'#3a2a1e',skin:'#d6a184'},{j:'#c0392b',j2:'#a33024',p:'#1d1d1d',suit:'tracksuit',hat:'none',hair:'#1d140e',skin:'#b98262'},
+    {j:'#2f6fb5',j2:'#24588f',p:'#3a3a3a',suit:'jacket',hat:'none',hair:'#d8d6d0',glasses:true,skin:'#e0b098'},{j:'#3a5a2a',j2:'#2e4822',p:'#6b5a45',suit:'jacket',hat:'bucket',hair:'#5a4636',skin:'#cf9878'},{j:'#f2c230',j2:'#d9ab1f',p:'#2b2f36',suit:'tracksuit',hat:'none',hair:'#2a1d14',skin:'#c98d6a'}];
+  for(let i=0;i<6;i++){const L=looks[i%looks.length],run=i%3===1,dog=i%3===2,obj=makeAngler({...L,beard:i%2?'none':'stubble',boots:'shoes'});scene.add(obj);const z=run?rnd(.3,1.4):rnd(1.6,5),dir=Math.random()<.5?1:-1;
+    const a={obj,pose:JSON.parse(JSON.stringify(POSES.stand)),target:'stand',walk:rnd(0,9),moving:true,speed:run?3.6:rnd(1.1,1.5),pos:new T.Vector3(rnd(-160,160),0,z),rotY:0,holding:-1,reelSpin:0,crank:0,faceTo:null,dir,z0:z};
+    if(dog){const d=new T.Group(),c=M(['#8a5a2a','#2b2b2b','#d9c8a8'][i%3]),bd=new T.Mesh(new T.BoxGeometry(.18,.2,.55),c);bd.position.y=.38;d.add(bd);const hd=new T.Mesh(new T.BoxGeometry(.16,.17,.2),c);hd.position.set(0,.52,-.33);d.add(hd);const sn=new T.Mesh(new T.BoxGeometry(.09,.08,.12),c);sn.position.set(0,.47,-.47);d.add(sn);
+      for(const ex of[-1,1]){const ear=new T.Mesh(new T.BoxGeometry(.04,.09,.05),c);ear.position.set(ex*.06,.63,-.3);d.add(ear);}d.userData.legs=[];for(const [lx,lz] of [[-.06,-.2],[.06,-.2],[-.06,.2],[.06,.2]]){const lg=new T.Group();lg.position.set(lx,.3,lz);const m=new T.Mesh(new T.BoxGeometry(.05,.3,.05),c);m.position.y=-.15;lg.add(m);d.add(lg);d.userData.legs.push(lg);}
+      const tl=new T.Mesh(new T.BoxGeometry(.03,.03,.22),c);tl.position.set(0,.5,.33);tl.rotation.x=-.7;d.add(tl);scene.add(d);a.dog=d;}
+    WALKERS.push(a);}}
+function updBeachLife(dt,t){const day=night()<.45;for(const a of WALKERS){a.obj.visible=day;if(a.dog)a.dog.visible=day;if(!day)continue;
+    const sp=a.speed;a.pos.x+=a.dir*sp*dt;if(Math.abs(a.pos.x)>190){a.dir*=-1;}a.pos.y=Math.max(sandY(a.z0),0)+(a.z0<0?0:0);a.pos.z=a.z0;a.walk+=dt*sp*5.2;a.moving=true;a.rotY=lerpAng(a.rotY,a.dir>0?-Math.PI/2:Math.PI/2,1-Math.exp(-6*dt));
+    lerpPose(dt,6,a);applyPose(t,a);
+    if(a.dog){const d=a.dog,off=a.dir*-1.2;d.position.set(a.pos.x-off*-1+a.dir*1.1,sandY(a.z0-.9),a.z0-.9);d.rotation.y=a.dir>0?-Math.PI/2:Math.PI/2;const ph=t*sp*6;d.userData.legs.forEach((l,k)=>l.rotation.x=Math.sin(ph+(k%2?Math.PI:0)+(k>1?Math.PI/2:0))*.6);}}}
 function buildLandmarks(){const rm=new T.MeshStandardMaterial({color:'#6f6a62',roughness:.95});
   if(SPOT.rocks){for(let i=0;i<Math.round(60*SPOT.rocks);i++){const r=new T.Mesh(new T.DodecahedronGeometry(rnd(.3,1.3),0),rm);const x=rnd(-120,120),z=rnd(-10,3);r.position.set(x,sandY(z)+rnd(-.1,.3),z);r.scale.y=rnd(.4,.8);r.rotation.set(rnd(0,3),rnd(0,3),0);r.castShadow=true;scene.add(r);}
     for(let k=0;k<3;k++){const g=new T.Group(),x0=rnd(-90,90);for(let i=0;i<14;i++){const r=new T.Mesh(new T.DodecahedronGeometry(rnd(.8,2),0),rm);r.position.set(x0+rnd(-3,3),rnd(-.6,.6),-rnd(12,40)*(i/14));g.add(r);}scene.add(g);}}
@@ -716,9 +770,9 @@ function buildLandmarks(){const rm=new T.MeshStandardMaterial({color:'#6f6a62',r
   if(SPOT.city||SPOT.huts){const bm=new T.MeshStandardMaterial({color:'#d8cfc0',roughness:.9});for(let i=0;i<40;i++){const side=i%2?1:-1,x=side*rnd(250,1400),z=rnd(30,500),h=rnd(6,28);if(!SPOT.city&&Math.abs(x)<600)continue;const b=new T.Mesh(new T.BoxGeometry(rnd(10,24),h,rnd(10,20)),bm);b.position.set(x,h/2,z);scene.add(b);}}
   if(SPOT.ship){const sm=new T.MeshStandardMaterial({color:'#3a3f48',roughness:.7});for(let i=0;i<2;i++){const g=new T.Group(),h=new T.Mesh(new T.BoxGeometry(180,18,28),sm);g.add(h);const bd=new T.Mesh(new T.BoxGeometry(40,24,26),new T.MeshStandardMaterial({color:'#e9e9e9'}));bd.position.set(60,20,0);g.add(bd);g.position.set(rnd(-1500,1500),8,-rnd(2500,4500));g.rotation.y=rnd(-.3,.3);scene.add(g);}}
   // luoghi caratteristici vicini: vecchio faro, pontile, porti e navi, castelli, torri, tempio
-  for(const L of LMK){if(L.t==='dune')continue;const p=azPos(L.lat,L.lon);if(p.d>14000)continue;const g=lmModel(L),k=1+Math.max(0,(p.d-500)/700);g.scale.setScalar(k);
+  for(const L of LMK){if(L.t==='dune')continue;const p=azPos(L.lat,L.lon);if(p.d>14000)continue;if(L.near&&p.d>L.near)continue;if(L.t==='lighthouse'&&SPOT.id==='ostia')continue;const g=lmModel(L),k=1+Math.max(0,(p.d-500)/700);g.scale.setScalar(k);
     // la spiaggia del gioco è una riva dritta: castelli, torri e fari restano sulla terraferma (la costa vera curva), porti e pontili partono dalla riva
-    const z=L.sea?Math.max(p.z,-60):L.t==='pier'||L.t==='port'?Math.max(p.z,0):Math.max(p.z,40+25*k);g.position.set(p.x,0,z);scene.add(g);}
+    const z=L.sea?Math.max(p.z,-60):L.t==='pier'||L.t==='port'||L.t==='canal'?Math.max(p.z,0):Math.max(p.z,40+25*k);g.position.set(p.x,0,z);scene.add(g);}
   // il Circeo all'orizzonte (da Anzio a Sabaudia)
   const c=azPos(CIRCEO.lat,CIRCEO.lon);if(c.d>2000&&c.d<70000&&c.z<1000){const k=Math.min(1,9000/c.d),m=circeoMesh(5200*k*2.2,CIRCEO.h*1.3*k*2,1600*k*2,c.x<0);const sc=Math.min(1,6000/c.d);m.position.set(c.x*sc,-2,Math.min(c.z*sc,0)-1800*k);m.lookAt(0,-2,0);scene.add(m);}}
 let TRIG=null;
@@ -2152,7 +2206,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   const gmul=(st.phase==='wait'&&!st.busy&&!st.rods.some(r=>r.state==='bite'))?st.speed:1;st.gmul=gmul;st.gt+=dt*1000*gmul;const gmin=dt*gmul/60;const w=wxAt(st.gt);
   // pescatore e vicini di spiaggia
   joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();updCrabs(dt,t);nearUI(t);
-  updNpcs(dt,t);rpUpd(dt,t);
+  updNpcs(dt,t);updBeachLife(dt,t);rpUpd(dt,t);
   if(st.cast?.on){st.cast.p+=st.cast.dir*dt*1.15;if(st.cast.p>1){st.cast.p=1;st.cast.dir=-1;}if(st.cast.p<0){st.cast.p=0;st.cast.dir=1;}const el=document.getElementById('gpw');if(el)el.style.width=(st.cast.p*100)+'%';}
   // canne
   for(const r of st.rods){
