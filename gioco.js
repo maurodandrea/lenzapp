@@ -411,7 +411,7 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   const body=new T.Mesh(new T.CylinderGeometry(.035,.04,.08,14),MAT.reel);body.position.z=.07;reel.add(body);
   const rotor=new T.Group();rotor.position.set(0,.065,.07);reel.add(rotor);
   const rm=new T.Mesh(new T.CylinderGeometry(.05,.045,.05,16),MAT.reel);rotor.add(rm);
-  const bail=new T.Mesh(new T.TorusGeometry(.055,.004,6,16,Math.PI),MAT.alu);bail.position.y=.04;rotor.add(bail);
+  const bail=new T.Mesh(new T.TorusGeometry(.058,.004,6,20,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.position.y=.035;rotor.add(bail);
   const spool=new T.Mesh(new T.CylinderGeometry(.052,.052,.035,18),MAT.spool);spool.position.set(0,.115,.07);reel.add(spool);
   const lt=canvasTex(64,16,(g)=>{for(let x=0;x<64;x+=8){g.fillStyle=x%16?'#f2f6f8':'#ff7a3c';g.fillRect(x,0,8,16);}});
   const lineOn=new T.Mesh(new T.CylinderGeometry(.047,.047,.03,24),new T.MeshStandardMaterial({map:lt,roughness:.4}));lineOn.position.copy(spool.position);reel.add(lineOn);reel.scale.setScalar(1.35);
@@ -636,7 +636,7 @@ function nearCrab(){let best=null,bd=1.6;for(const c of CRABS){if(!c.visible)con
 G.crab=()=>seq(async()=>{const c=nearCrab();if(!c)return;st.phase='busy';setUI();const fc=Math.atan2(-(c.position.x-AN.pos.x),-(c.position.z-AN.pos.z));AN.faceTo=fc;pose('bend');await sleep(.7);
   c.userData.hid=rnd(15,40);c.visible=false;st.inv.granchio++;click();pose('stand');AN.faceTo=null;st.msg=`🦀 Preso un granchio! Ne hai ${st.inv.granchio} da innescare.`;st.phase='wait';setUI();});
 // sedia scelta, riparo, borsoni e frangivento sulla postazione
-const Y0=()=>CHAIR.z*.035;let CAMPX=[];function styleCamp(){const g=st.gear,ch=CHAIRG;if(!ch)return;CAMPX.forEach(o=>scene.remove(o));CAMPX=[];const add=o=>{o.traverse(m=>{if(m.isMesh)m.castShadow=true;});scene.add(o);CAMPX.push(o);MYG.push(o);return o;};
+const Y0=()=>CHAIR.z*.035;let CAMPX=[];function styleCamp(){setTimeout(()=>{CAMPX.forEach(texturize);if(CHAIRG)texturize(CHAIRG);MYG.forEach(o=>o&&texturize(o));},0);const g=st.gear,ch=CHAIRG;if(!ch)return;CAMPX.forEach(o=>scene.remove(o));CAMPX=[];const add=o=>{o.traverse(m=>{if(m.isMesh)m.castShadow=true;});scene.add(o);CAMPX.push(o);MYG.push(o);return o;};
   const c=g.chair||'';ch.visible=!!c;{const bk=new T.Mesh(new T.CylinderGeometry(.15,.18,c?.32:.5,16),MAT.bucket);bk.position.set(c?CHAIR.x-.75:CHAIR.x,Y0()+(c?.16:.25),c?CHAIR.z-.2:CHAIR.z+.02);add(bk);}
   if(c)ch.userData.tela.color.set({chairStd:'#4b5a36',chairHigh:'#1d3557',chairLevel:'#2f6fb5',chairArm:'#7a2018'}[c]);if(c)ch.scale.set(1,c==='chairHigh'?1.12:1,1);
   const Y=CHAIR.z*.035,M=(cl,o={})=>new T.MeshStandardMaterial({color:cl,roughness:.8,...o});
@@ -744,6 +744,12 @@ let RODTX=null;function rodTex(){if(RODTX)return RODTX;const carb=canvasTex(64,2
   const eva=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#2a2a2a';g.fillRect(0,0,w,h);for(let i=0;i<2500;i++){const l=20+Math.random()*40;g.fillStyle=`rgb(${l},${l},${l})`;g.fillRect(Math.random()*w,Math.random()*h,1.5,1.5);}});eva.wrapS=eva.wrapT=T.RepeatWrapping;eva.repeat.set(2,2);
   const brush=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#9aa0a6';g.fillRect(0,0,w,h);for(let y=0;y<h;y++){const l=130+Math.random()*60;g.fillStyle=`rgba(${l},${l},${l},.5)`;g.fillRect(0,y,w,1);}});brush.wrapS=brush.wrapT=T.RepeatWrapping;
   return RODTX={carb,eva,brush};}
+// attrezzatura da spiaggia: tela per sedie, borse e tende, plastica granulosa per secchi e cassette, metallo spazzolato per i tubi
+let TXZ=null;function txz(){if(TXZ)return TXZ;const mk=(f,r)=>{const t=canvasTex(128,128,f);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(r,r);return t;};
+  TXZ={fab:mk((g,w,h)=>{g.fillStyle='#d8d8d8';g.fillRect(0,0,w,h);for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){const l=(((x+y)/3)%2)?235:195;g.fillStyle=`rgb(${l},${l},${l})`;g.fillRect(x,y,3,2);}},6),
+    pla:mk((g,w,h)=>{g.fillStyle='#e8e8e8';g.fillRect(0,0,w,h);for(let i=0;i<3000;i++){const l=205+Math.random()*50;g.fillStyle=`rgb(${l},${l},${l})`;g.fillRect(Math.random()*w,Math.random()*h,1,1);}},3)};return TXZ;}
+function texturize(root){const X=txz();root.traverse(m=>{if(!m.isMesh||!m.material||Array.isArray(m.material))return;const mt=m.material;if(!mt.isMeshStandardMaterial||mt.map||mt.userData.tz||mt.transparent||mt.emissiveIntensity>0&&mt.emissive&&mt.emissive.getHex())return;mt.userData.tz=1;
+  if(mt.metalness>.4){mt.map=rodTex().brush;}else if(mt.roughness>.8){mt.map=X.fab;mt.bumpMap=X.fab;mt.bumpScale=.004;}else{mt.map=X.pla;mt.roughness=Math.max(.45,mt.roughness);}mt.needsUpdate=true;});}
 const SHIPM={};function shipMat(k){if(SHIPM[k])return SHIPM[k];const t=canvasTex(1024,128,(g,w,h)=>{g.fillStyle='#eef1f3';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=`rgba(120,110,100,${Math.random()*.08})`;g.fillRect(Math.random()*w,0,2+Math.random()*4,h);}
     if(k==='hull'){g.fillStyle='#1f4fa0';g.fillRect(0,h*.78,w,h*.22);g.fillStyle='#7a2a1e';g.fillRect(0,h*.92,w,h*.08);g.fillStyle='#2b3440';for(let x=12;x<w-12;x+=18)g.beginPath(),g.arc(x,h*.42,3.2,0,7),g.fill();}
     else{g.fillStyle='#24313d';for(const y of [.18,.48,.78])for(let x=8;x<w-8;x+=14)g.fillRect(x,h*y-5,10,10);g.fillStyle='#c9d1d8';g.fillRect(0,h*.32,w,3);g.fillRect(0,h*.62,w,3);}
@@ -1590,9 +1596,13 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
   lab('CANNE',-4.95,2.4,-4.2,Math.PI/2);
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
-    for(const sx of[-1,1]){const h=new T.Mesh(new T.CylinderGeometry(.06,.06,.54,12),Y);h.rotation.x=Math.PI/2;h.position.set(sx*.13,.07,0);B.add(h);}
-    const dk=new T.Mesh(new T.BoxGeometry(.36,.05,.42),W);dk.position.y=.15;B.add(dk);const hop=new T.Mesh(new T.BoxGeometry(.2,.1,.16),K);hop.position.set(0,.22,.05);B.add(hop);const ant=new T.Mesh(new T.CylinderGeometry(.005,.005,.2,5),K);ant.position.set(.12,.27,-.15);B.add(ant);
-    const D=new T.Group();D.position.set(.42,.24,-2.6);scene.add(D);const bd=new T.Mesh(new T.BoxGeometry(.16,.07,.22),M('#e8ecef'));bd.position.y=.12;D.add(bd);const cam=new T.Mesh(new T.SphereGeometry(.035,10,8),K);cam.position.set(0,.08,.12);D.add(cam);
+    // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
+    {const sh=new T.Shape();sh.moveTo(0,-.32);sh.quadraticCurveTo(.2,-.2,.2,.08);sh.lineTo(.2,.28);sh.lineTo(-.2,.28);sh.lineTo(-.2,.08);sh.quadraticCurveTo(-.2,-.2,0,-.32);
+      const hullG=new T.ExtrudeGeometry(sh,{depth:.12,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:3});hullG.rotateX(Math.PI/2);hullG.translate(0,.14,0);const hm=new T.MeshStandardMaterial({color:'#f2c230',roughness:.35,metalness:.05,map:txz().pla});const hl=new T.Mesh(hullG,hm);B.add(hl);
+      const dk2=new T.Mesh(new T.ExtrudeGeometry(sh,{depth:.01,bevelEnabled:false}),new T.MeshStandardMaterial({color:'#eef1f3',roughness:.4,map:txz().pla}));dk2.geometry.rotateX(Math.PI/2);dk2.scale.set(.92,1,.92);dk2.position.y=.155;B.add(dk2);
+      const hop2=new T.Mesh(new T.BoxGeometry(.18,.09,.14),new T.MeshStandardMaterial({color:'#1c2024',roughness:.5,map:txz().pla}));hop2.position.set(0,.2,.02);B.add(hop2);const lid=new T.Mesh(new T.BoxGeometry(.19,.01,.15),new T.MeshStandardMaterial({color:'#2f6fb5',roughness:.4}));lid.position.set(0,.25,.02);B.add(lid);
+      const ant2=new T.Mesh(new T.CylinderGeometry(.004,.004,.22,5),K);ant2.position.set(.12,.27,.2);B.add(ant2);for(const sx of[-1,1]){const pr=new T.Mesh(new T.CylinderGeometry(.025,.025,.01,10),M('#9aa3aa',{metalness:.7}));pr.rotation.x=Math.PI/2;pr.position.set(sx*.09,.06,.3);B.add(pr);}B.rotation.y=.5;}
+    const D=new T.Group();D.position.set(.42,.24,-2.6);scene.add(D);const bd=new T.Mesh(new T.SphereGeometry(.11,16,10),M('#e8ecef',{roughness:.3,map:txz().pla}));bd.scale.set(.75,.38,1);bd.position.y=.12;D.add(bd);const cam=new T.Mesh(new T.SphereGeometry(.035,10,8),K);cam.position.set(0,.08,.12);D.add(cam);
     for(const [ax,az] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const arm=new T.Mesh(new T.BoxGeometry(.03,.02,.24),K);arm.position.set(ax*.1,.14,az*.1);arm.rotation.y=Math.atan2(ax,az);D.add(arm);const mo=new T.Mesh(new T.CylinderGeometry(.02,.02,.04,8),K);mo.position.set(ax*.17,.16,az*.17);D.add(mo);const pr=new T.Mesh(new T.BoxGeometry(.2,.004,.025),M('#9aa3aa'));pr.position.set(ax*.17,.185,az*.17);pr.rotation.y=ax*az*.6;D.add(pr);}
     for(const sx of[-1,1]){const lg=new T.Mesh(new T.BoxGeometry(.012,.09,.16),K);lg.position.set(sx*.08,.045,0);D.add(lg);}}box(.08,.08,5.6,M('#6b4a32'),-4.85,.35,-4.2);box(.08,.08,5.6,M('#6b4a32'),-4.85,1.9,-4.2);
   const blanks=['#1b1b1b','#0f2f5a','#5a0f12','#1b3d22','#e3e3e3','#26303a','#3a1f5c'];for(let i=0;i<15;i++){const z=-6.8+i*.37,h=rnd(2.1,2.45),g=new T.Group();
