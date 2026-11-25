@@ -1688,14 +1688,12 @@ function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.g
   const leadF=clamp(1.15-((r.lead||st.lead)-100)/400,.85,1.1)*(r.rig==='2ami'?.93:r.rig==='corto'?1.04:1),baitF=r.bait==='cefalotto'?.55:r.bait==='sarda'||r.bait==='seppia'?.85:1,wind=1+windHelp(w.wd)*clamp(w.ws/60,0,.35);
   const dist=clamp(base*leadF*baitF*wind+rnd(-3,3),8,150+gearTier(r).all*35);st.cast=null;
   r.star=night()>.25?(st.gear.starlight>0?(st.gear.starlight--,gearSave(),true):false):r.star;
-  seq(async()=>{st.phase='busy';st.msg='';setUI();castAnimStart('fire');const H=(CSEQ[st.castStyle]||CSEQ.above).hit;await sleep(H*.6);whoosh();await sleep(H*.4);const L0=st.castLead;st.castLead=null;
+  seq(async()=>{st.phase='busy';const q=CSEQ[st.castStyle]||CSEQ.above,H=q.hit,SL=.35,T0=x=>(x||[]).reduce((a,y)=>a+y[1],0);st.replayCam=true;st.slow=SL;st.msg='⏪ Il tuo lancio al rallentatore';setUI();if(POSES.hold)AN.pose=JSON.parse(JSON.stringify(POSES.hold));castAnimStart('load');await sleep(T0(q.load)/SL+.4);castAnimStart('fire');await sleep(H*.6/SL);whoosh();await sleep(H*.4/SL);st.slow=1;st.msg='';setUI();const L0=st.castLead;st.castLead=null;
     // il piombo vola: parabola dalla cima al punto d'arrivo
     const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);if(L0)tip.copy(L0.p);const drift=(Math.sin((w.wd-FACE)*R))*w.ws/40*3;const dir=(st.castDir||0)*.21*dist,end=new T.Vector3(r.x+dir+drift*(green?.3:1)+rnd(-S.spr,S.spr)*(green?.12:1)+(st.castStyle==='side'&&!green?S.spr*.5:0),0,-dist);
     r.flight={a:tip.clone(),b:end,t:0,dur:1.1+dist/120,low:st.castStyle==='side'};r.sinker.visible=true;r.dist=0.01;r.state='flying';
-    await sleep(r.flight.dur);splash();burst(end,1);r.flight=null;setTimeout(()=>{st.castCam=false;CAM.cl=null;},700);r.dist=dist;r.sx=end.x;r.sz=end.z;r.state='fishing';r.landT=st.gt;r.drifting=0;
+    await sleep(r.flight.dur);splash();burst(end,1);r.flight=null;setTimeout(()=>{st.castCam=false;st.replayCam=false;CAM.cl=null;},700);r.dist=dist;r.sx=end.x;r.sz=end.z;r.state='fishing';r.landT=st.gt;r.drifting=0;
     st.msg=(q>=1?`Lancio ${S.n} perfetto: ${Math.round(dist)} m!`:q>.8?`Buon lancio ${S.n}: ${Math.round(dist)} m`:`Lancio ${S.n} corto: ${Math.round(dist)} m`);checkTangle(r);setUI();
-    {const q=CSEQ[st.castStyle]||CSEQ.above,T0=x=>(x||[]).reduce((a,y)=>a+y[1],0),sp0=r.sinker.position.clone(),SL=.3;await sleep(.8);const m0=st.msg;st.replayCam=true;st.slow=SL;st.msg='⏪ Replay del lancio al rallentatore';setUI();
-      castAnimStart('load');st.castLead=null;r.sinker.position.copy(sp0);await sleep(T0(q.load)/SL+.4);castAnimStart('fire');st.castLead=null;r.sinker.position.copy(sp0);await sleep(T0(q.fire)/SL+.3);st.slow=1;st.replayCam=false;st.castCam=false;CAM.cl=null;st.msg=m0;}
     st.castAnim=null;pose('hold');await sleep(.6);await putRod(st.sel);await stepBack(st.sel);st.phase='wait';if(r.state!=='tangled')st.msg='Tocca la sedia per sederti, o un\'altra canna per andarci.';setUI();});}
 
 /* ---------- barchino elettrico e drone ---------- */
