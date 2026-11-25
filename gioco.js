@@ -1131,10 +1131,10 @@ G.turnSig=side=>{if(st.phase!=='map'||!MP.car||!side)return;{const w=document.ge
   if(c.app){const A=c.app,d=A.len-A.u;if(A.chosen||d>2.5){msg('Nessun incrocio vicino: prosegui verso la costa.');return;}if(A.left==null){const P=A.pts,n=P.length,hx=P[n-1][0]-P[Math.max(0,n-4)][0],hy=P[n-1][1]-P[Math.max(0,n-4)][1],t=roadAt(c.s);A.left=hx*t.ty-hy*t.tx>0?1:-1;}G.appDir(side<0?A.left:-A.left);return;}
   // uscita per lo spot: è sempre dal lato del mare
   const exitSide=c.dir===1?1:-1,nx=MP.nx;if(nx==null||nx<0)return;const d=(MP.spots[nx].ramps[c.dir].rs-c.s)*c.dir;
-  if(MP.arm!=null){if(side!==exitSide){MP.arm=null;MP.key='';}return;}
+  const NX=MP.arm!=null?MP.arm:nx;
   if(d>3){msg(`Nessuna uscita vicina: la prossima (<b>${MP.spots[nx].sp.name}</b>) è tra ${d.toFixed(1).replace('.',',')} km`);return;}
-  if(side!==exitSide){msg(`L'uscita per <b>${MP.spots[nx].sp.name}</b> è a ${exitSide>0?'destra ➡️':'sinistra ⬅️'}`);return;}
-  {const R0=MP.spots[nx].ramps[c.dir];c.s=R0.rs;c.ramp={i:nx,r:R0,u:0};c.v=Math.min(c.v,.6);MP.arm=null;MP.key='ramp';const e=document.getElementById('gpark');if(e)e.innerHTML=`↘ Esci per <b>${MP.spots[nx].sp.name}</b>…`;}};
+  
+  {const R0=MP.spots[NX].ramps[c.dir];c.s=R0.rs;c.ramp={i:NX,r:R0,u:0};c.v=Math.min(c.v,.6);MP.arm=null;MP.key='ramp';const e=document.getElementById('gpark');if(e)e.innerHTML=`↘ Esci per <b>${MP.spots[NX].sp.name}</b>…`;}};
 if(!window.__lzArrows){window.__lzArrows=1;addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){window.GAME?.turnSig?.(e.key==='ArrowLeft'?-1:1);}});}
 G._mp=()=>({MP,M3});
 function draw3D(dt){const c=MP.car,P=carPose(),car=M3.car;M3.t+=dt;const t=M3.t;
