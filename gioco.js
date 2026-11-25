@@ -730,7 +730,7 @@ function setupRods(){if(TRIG){scene.remove(TRIG);TRIG=null;}if(holder().k==='tri
   st.rods=Array.from({length:st.nRods},(_,i)=>{const x=holder().k==='tripod'?(i-(st.nRods-1)/2)*.6:rodX(i,st.nRods),spike=makeSpike(holder().k);spike.position.set(x,ROD_Z*.035,ROD_Z);scene.add(spike);
     planFix();const g0=st.gear,PQ=st.plan[i]||{},rid=PQ.rodId||g0.rod,lid=PQ.reelId||g0.reel,obj=makeRod();skinRod(obj,rid,lid);scene.add(obj);const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(40*3),3));const line=new T.Line(lg,MAT.line);line.frustumCulled=false;scene.add(line);
     const sinker=new T.Mesh(new T.SphereGeometry(.05,8,6),MAT.lead);sinker.visible=false;scene.add(sinker);
-    const hit=new T.Mesh(new T.CylinderGeometry(.6,.6,4.6,8),new T.MeshBasicMaterial({visible:false}));hit.position.set(x,2.2,ROD_Z-.3);hit.rotation.x=-8*R;scene.add(hit);
+    const hit=new T.Mesh(new T.CylinderGeometry(holder().k==='tripod'?.27:.6,holder().k==='tripod'?.27:.6,4.6,8),new T.MeshBasicMaterial({visible:false}));hit.position.set(x,2.2,ROD_Z-.3);hit.rotation.x=-8*R;scene.add(hit);
     return {rodId:rid,reelId:lid,lineT:PQ.lineT||'nylon',leadT:PQ.leadT||'piramidale',hookT:PQ.hookT||'aberdeen',grip:PQ.leadT==='ragno',lead:PQ.lead??st.lead,hook:PQ.hook??st.hook,rig:PQ.rig||'lungo',broken:false,dismantled:false,i,x,spike,obj,line,sinker,hit,bait:null,dist:0,state:'idle',baitLeft:0,bend:0,bitePlan:null,held:false,sx:x,sz:-1};});}
 function placeRodOnSpike(r){const by=ROD_Z*.035,cy=r.spike?.userData.cupY??.62,t=SPIKE_TILT*R;// calcio nella tazza, fusto parallelo al picchetto
   r.obj.position.set(r.x,by+cy*Math.cos(t)+.035*Math.sin(t),ROD_Z+cy*Math.sin(t)-.035*Math.cos(t));r.obj.rotation.set(t,0,0,'YXZ');}
