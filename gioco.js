@@ -760,7 +760,7 @@ async function startMap(){st.phase='map';
   MP.skipAsk=false;
   ['#gspd','#glamp','#gjoy'].forEach(q=>{const e=root.querySelector(q);if(e)e.style.display='none';});hud.innerHTML='';
   const c=document.createElement('canvas');c.id='gmapc';root.insertBefore(c,root.firstChild);MP.c=c;MP.g=c.getContext('2d');
-  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">📡 Recupero posizione…</div></div>';
+  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">📡 Recupero Posizione</div></div>';
   const r0=root,from=MP.from;MP.from=null;const posP=from?Promise.resolve(null):gamePos();let C=null;try{C=await window.costa();}catch(e){}if(root!==r0)return;
   if(!C){ui.innerHTML=`<div class="gpanel"><b>Mappa non disponibile</b><div class="gs">Scegli direttamente lo spot.</div><div class="gtalk">${SPOTS.map((sp,i)=>`<button class="gc" onclick="GAME.arrive(${i})">${sp.name}</button>`).join('')}</div></div>`;return;}
   const pts=[],segs=[];
