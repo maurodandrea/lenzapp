@@ -1446,7 +1446,7 @@ const ROD_COL={beach390:['#c9ccd0','#e6e8ea','grigio'],surf420:['#ff7a00','#ff7a
 function skinRod(obj,rodId,reelId){const g=st.gear,U=obj.userData;if(!U.sk){U.sk={m1:new T.MeshStandardMaterial({roughness:.3,metalness:.35}),m2:new T.MeshStandardMaterial({roughness:.3,metalness:.35}),mr:new T.MeshStandardMaterial({roughness:.3,metalness:.75}),base:U.reel.scale.x};
     obj.traverse(o=>{if(!o.isMesh)return;if(o.material===MAT.blank)o.material=U.sk.m1;else if(o.material===MAT.blank2)o.material=U.sk.m2;else if(o.material===MAT.reel)o.material=U.sk.mr;});}
   const rc=ROD_COL[rodId]||ROD_COL.surf420;U.sk.m1.color.set('#121212');U.sk.m2.color.set(rc[0]);const fl=rodId!=='beach390';U.sk.m2.emissive.set(fl?rc[0]:'#000');U.sk.m1.emissiveIntensity=.35;U.sk.m1.emissive.set('#000');U.sk.m2.emissiveIntensity=.35;U.sk.m1.metalness=U.sk.m2.metalness=fl?.1:.35;U.sk.mr.color.set(REEL_COL[reelId]||'#3d4550');
-  {const isM=reelId==='rMult';U.reel.visible=!isM;if(U.mult){U.mult.visible=isM;U.mult.traverse(o=>{if(o.isMesh&&o.material===MAT.reel)o.material=U.sk.mr;});}}U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));
+  {const isM=reelId==='rMult';U.reel.visible=!isM;if(U.mult){U.mult.visible=isM;U.mult.traverse(o=>{if(o.isMesh&&o.material===MAT.reel)o.material=U.sk.mr;});}}{const mm=(ROD[rodId]?.n||'').match(/(\d),(\d+) m/),L=mm?+(mm[1]+'.'+mm[2]):4.2;obj.scale.set(1,L/4.2*1.12,1);}U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));{const ky=obj.scale.y;U.reel.scale.y/=ky;if(U.mult){U.mult.scale.set(1.35,1.35/ky,1.35);}}
   if(beadsN()>0){const bm=new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.5});obj.userData.beads=bm;}}
 function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>reelN(id);
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
@@ -1997,18 +1997,18 @@ G.untangle=()=>seq(async()=>{const r=st.rods[st.sel],tg=r.tangle;if(!tg)return;s
 
 /* ---------- abboccate, ferrata e combattimento ---------- */
 function startBite(r){
-  const ws=speciesWeights(r),tot=ws.reduce((a,[,f])=>a+f,0),u=Math.random()*(tot+.12);let acc=0,sp=null;for(const [s,f] of ws){acc+=f;if(u<acc){sp=s;break;}}
+  const ws=speciesWeights(r),tot=ws.reduce((a,[,f])=>a+f,0),u=Math.random()*(tot>0?tot*1.15:1);let acc=0,sp=null;for(const [s,f] of ws){acc+=f;if(u<acc){sp=s;break;}}
   const kind=sp?sp.bite:'picchiettata',steal=!sp||Math.random()<.18;
-  const pats={picchiettata:t=>t<7?(Math.sin(t*22)>.6?.25:0)*(Math.sin(t*3.1)>-.2?1:.2):(t%2.6<1.5?.75:.2),nervosa:t=>(Math.sin(t*15)>.3?.32:0)+(t%2.3<.25?.4:0),decisa:t=>t<4?(Math.sin(t*18)>.5?.22:0):(t%2.4<1.4?.75:.18),violenta:t=>t%2.2<1.5?.95:.35,partenza:t=>t<1?.3:1};
-  r.state='bite';r.biteT=0;r.bitePlan={sp,steal,kind,pattern:pats[kind],len:kind==='partenza'?13:kind==='violenta'?12:kind==='decisa'?16:kind==='picchiettata'?17:12};r.bentT=0;
+  const pats={picchiettata:t=>t<7?(Math.sin(t*22)>.6?.25:0)*(Math.sin(t*3.1)>-.2?1:.2):(t%2.6<1.5?.75:.2),nervosa:t=>t<5?(Math.sin(t*15)>.3?.32:0)+(t%2.3<.25?.4:0):(t%2.4<1.4?.8:.25),decisa:t=>t<4?(Math.sin(t*18)>.5?.22:0):(t%2.4<1.4?.75:.18),violenta:t=>t%2.2<1.5?.95:.35,partenza:t=>t<1?.3:1};
+  r.state='bite';r.biteT=0;r.bitePlan={sp,steal,kind,pattern:pats[kind],len:kind==='partenza'?13:kind==='violenta'?12:kind==='decisa'?16:kind==='picchiettata'?17:15};r.bentT=0;r.bentAt=null;
   bell(kind==='picchiettata'?2:kind==='partenza'||kind==='violenta'?5:3,kind==='picchiettata'?.12:.3);try{navigator.vibrate?.(kind==='violenta'||kind==='partenza'?[120,60,200]:[60]);}catch(e){}
   st.msg=`🔔 Canna ${r.i+1}: ${kind==='picchiettata'?'piccole tocche…':kind==='nervosa'?'tocche nervose':kind==='decisa'?'la cima si piega decisa!':'partenza violenta!'}`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
 function beginFight(r,sp){const w=sizeOf(sp);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
   r.state='fight';pose('reel');st.phase='fight';vib([160,60,90]);setUI();}
 G.fightHooked=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='hooked')return;st.phase='busy';setUI();await pickRod(st.sel);pose('reel');beginFight(r,r.bitePlan.sp);});
-G.strike=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='bite')return;const p=r.bitePlan,strong=p.pattern(r.biteT)>.4;
+G.strike=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='bite')return;const p=r.bitePlan,strong=p.pattern(r.biteT)>.4,bent0=(r.bentT||0)>=.9||(r.bentAt!=null&&r.biteT-r.bentAt<1.6);
   st.phase='busy';setUI();await pickRod(st.sel);pose('strike');whoosh();await sleep(.35);
-  const bent=(r.bentT||0)>=1;let ok=p.sp&&(bent||!p.steal)&&(bent?1:strong?.35:.1)>Math.random();if(p.sp&&hookCat(st.hook)==='grande'&&p.sp.w[1]<.4)ok=ok&&Math.random()<.5;
+  const bent=bent0;let ok=p.sp&&(bent||!p.steal)&&(bent?1:strong?.35:.1)>Math.random();if(p.sp&&hookCat(st.hook)==='grande'&&p.sp.w[1]<.4)ok=ok&&Math.random()<.5;
   if(!ok){r.state='fishing';const lost=p.steal||Math.random()<.5;if(lost)r.baitLeft=0;pose('hold');await sleep(.4);
     showCatch({fish:false,txt:strong?'Mancato!':'Troppo presto',why:strong?'Hai ferrato troppo presto: aspetta che la cima resti piegata per più di un secondo.':'Erano solo tocche: aspetta che la cima resti piegata per più di un secondo prima di ferrare.',left:!lost});return;}
   const sp=p.sp,w=sizeOf(sp);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
@@ -2214,7 +2214,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   for(const r of st.rods){
     if(r.state==='fishing'&&r.dist>8){const need=suggestLead(w.wave||0)+(r.leadT==='ragno'?30:r.leadT==='ogiva'?12:-10);if((w.wave||0)>1.2&&(r.lead||st.lead)<need-20&&st.gt-(r.landT||0)>6e5&&(r.drifting=1)){const k=(need-(r.lead||st.lead))/100;r.dist-=gmin*k*6;r.sx+=gmin*k*Math.sin((w.wd-FACE)*R)*3;r.tgT=(r.tgT||0)-gmin;if(r.tgT<=0){r.tgT=1;if(checkTangle(r)&&st.phase==='wait')setUI();}if(!r.driftMsg){r.driftMsg=1;st.msg=`Canna ${r.i+1}: il piombo da ${r.lead} g «ara», la corrente lo trascina verso riva. Metti un piombo più pesante.`;if(st.phase==='wait')setUI();}}}
     if(r.state==='fishing'){const was=r.baitLeft;r.baitLeft-=gmin*(1+(w.wave||0)*.6);if(r.bait&&was>0&&r.baitLeft<=0){baitGone();vib([60,80,60]);st.msg=`🪝 Canna ${r.i+1}: l'esca è finita, va reinnescata.`;if(st.phase==='wait')setUI();}if(Math.random()<biteRate(r)*gmin)startBite(r);}
-    if(r.state==='bite'){r.biteT+=dt;r.bentT=r.bitePlan.pattern(r.biteT)>.55?(r.bentT||0)+dt:0;if(r.biteT>r.bitePlan.len){const pl=r.bitePlan,auto={partenza:.6,violenta:.45,decisa:.3,nervosa:.15,picchiettata:.05}[pl.kind]||0;
+    if(r.state==='bite'){r.biteT+=dt;r.bentT=r.bitePlan.pattern(r.biteT)>.55?(r.bentT||0)+dt:0;if(r.bentT>=.9){if(r.bentAt==null||r.biteT-r.bentAt>2){st.msg=`⚡ Canna ${r.i+1}: la cima resta piegata, FERRA ADESSO!`;if(st.phase==='wait'||st.phase==='atrod')setUI();}r.bentAt=r.biteT;}if(r.biteT>r.bitePlan.len){const pl=r.bitePlan,auto={partenza:.6,violenta:.45,decisa:.3,nervosa:.15,picchiettata:.05}[pl.kind]||0;
         if(pl.sp&&!pl.steal&&Math.random()<auto){r.state='hooked';r.hookT=0;bell(4,.3);try{navigator.vibrate?.([200,80,200]);}catch(e){}st.msg=`🐟 Canna ${r.i+1}: il pesce si è allamato da solo! Vai a recuperarlo.`;if(st.phase==='wait'||st.phase==='atrod')setUI();continue;}
         r.state='fishing';r.baitLeft-=pl.steal?999:10;st.msg=`Canna ${r.i+1}: ha smesso di battere${pl.steal?' (forse ti hanno rubato l\'esca)':''}.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}}
     if(r.state==='hooked'){r.hookT+=dt;if(Math.random()<dt*.012*(1-gearTier(r).all*.6)||r.hookT>150+gearTier(r).all*120){r.state='fishing';r.baitLeft=0;r.bitePlan=null;st.msg=`Canna ${r.i+1}: il pesce si è slamato. Controlla l'esca.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
