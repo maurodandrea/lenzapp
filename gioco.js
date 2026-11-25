@@ -1367,11 +1367,18 @@ function gearQuality(){const g=st.gear,b=g.bought||{};if(!(g.rods||[]).length||!
   const rt=Math.max(...g.rods.map(id=>clamp(((ROD[id]?.mul||1)-.9)/.28,0,1))),rp=Math.max(...g.reels.map(id=>REEL_POW[id]??.3));
   const bk=Object.entries(g.baits||{}).filter(([,n])=>n>0).map(([k])=>k),good=['bibi','arenicola','cannolicchio','cefalotto','sarda','gambero'],bs=Math.min(1,(bk.length+bk.filter(k=>good.includes(k)).length)/8);
   const hs=Object.values(g.hooks||{}).filter(n=>n>0).length,ls=Object.values(g.leads||{}).filter(n=>n>0).length;
-  let q=rt*.30+rp*.25+bs*.15;                                                     // canna, mulinello, esche
-  q+=((g.braidN>0||g.braid)?.03:0)+((g.termF||0)>0?.04:0)+(g.leader>0?.03:0);      // fili
-  q+=(beadsN()>0?.015:0)+(g.swivels>0?.015:0)+(g.snaps>0?.01:0)+Math.min(1,hs/3)*.02+Math.min(1,ls/4)*.02; // minuterie, ami e piombi assortiti
-  q+=(g.needle?.015:0)+(g.elastic?.015:0)+(b.scis?.015:0)+(b.slam?.015:0);         // attrezzi
-  q+=(b.oxy||b.bucket?.02:0)+(g.torch>0?.02:0)+(g.starlight>0?.02:0);              // secchio/ossigenatore, frontale, starlight
+  const sum=o=>Object.values(o||{}).reduce((a,n)=>a+(n||0),0),rc=sum(g.rodCnt),lc=sum(g.reelCnt),o=g.outfits||[],ch=g.chairs||[],sh=g.shelters||[];
+  let q=rt*.22+rp*.22+bs*.13;                                                     // canna, mulinello, esche
+  q+=((g.braidN>0||g.braid)?.03:0)+((g.termF||0)>0?.03:0)+(g.leader>0?.02:0);      // fili
+  q+=(beadsN()>0?.015:0)+(g.swivels>0?.015:0)+(g.snaps>0?.01:0)+Math.min(1,hs/3)*.015+Math.min(1,ls/4)*.015; // minuterie, ami e piombi assortiti
+  q+=(g.elastic?.01:0)+(b.scis?.01:0);                                             // attrezzi (ago e slamatore sono indispensabili, non danno punti)
+  q+=[0,.02,.03,.04][g.torch||0];                                                  // frontale
+  q+=sh.includes('bivvy')?.04:sh.length?.03:0;                                     // tenda o ombrellone
+  q+=o.some(x=>['waders','neo','wetsuit'].includes(x))?.04:o.some(x=>['thermo','jacket'].includes(x))?.03:o.length?.02:0; // vestiario
+  q+=b.oxy?.03:b.bucket?.015:0;                                                    // ossigenatore o secchio
+  q+=ch.includes('chairArm')?.03:ch.some(c=>['chairLevel','chairHigh'].includes(c))?.025:ch.length?.02:0; // sedia
+  q+=g.starlight>0?.02:0;
+  q+=(rc>=2?.015:0)+(lc>=2?.015:0)+(sum(g.leads)>=6?.0075:0)+(sum(g.hooks)>=20?.0075:0)+(g.swivels>=10?.0075:0)+((g.term||0)+(g.termF||0)>=10?.0075:0); // scorte per le rotture
   return Math.min(1,q);}
 const rodN=id=>(ROD[id]?.n||'')+(ROD_MAXG[id]?` · max ${ROD_MAXG[id]} g`:'');
 const rdot=id=>{const c=ROD_COL[id]||ROD_COL.surf420;return `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;background:linear-gradient(90deg,${c[0]} 50%,${c[1]} 50%);border:1px solid #0006"></span>`;};
@@ -1386,7 +1393,7 @@ function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>r
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
     <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
-    <div class="gs" style="color:${q<.5?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.5?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':(q>=.99?'🏆 Attrezzatura al top: 100% di efficacia.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia. Per il 100% serve tutto al top: canna, mulinello, esche e accessori.')}</div>`;}
+    <div class="gs" style="color:${q<.5?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.5?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':(q>=.99?'🏆 Attrezzatura al top: 100% di efficacia.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia. Per il 100% serve tutto al top: canna, mulinello, esche, accessori, vestiario, tenda, sedia, frontale e scorte.')}</div>`;}
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
 // ogni canna montata prende dallo zaino un piombo, un amo, una girella, un moschettone e un terminale
