@@ -407,16 +407,24 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
     segs.push(s);parent=s;}
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
   const reel=new T.Group();reel.position.set(0,.05,0);reel.rotation.y=Math.PI;segs[2].add(reel);
-  const stem=new T.Mesh(new T.BoxGeometry(.015,.02,.07),MAT.reel);stem.position.z=.02;reel.add(stem);
-  const body=new T.Mesh(new T.CylinderGeometry(.035,.04,.08,14),MAT.reel);body.position.z=.07;reel.add(body);
+  // come un mulinello vero (tipo Trabucco Hydrus): piede sul fusto, gambo, corpo ingranaggi a goccia con piastra laterale, rotore con due bracci, archetto in filo con rullino, bobina con gonna e pomello frizione davanti, manovella laterale
+  const foot=new T.Mesh(new T.BoxGeometry(.016,.075,.006),MAT.reel);foot.position.z=.008;reel.add(foot);
+  const stem=new T.Mesh(new T.BoxGeometry(.012,.022,.05),MAT.reel);stem.position.set(0,-.005,.03);stem.rotation.x=-.25;reel.add(stem);
+  const bsh=new T.Shape();bsh.moveTo(0,-.035);bsh.quadraticCurveTo(.05,-.035,.05,.01);bsh.quadraticCurveTo(.05,.045,.012,.05);bsh.lineTo(-.012,.05);bsh.quadraticCurveTo(-.05,.045,-.05,.01);bsh.quadraticCurveTo(-.05,-.035,0,-.035);
+  const bodyG=new T.ExtrudeGeometry(bsh,{depth:.05,bevelEnabled:true,bevelThickness:.006,bevelSize:.006,bevelSegments:3});bodyG.translate(0,0,-.025);bodyG.rotateY(Math.PI/2);bodyG.rotateZ(Math.PI/2);const body=new T.Mesh(bodyG,MAT.reel);body.position.set(0,.02,.07);reel.add(body);
+  const plate=new T.Mesh(new T.CylinderGeometry(.026,.026,.006,18),MAT.alu);plate.rotation.z=Math.PI/2;plate.position.set(.033,.015,.07);reel.add(plate);
   const rotor=new T.Group();rotor.position.set(0,.065,.07);reel.add(rotor);
-  const rm=new T.Mesh(new T.CylinderGeometry(.05,.045,.05,16),MAT.reel);rotor.add(rm);
-  const bail=new T.Mesh(new T.TorusGeometry(.058,.004,6,20,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.position.y=.035;rotor.add(bail);
-  const spool=new T.Mesh(new T.CylinderGeometry(.052,.052,.035,18),MAT.spool);spool.position.set(0,.115,.07);reel.add(spool);
+  const rm=new T.Mesh(new T.CylinderGeometry(.048,.038,.04,18,1,true),MAT.reel);rm.material=MAT.reel;rotor.add(rm);const rb=new T.Mesh(new T.CylinderGeometry(.038,.038,.006,18),MAT.reel);rb.position.y=-.02;rotor.add(rb);
+  for(const sx of[-1,1]){const ar=new T.Mesh(new T.BoxGeometry(.012,.06,.018),MAT.reel);ar.position.set(sx*.05,.025,0);ar.rotation.z=sx*-.18;rotor.add(ar);}
+  const bail=new T.Mesh(new T.TorusGeometry(.06,.0025,6,24,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.rotation.z=.15;bail.position.y=.05;rotor.add(bail);
+  const roller=new T.Mesh(new T.CylinderGeometry(.008,.008,.012,10),MAT.alu);roller.rotation.z=Math.PI/2;roller.position.set(.06,.05,0);rotor.add(roller);
+  const spool=new T.Mesh(new T.CylinderGeometry(.052,.05,.05,24),MAT.spool);spool.position.set(0,.115,.07);reel.add(spool);
+  const lip=new T.Mesh(new T.CylinderGeometry(.056,.056,.006,24),MAT.reel);lip.position.set(0,.142,.07);reel.add(lip);const skirt=new T.Mesh(new T.CylinderGeometry(.054,.05,.02,24,1,true),MAT.reel);skirt.position.set(0,.085,.07);reel.add(skirt);
+  const drag=new T.Mesh(new T.CylinderGeometry(.02,.024,.022,10),MAT.reel);drag.position.set(0,.156,.07);reel.add(drag);const fin=new T.Mesh(new T.BoxGeometry(.03,.012,.006),MAT.reel);fin.position.set(0,.17,.07);reel.add(fin);
   const lt=canvasTex(64,16,(g)=>{for(let x=0;x<64;x+=8){g.fillStyle=x%16?'#f2f6f8':'#ff7a3c';g.fillRect(x,0,8,16);}});
-  const lineOn=new T.Mesh(new T.CylinderGeometry(.047,.047,.03,24),new T.MeshStandardMaterial({map:lt,roughness:.4}));lineOn.position.copy(spool.position);reel.add(lineOn);reel.scale.setScalar(1.35);
+  const lineOn=new T.Mesh(new T.CylinderGeometry(.051,.051,.036,24),new T.MeshStandardMaterial({map:lt,roughness:.4}));lineOn.position.copy(spool.position);reel.add(lineOn);reel.scale.setScalar(1.35);
   const crank=new T.Group();crank.position.set(.045,.0,.07);reel.add(crank);
-  const arm=new T.Mesh(new T.BoxGeometry(.012,.07,.012),MAT.alu);arm.position.y=.035;crank.add(arm);const knob=new T.Mesh(new T.CylinderGeometry(.012,.012,.03,8),MAT.cork);knob.rotation.z=Math.PI/2;knob.position.set(.02,.07,0);crank.add(knob);
+  const arm=new T.Mesh(new T.BoxGeometry(.009,.085,.016),MAT.reel);arm.position.y=.042;crank.add(arm);const knob=new T.Mesh(new T.CylinderGeometry(.013,.016,.034,12),MAT.cork);knob.rotation.z=Math.PI/2;knob.position.set(.022,.082,0);crank.add(knob);
   crank.rotation.z=-Math.PI/2;
   // mulinello rotante (moltiplicatore): bobina orizzontale tra due flange tonde, sopra la canna, manovella laterale
   const mult=new T.Group();mult.position.set(0,.08,-.055);mult.visible=false;segs[2].add(mult);{const ax=g=>{g.rotateZ(Math.PI/2);return g;};
@@ -810,10 +818,10 @@ function loadHDRI(){const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';loadSc
 // aerei in avvicinamento a Fiumicino visibili dagli spot vicini
 // step 4: effetti finali in grafica alta: bagliore del sole e riflesso sul mare, foschia all'orizzonte
 let GLARE=null;function addGlare(){const gt=glowTex('rgba(255,244,214,1)'),m=new T.SpriteMaterial({map:gt,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.55,fog:false});GLARE=new T.Sprite(m);GLARE.scale.set(900,900,1);scene.add(GLARE);
-  const rm=new T.MeshBasicMaterial({map:glowTex('rgba(255,236,190,1)'),transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.35});const rf=new T.Mesh(new T.PlaneGeometry(260,1400),rm);rf.rotation.x=-Math.PI/2;rf.position.y=.12;scene.add(rf);GLARE.userData.rf=rf;
+  const rm=new T.MeshBasicMaterial({map:glowTex('rgba(255,236,190,1)'),transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.35});const rf=new T.Mesh(new T.PlaneGeometry(260,1400),rm);rf.rotation.x=-Math.PI/2;rf.visible=false;GLARE.userData.rf=rf;
   if(scene.fog)scene.fog.density=(scene.fog.density||0)*1.15;}
 function updGlare(){if(!GLARE||!sunLight)return;const d=sunLight.position.clone().normalize(),up=Math.max(0,d.y),day=night()<.5;GLARE.visible=day&&up>.02;GLARE.position.copy(camera.position).addScaledVector(d,3000);GLARE.material.opacity=.25+.45*(1-up);
-  const rf=GLARE.userData.rf;rf.visible=GLARE.visible&&d.z<0;rf.position.set(camera.position.x+d.x*600,.12,camera.position.z+d.z*600);rf.rotation.z=Math.atan2(d.x,-d.z);rf.material.opacity=.15+.3*(1-up);}
+  const rf=GLARE.userData.rf;rf.visible=false;rf.position.set(camera.position.x+d.x*600,.12,camera.position.z+d.z*600);rf.rotation.z=Math.atan2(d.x,-d.z);rf.material.opacity=.15+.3*(1-up);}
 let PLANES=[];function buildPlanes(){PLANES=[];const sid=String(SPOT.id||'').replace(/^g_/,'');if(!['fiumicino','ostia','focene','passoscuro','fregene','castelfusano','darzagaia','cancello7','castelporziano'].includes(sid))return;loadProp('plane').then(src=>{if(!src||!scene)return;for(let i=0;i<2;i++){const m=propClone(src,38);const sz=m.userData.size;m.userData.fwd=sz.z>sz.x;m.visible=false;scene.add(m);PLANES.push({m,t:-rnd(10,80)-i*60});}});}
 function updPlanes(dt){for(const P of PLANES){P.t+=dt;const T0=45;if(P.t<0){P.m.visible=false;continue;}if(P.t>T0){P.t=-rnd(70,160);continue;}const u=P.t/T0,fi=String(SPOT.id).includes('fiumicino'),dir=fi?1:-1;P.m.visible=true;P.m.position.set(dir*(-1600+u*3200),260-u*(fi?180:60),-500+u*400);P.m.rotation.set(0,(dir>0?-Math.PI/2:Math.PI/2)+(P.m.userData.fwd?0:Math.PI/2)+Math.PI,0);}}
 let WALKERS=[];// da ottobre a maggio maniche e pantaloni lunghi; mai abiti eleganti (giacca e cravatta, tacchi) in spiaggia
