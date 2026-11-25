@@ -1308,6 +1308,7 @@ const CAT=[
     {id:'o_thermo',outfit:'thermo',n:'Giacca impermeabile termica',d:'Imbottita e antipioggia, cappuccio e polsini stagni.',p:()=>89},
     {id:'o_wind',outfit:'wind',n:'Tuta antivento',d:'Leggera, blocca il vento di tramontana.',p:()=>49},
     {id:'o_float',outfit:'float',n:'Giacca galleggiante arancione',d:'Visibile e sicura sugli scogli.',p:()=>99},
+    {id:'wetsuit',outfit:'wetsuit',n:'Muta da sub 5 mm',d:'L\'unica con cui puoi nuotare: vai a recuperare a nuoto incagli e lenze. Con lo scafandro arrivi alla pancia, con gli stivali alle ginocchia, senza solo alle caviglie.',p:()=>129},
     {id:'h_cap',hat:'cap',n:'Berretto con visiera',d:'Ripara gli occhi dal sole.',p:()=>8},
     {id:'h_bucket',hat:'bucket',n:'Cappello da pescatore',d:'Ripara dal sole e dalla pioggia.',p:()=>15},
     {id:'h_beanie',hat:'beanie',n:'Berretto di lana',d:'Per le uscite invernali.',p:()=>12},
@@ -1617,7 +1618,7 @@ function setUI(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p==='
 G.setN=n=>{if(n<=maxRods()){st.nRods=n;planFix();}if(n>maxRods()){st.msg=`🎣 Per ${n} canne servono ${n} canne, ${n} mulinelli e ${n} posti sul picchetto: passa dal negozio.`;setUI();return;}st.nRods=n;LSS('nrods',n);setUI();};G.setLead=g=>{st.lead=g;LSS('lead',g);setUI();};G.setHook=k=>{st.hook=k;LSS('hook',k);setUI();};
 G.setSpeed=s=>{st.speed=s;LSS('speed',s);const b=document.getElementById('gspd');if(b)b.textContent='⏩ '+s+'x';if(st.phase==='wait')setUI();};G.relBag=t=>{let tot=0;for(const c of st.bag)if(!c.rel&&(t==null||c.t===t)){c.rel=true;tot+=10;}if(tot>0){earn('catch',Math.round(tot*100)/100,'pesci rilasciati vivi');click();}setUI();};G.bagView=()=>{st.phase='bag';setUI();};G.toWait=()=>{st.phase='wait';setUI();};G.drag=v=>{if(st.fight)st.fight.drag=+v;};
 G.setOutfit=k=>{st.outfit=k;LSS('outfit',k);setUI();};G.setHat=k=>{st.gear.hat=k;gearSave();setUI();};G.setGearK=(k,v)=>{st.gear[k]=v;gearSave();if(scene&&CHAIRG){styleCamp();}setUI();};
-const OUTF={jeans:{n:'Jeans e maglia',suit:'casual',j:'#8a8f94',j2:'#7a7f84',p:'#355a8a'},tracksuit:{n:'Tuta',suit:'tracksuit',j:'#2f5544',j2:'#264638',p:'#2c3445'},waders:{n:'Scafandro',suit:'waders',j:'#2f5544',j2:'#264638',p:'#2c3445'},jacket:{n:'Giacca impermeabile',suit:'jacket',j:'#2f5544',j2:'#264638',p:'#2c3445'},neo:{n:'Neoprene',suit:'waders',rubber:'#16191d',j:'#16191d',j2:'#2f6fb5',p:'#16191d'},thermo:{n:'Giacca termica',suit:'jacket',j:'#b8352a',j2:'#7a2018',p:'#2b2f36'},wind:{n:'Tuta antivento',suit:'tracksuit',j:'#1d3557',j2:'#14243b',p:'#1d3557'},float:{n:'Galleggiante',suit:'jacket',j:'#e67e22',j2:'#c0392b',p:'#2b2f36'}};
+const OUTF={jeans:{n:'Jeans e maglia',suit:'casual',j:'#8a8f94',j2:'#7a7f84',p:'#355a8a'},tracksuit:{n:'Tuta',suit:'tracksuit',j:'#2f5544',j2:'#264638',p:'#2c3445'},waders:{n:'Scafandro',suit:'waders',j:'#2f5544',j2:'#264638',p:'#2c3445'},jacket:{n:'Giacca impermeabile',suit:'jacket',j:'#2f5544',j2:'#264638',p:'#2c3445'},neo:{n:'Neoprene',suit:'waders',rubber:'#16191d',j:'#16191d',j2:'#2f6fb5',p:'#16191d'},wetsuit:{n:'Muta',suit:'waders',rubber:'#0d0f12',j:'#0d0f12',j2:'#0d0f12',p:'#0d0f12'},thermo:{n:'Giacca termica',suit:'jacket',j:'#b8352a',j2:'#7a2018',p:'#2b2f36'},wind:{n:'Tuta antivento',suit:'tracksuit',j:'#1d3557',j2:'#14243b',p:'#1d3557'},float:{n:'Galleggiante',suit:'jacket',j:'#e67e22',j2:'#c0392b',p:'#2b2f36'}};
 function setPlayerLook(){const old=AN.obj,ph=myPhoto(),O=OUTF[st.outfit]||OUTF.jeans,g=st.gear;const n=makeAngler({...O,hat:g.hat||'none',boots:O.suit==='waders'?undefined:g.boots?'tall':'shoes',beard:ph?'none':'stubble',photo:ph,c:'#b8352a'});
   n.position.copy(old.position);n.rotation.copy(old.rotation);scene.remove(old);scene.add(n);AN.obj=n;
   AN.obj.userData.J.head.add(headLamp);const lt=new T.Object3D();lt.position.set(0,-1.2,-6);AN.obj.userData.J.head.add(lt);headLamp.target=lt;}
@@ -1675,7 +1676,7 @@ G.snagPull=()=>seq(async()=>{const sn=st.snag;if(!sn)return;st.phase='busy';setU
     if(sn.stage==='fight'){const f=st.fight;st.fight=null;sn.r.state='idle';showCatch({fish:false,txt:'Lenza rotta!',why:'Incagliato con il pesce attaccato: la lenza ha ceduto. Rifai il terminale.'});return;}
     st.msg='💥 La lenza si è rotta: hai perso piombo e amo.';st.phase='rig';setUI();return;}
   st.snag.msg='Niente da fare, è ancora incastrato. Prova a cambiare angolo.';pose('reel');st.phase='snag';setUI();});
-G.snagSwim=()=>seq(async()=>{const sn=st.snag;if(!sn)return;const r=sn.r,w=wxAt(st.gt);st.phase='busy';st.msg='🏊 Posa la canna ed entra in acqua…';setUI();
+G.snagSwim=()=>seq(async()=>{const sn=st.snag;if(!sn)return;if(st.outfit!=='wetsuit'){st.msg=st.gear.outfits?.includes('wetsuit')?'🤿 Per nuotare fino all\'incaglio indossa la muta.':'🤿 Per andare a nuoto serve la muta da sub: la trovi al negozio (Abbigliamento).';st.needShop=!st.gear.outfits?.includes('wetsuit');setUI();return;}const r=sn.r,w=wxAt(st.gt);st.phase='busy';st.msg='🏊 Posa la canna ed entra in acqua…';setUI();
   if(r.held)await putRod(r.i);const back={x:AN.pos.x,z:AN.pos.z};const far=Math.min(r.dist*.7,45),tx=lerp(r.x,r.sx,far/Math.max(1,r.dist));
   await walkTo(r.x+.3,-.5,2.6);st.msg=(w.sst<18&&!['waders','wetsuit'].includes(st.outfit))?`🥶 Brrr, l'acqua è a ${Math.round(w.sst)}°!`:'🏊 Nuota lungo la lenza…';setUI();
   await walkTo(tx,-far,2.4);st.msg='🤿 Si immerge e libera il piombo…';setUI();AN.dive=1;splash(.3);burst(new T.Vector3(AN.pos.x,0,AN.pos.z),.6);await sleep(2.2);AN.dive=0;burst(new T.Vector3(AN.pos.x,0,AN.pos.z),.6);
@@ -2115,13 +2116,15 @@ function moveActor(a,dt){
     if(d<.05){a.moving=false;a.walkTarget=null;wt.res();}else{const s=Math.min(d,a.speed*dt);a.pos.x+=dx/d*s;a.pos.z+=dz/d*s;a.walk+=dt*a.speed*5.2;const ty=Math.atan2(-dx,-dz);a.rotY=lerpAng(a.rotY,ty,1-Math.exp(-10*dt));}
     if(a===AN){const dp=sandY(a.pos.z);a.swim=dp<-1;a.pos.y=a.swim?(a.dive?-1.1:-.2):dp;}else a.pos.y=Math.max(0,a.pos.z*.035);if(a.target==='sit'||a.target==='bend')a.target=a.holding>=0?'hold':'stand';}
   else if(a.faceTo!=null){a.rotY=lerpAng(a.rotY,a.faceTo,1-Math.exp(-(a===AN&&st.castAnim?6*(st.slow||1):8)*dt));}}
+function maxDepth(){const o=st.outfit,g=st.gear;if(o==='wetsuit')return 99;if(o==='waders'||o==='neo')return 1.05;if(g.boots)return .45;return .12;}
 function joyMove(dt,t){const m=Math.hypot(JOY.x,JOY.y);const free=st.phase==='wait'&&!st.busy;
   if(!JOY.on||m<.15||!free){if(AN.joying){AN.joying=false;AN.moving=false;}return;}
   if(AN.target==='sit'){pose('stand');AN.pos.z-=.35;}
   const fw=new T.Vector3().subVectors(CAM.l||new T.Vector3(0,0,-10),camera.position);fw.y=0;fw.normalize();const rt=new T.Vector3(-fw.z,0,fw.x);
   const dir=fw.multiplyScalar(-JOY.y).add(rt.multiplyScalar(JOY.x));if(dir.lengthSq()<1e-4)return;dir.normalize();
   const inWater=AN.pos.z<-.1,deep=sandY(AN.pos.z)<-1,sp=(deep?1.3:inWater?1.1:3)*Math.min(1,m);AN.joying=true;AN.moving=true;AN.walkTarget=null;AN.speed=sp;AN.faceTo=null;
-  AN.pos.x=clamp(AN.pos.x+dir.x*sp*dt,-110,110);AN.pos.z=clamp(AN.pos.z+dir.z*sp*dt,-150,26);AN.swim=sandY(AN.pos.z)<-1;AN.pos.y=AN.swim?-.2:sandY(AN.pos.z);AN.walk+=dt*sp*5.2;
+  {const nz=clamp(AN.pos.z+dir.z*sp*dt,-150,26),mx=maxDepth();if(-sandY(nz)>mx&&nz<AN.pos.z){if(!AN.depthMsg){AN.depthMsg=1;st.msg=mx<.2?'🥾 Senza stivali puoi entrare in acqua solo fino alle caviglie.':mx<.6?'🥾 Con gli stivali arrivi fino alle ginocchia: con lo scafandro andresti fino alla pancia.':mx<2?'🦺 Con lo scafandro arrivi fino alla pancia: per nuotare serve la muta.':'';setUI();}}else{AN.pos.z=nz;AN.depthMsg=0;}}
+  AN.pos.x=clamp(AN.pos.x+dir.x*sp*dt,-110,110);AN.swim=sandY(AN.pos.z)<-1;AN.pos.y=AN.swim?-.2:sandY(AN.pos.z);AN.walk+=dt*sp*5.2;
   AN.rotY=lerpAng(AN.rotY,Math.atan2(-dir.x,-dir.z),1-Math.exp(-10*dt));
   if(inWater){AN.splT=(AN.splT||0)-dt;if(AN.splT<=0){AN.splT=deep?.5:.35;burst(new T.Vector3(AN.pos.x,.05,AN.pos.z-.2),deep?.4:.25);if(deep&&Math.random()<.3)splash(.05);}}}
 // pulsanti che compaiono quando sei vicino a un granchio o a un altro pescatore
