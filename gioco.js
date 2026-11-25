@@ -388,7 +388,18 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   const crank=new T.Group();crank.position.set(.045,.0,.07);reel.add(crank);
   const arm=new T.Mesh(new T.BoxGeometry(.012,.07,.012),MAT.alu);arm.position.y=.035;crank.add(arm);const knob=new T.Mesh(new T.CylinderGeometry(.012,.012,.03,8),MAT.cork);knob.rotation.z=Math.PI/2;knob.position.set(.02,.07,0);crank.add(knob);
   crank.rotation.z=-Math.PI/2;
-  g.userData={segs,rotor,crank,reel,lineOn,tip:new T.Object3D()};segs[SEG-1].add(g.userData.tip);g.userData.tip.position.y=ROD_LEN/SEG;
+  // mulinello rotante (moltiplicatore): bobina orizzontale tra due flange tonde, sopra la canna, manovella laterale
+  const mult=new T.Group();mult.position.set(0,.13,-.055);mult.visible=false;segs[3].add(mult);{const ax=g=>{g.rotateZ(Math.PI/2);return g;};
+    for(const sx of[-1,1]){const pl=new T.Mesh(ax(new T.CylinderGeometry(.05,.05,.016,22)),MAT.reel);pl.position.x=sx*.045;mult.add(pl);const cap=new T.Mesh(ax(new T.CylinderGeometry(.03,.034,.01,18)),MAT.alu);cap.position.x=sx*.057;mult.add(cap);}
+    const sp=new T.Mesh(ax(new T.CylinderGeometry(.034,.034,.074,20)),new T.MeshStandardMaterial({map:lt,roughness:.4}));mult.add(sp);
+    for(const [y,z] of [[.04,.02],[-.035,.03],[.0,-.045]]){const b=new T.Mesh(ax(new T.CylinderGeometry(.005,.005,.09,6)),MAT.alu);b.position.set(0,y,z);mult.add(b);}
+    const lw=new T.Mesh(new T.BoxGeometry(.07,.012,.012),MAT.alu);lw.position.set(0,.05,-.035);mult.add(lw);
+    const foot=new T.Mesh(new T.BoxGeometry(.02,.01,.05),MAT.alu);foot.position.set(0,-.01,.04);mult.add(foot);
+    const ca=new T.Group();ca.position.set(.066,0,0);mult.add(ca);const arm2=new T.Mesh(new T.BoxGeometry(.008,.09,.012),MAT.alu);ca.add(arm2);
+    for(const sy of[-1,1]){const k=new T.Mesh(ax(new T.CylinderGeometry(.011,.011,.024,10)),MAT.cork);k.position.set(.016,sy*.045,0);ca.add(k);}
+    const star=new T.Mesh(ax(new T.CylinderGeometry(.018,.018,.006,6)),MAT.alu);star.position.set(.062,0,0);mult.add(star);
+    mult.scale.setScalar(1.35);}
+  g.userData={segs,rotor,crank,reel,lineOn,mult,tip:new T.Object3D()};segs[SEG-1].add(g.userData.tip);g.userData.tip.position.y=ROD_LEN/SEG;
   // campanello e luce chimica in cima
   const bell=new T.Mesh(new T.SphereGeometry(.018,8,8),MAT.spool);bell.position.set(0,-.08,.02);segs[SEG-1].add(bell);
   const glow=new T.Sprite(new T.SpriteMaterial({map:glowTex('rgba(150,255,130,1)'),transparent:true,depthWrite:false,blending:T.AdditiveBlending}));glow.scale.set(.5,.5,.5);glow.position.y=ROD_LEN/SEG;segs[SEG-1].add(glow);g.userData.glow=glow;
@@ -1348,7 +1359,7 @@ const ROD_COL={beach390:['#c9ccd0','#e6e8ea','grigio'],surf420:['#ff7a00','#ff7a
 function skinRod(obj,rodId,reelId){const g=st.gear,U=obj.userData;if(!U.sk){U.sk={m1:new T.MeshStandardMaterial({roughness:.3,metalness:.35}),m2:new T.MeshStandardMaterial({roughness:.3,metalness:.35}),mr:new T.MeshStandardMaterial({roughness:.3,metalness:.75}),base:U.reel.scale.x};
     obj.traverse(o=>{if(!o.isMesh)return;if(o.material===MAT.blank)o.material=U.sk.m1;else if(o.material===MAT.blank2)o.material=U.sk.m2;else if(o.material===MAT.reel)o.material=U.sk.mr;});}
   const rc=ROD_COL[rodId]||ROD_COL.surf420;U.sk.m1.color.set('#121212');U.sk.m2.color.set(rc[0]);const fl=rodId!=='beach390';U.sk.m2.emissive.set(fl?rc[0]:'#000');U.sk.m1.emissiveIntensity=.35;U.sk.m1.emissive.set('#000');U.sk.m2.emissiveIntensity=.35;U.sk.m1.metalness=U.sk.m2.metalness=fl?.1:.35;U.sk.mr.color.set(REEL_COL[reelId]||'#3d4550');
-  U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));
+  {const isM=reelId==='rMult';U.reel.visible=!isM;if(U.mult){U.mult.visible=isM;U.mult.traverse(o=>{if(o.isMesh&&o.material===MAT.reel)o.material=U.sk.mr;});}}U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));
   if(beadsN()>0){const bm=new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.5});obj.userData.beads=bm;}}
 function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>id==='rT'?'Tournament 14000':id.slice(1);
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+ROD[id].n}</button>`).join('')}</div>
