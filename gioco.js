@@ -985,17 +985,17 @@ async function approachRoute(pos){const q=PJ(pos.lat,pos.lon),nr=nearRoad(q),dis
 // immagini satellitari (le stesse della mappa degli spot) caricate a tessere attorno all'auto
 const SAT={cache:new Map(),any:false};
 function satLoad(z,x,y,k){const o={m:null,ok:false,t:M3.t};SAT.cache.set(k,o);
-  const n=2**z,lo=i=>i/n*360-180,la=j=>Math.atan(Math.sinh(Math.PI*(1-2*j/n)))/R,a=PJ(la(y),lo(x)),b=PJ(la(y+1),lo(x+1)),h=z<11?-.003:z<15?-.001:0;
+  const n=2**z,lo=i=>i/n*360-180,la=j=>Math.atan(Math.sinh(Math.PI*(1-2*j/n)))/R,a=PJ(la(y),lo(x)),b=PJ(la(y+1),lo(x+1)),h=z<11?-.003:z<15?-.001:z<16?0:z<17?.0004:.0008;
   const m=new T.Mesh(flatGeo([a[0],h,-a[1],b[0],h,-a[1],a[0],h,-b[1],b[0],h,-b[1]],[0,1,1,1,0,0,1,0],[0,2,1,1,2,3]),new T.MeshBasicMaterial({color:M3.tint?M3.tint.clone():0xffffff,side:T.DoubleSide,toneMapped:false}));m.visible=false;M3.S.add(m);o.m=m;
-  new T.TextureLoader().setCrossOrigin('anonymous').load(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,t=>{if(!M3.S||!o.m){t.dispose();return;}t.encoding=T.sRGBEncoding;t.anisotropy=4;m.material.map=t;m.material.needsUpdate=true;o.ok=true;SAT.any=true;},undefined,()=>{});}
+  new T.TextureLoader().setCrossOrigin('anonymous').load(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,t=>{if(!M3.S||!o.m){t.dispose();return;}t.encoding=T.sRGBEncoding;t.anisotropy=8;m.material.map=t;m.material.needsUpdate=true;o.ok=true;SAT.any=true;},undefined,()=>{});}
 function satTiles(cx,cy,z,rad,on,need){const lat=cy/KY+LAT0,lon=cx/KX+LON0,n=2**z,tx=Math.floor((lon+180)/360*n),ty=Math.floor((1-Math.log(Math.tan(lat*R)+1/Math.cos(lat*R))/Math.PI)/2*n);
   if(!on)return;for(let dx=-rad;dx<=rad;dx++)for(let dy=-rad;dy<=rad;dy++){const k=z+'/'+(tx+dx)+'/'+(ty+dy);need.add(k);if(!SAT.cache.has(k))satLoad(z,tx+dx,ty+dy,k);}}
-function satUpdate(cx,cy,fast){const need=new Set();satTiles(cx,cy,10,2,true,need);satTiles(cx,cy,13,2,true,need);satTiles(cx,cy,15,2,!fast,need);
+function satUpdate(cx,cy,fast){const need=new Set();satTiles(cx,cy,10,2,true,need);satTiles(cx,cy,13,2,true,need);satTiles(cx,cy,15,2,!fast,need);satTiles(cx,cy,16,2,!fast,need);satTiles(cx,cy,17,1,!fast,need);
   for(const [k,o] of SAT.cache){const v=need.has(k);if(o.m)o.m.visible=v&&o.ok;if(v)o.t=M3.t;}
-  if(SAT.cache.size>170){[...SAT.cache].filter(([k])=>!need.has(k)).sort((a,b)=>a[1].t-b[1].t).slice(0,SAT.cache.size-140).forEach(([k,o])=>{if(o.m){M3.S.remove(o.m);o.m.geometry.dispose();o.m.material.map?.dispose();o.m.material.dispose();o.m=null;}SAT.cache.delete(k);});}
+  if(SAT.cache.size>260){[...SAT.cache].filter(([k])=>!need.has(k)).sort((a,b)=>a[1].t-b[1].t).slice(0,SAT.cache.size-220).forEach(([k,o])=>{if(o.m){M3.S.remove(o.m);o.m.geometry.dispose();o.m.material.map?.dispose();o.m.material.dispose();o.m=null;}SAT.cache.delete(k);});}
   if(M3.deco)M3.deco.visible=!SAT.any;}
 function build3D(){SAT.cache.clear();SAT.any=false;
-  const R=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});R.setPixelRatio(Math.min(1.6,devicePixelRatio||1));R.toneMapping=T.ACESFilmicToneMapping;R.outputEncoding=T.sRGBEncoding;
+  const R=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});R.setPixelRatio(Math.min(2.5,devicePixelRatio||1));R.toneMapping=T.ACESFilmicToneMapping;R.outputEncoding=T.sRGBEncoding;
   const cv=R.domElement;cv.id='gmapc';cv.style.width=cv.style.height='100%';(root.querySelector('#g3')||root).appendChild(cv);
   // visuale: un dito ruota (orizzontale) e inclina (verticale), due dita o rotella zoomano, doppio tocco rimette com'era
   M3.zoom=1;M3.orb=0;M3.tilt=1;{const pts=new Map();let pd=0;
