@@ -2300,8 +2300,19 @@ function moveActor(a,dt){
 function maxDepth(){const o=st.outfit,g=st.gear;if(o==='wetsuit')return 99;if(o==='waders'||o==='neo')return 1.05;if(g.boots)return .45;return .12;}
 // il tuo pescatore con un personaggio realistico: lo scheletro semplice resta invisibile e regge la canna, il corpo vero segue posizione e azioni
 let PREAL=null,PREALP=null;
+// vestiti comprati sul personaggio realistico: maglia, pantaloni e scarpe prendono il colore dell'abito; scafandro e muta coprono tutto; cappello sulla testa
+function dressReal(g){const O=OUTF[st.outfit]||OUTF.jeans,gr=st.gear,key=st.outfit+'|'+gr.hat+'|'+!!gr.boots;if(g.userData.dress===key)return;g.userData.dress=key;
+  const rub=O.rubber||'#2f4a3a',wad=O.suit==='waders',wet=st.outfit==='wetsuit',casual=st.outfit==='jeans'||!st.outfit;
+  g.traverse(m=>{if(!m.isMesh)return;if(!m.userData.m0)m.userData.m0=m.material;const n=m.name||'',top=/Shirt|Tops|Hoodie|Sweater|Suit|Coat|Jacket|Collar|Zipper|Tie|Belt/i.test(n),bot=/Pants|Bottoms|Shorts/i.test(n),feet=/Shoe|Sneaker|Heels|Socks/i.test(n);
+    let col=null;if(wet&&(top||bot||feet))col='#0d0f12';else if(wad&&(bot||feet))col=rub;else if(!casual&&top)col=O.j;else if(!casual&&bot)col=O.p;if(feet&&gr.boots&&!wad&&!wet)col='#2a3a2c';
+    if(col){const mt=m.userData.m0.clone();mt.map=null;mt.color=new T.Color(col);mt.roughness=wad||wet?.45:.85;m.material=mt;}else m.material=m.userData.m0;});
+  if(g.userData.hat){g.remove(g.userData.hat);g.userData.hat=null;}const h=gr.hat;if(h&&h!=='none'){const hg=new T.Group(),M2=c=>new T.MeshStandardMaterial({color:c,roughness:.85});
+    if(h==='cap'){const c=new T.Mesh(new T.SphereGeometry(.105,14,8,0,Math.PI*2,0,Math.PI/2),M2('#2b3a55'));hg.add(c);const v=new T.Mesh(new T.BoxGeometry(.13,.01,.09),M2('#2b3a55'));v.position.set(0,.005,.1);hg.add(v);}
+    else if(h==='bucket'){const c=new T.Mesh(new T.CylinderGeometry(.09,.1,.09,16),M2('#9a8a5a'));c.position.y=.04;hg.add(c);const b=new T.Mesh(new T.CylinderGeometry(.16,.16,.008,20),M2('#9a8a5a'));hg.add(b);}
+    else{const c=new T.Mesh(new T.SphereGeometry(.105,14,8,0,Math.PI*2,0,Math.PI/1.9),M2('#5a2a2a'));hg.add(c);}g.add(hg);g.userData.hat=hg;}}
 function playerReal(dt){if(!AN.obj)return;if(!PREAL&&!PREALP&&T){PREALP=loadChars().then(C=>{if(!C||!scene)return;PREAL=makeChar(C,st.gear.char||'remy',1.78);PREAL.userData.ch=st.gear.char||'remy';scene.add(PREAL);});}
   if(!PREAL)return;if(PREAL.userData.ch!==(st.gear.char||'remy')){PREAL.parent?.remove(PREAL);PREAL=null;PREALP=null;return;}if(PREAL.parent!==scene)scene.add(PREAL);if(AN._hid!==AN.obj){AN.obj.traverse(o=>{if(o.isMesh&&!o.userData.keep&&!o.userData.onHand)o.visible=false;});AN._hid=AN.obj;}
+  dressReal(PREAL);if(PREAL.userData.hat){if(!PREAL.userData.head)PREAL.traverse(b=>{if(b.isBone&&b.name==='mixamorigHeadTop_End'&&!PREAL.userData.head)PREAL.userData.head=b;});const hb=PREAL.userData.head;if(hb){PREAL.updateMatrixWorld(true);const hp=hb.getWorldPosition(new T.Vector3());PREAL.worldToLocal(hp);PREAL.userData.hat.position.copy(hp).add(new T.Vector3(0,-.07,0));}}
   PREAL.position.copy(AN.pos);PREAL.rotation.y=AN.rotY+Math.PI;PREAL.visible=AN.obj.visible!==false;
   const tg=AN.target||'',k=AN.moving||AN.joying?((AN.speed||1)>3.2?'run':'walk'):tg==='sit'?'sit':st.castAnim?'cast':AN.swim?'swim':(AN.holding>=0||/reel|hold|strike|bend/.test(tg))?'fishidle':'idle';
   PREAL.userData.play(k,k==='walk'?clamp((AN.speed||1.2)/1.3,.6,1.4):1);PREAL.userData.mixer.update(dt*(st.slow||1));}
