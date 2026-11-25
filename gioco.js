@@ -1238,10 +1238,10 @@ async function cloudGameLoad(){const C=gameCloud();if(!C||CGL===C.user.uid)retur
 setInterval(cloudGameLoad,3000);setTimeout(cloudGameLoad,500);
 const eur=v=>'€ '+v.toFixed(2).replace('.',',');
 const ROD={beach390:{n:'Travel Telescopica 3,90 m',mul:0.9},tele420:{n:'Surf Telescopica 4,20 m',mul:0.92},surf420:{n:'Surf 4,20 m 3 pz vetro/carbonio',mul:0.96},surf420s:{n:'Surf 4,20 m 3 pz carbonio',mul:0.99},surf420c:{n:'Surf 4,50 m 3 pz',mul:0.99},surf420c2:{n:'Surf Hybrid 4,50 m 3 pz',mul:1.04},surf450:{n:'Extreme 4,50 m 3 pz',mul:1.06},surf450_2:{n:'Tournament 4,30 m 3 pz',mul:1.08},surf450h:{n:'Tournament 4,20 m 2 pz',mul:1.11},surf470:{n:'Competition 4,50 m 3 pz',mul:1.12},surf480:{n:'Competition 4,28 m 2 pz',mul:1.13},surf480_2:{n:'ProTeam 4,40 m 3 pz',mul:1.17},surf500:{n:'ProTeam 4,28 m 2 pz',mul:1.18},surf500_2:{n:'Gold Long Cast 4,45 m 2 pz',mul:1.2}};
-const REELS={r5000:{n:'5000 leggero',drag:7,cast:1},r6000:{n:'6000',drag:8,cast:1},r8000:{n:'8000',drag:12,cast:1},r10000:{n:'10000',drag:15,cast:1},r14000:{n:'14000',drag:20,cast:1.01},rRear:{n:'7000 frizione posteriore',drag:10,cast:1},rLC:{n:'Long Cast 12000',drag:18,cast:1.04},rMult:{n:'Mulinello rotante',drag:22,cast:1.06},rT:{n:'Tournament 14000',drag:25,cast:1.03}};
+const REELS={r5000:{n:'5000 base',drag:7,cast:1.0},r6000:{n:'7000 base',drag:8,cast:1.01},r8000:{n:'Surf 8000',drag:11,cast:1.02},rRear:{n:'Strong 9000',drag:14,cast:1.03},r10000:{n:'Extreme 10000',drag:16,cast:1.04},rLC:{n:'Tournament 12000',drag:19,cast:1.05},r14000:{n:'Competition 14000',drag:22,cast:1.06},rT:{n:'Gold Long Cast 13000',drag:25,cast:1.08},rMult:{n:'Mulinello rotante',drag:22,cast:1.06}};
 const reelN=id=>REELS[id]?.n||id,reelDrag=id=>REELS[id]?.drag||12;
 // livello dell'attrezzatura montata su una canna: 0 = di base, 1 = il top (canna Long Cast + Tournament)
-const REEL_POW={r5000:0,r6000:.1,rRear:.15,r8000:.3,r10000:.5,rLC:.6,r14000:.7,rMult:.8,rT:1};const reelPow=r=>REEL_POW[r?.reelId||st.gear.reel]??.3;
+const REEL_POW={r5000:0,r6000:0.1,r8000:0.25,rRear:0.4,r10000:0.55,rLC:0.7,r14000:0.85,rT:1,rMult:.8};const reelPow=r=>REEL_POW[r?.reelId||st.gear.reel]??.3;
 function gearTier(r){const g=st.gear,rt=clamp(((ROD[r?.rodId||g.rod]?.mul||1)-.9)/.28,0,1),RL=REELS[r?.reelId||g.reel]||REELS.r8000,lt=clamp((RL.drag-7)/18*.7+(RL.cast-1)/.06*.3,0,1);return {rod:rt,reel:lt,all:(rt+lt)/2};}
 // prezzi e confezioni realistici; o = opzioni scelte
 const CAT=[
@@ -1261,13 +1261,14 @@ const CAT=[
     {id:'surf500',rod:1,n:'Canna ProTeam 4,28 m · 2 pz',d:'Carbonio 46 t, lancia fino a 275 g. Lancio +18% · più alta probabilità di recuperare il pesce.',p:()=>759},
     {id:'surf500_2',rod:1,n:'Canna Gold Long Cast 4,45 m · 2 pz',d:'Carbon Fiber Ultra, lancia fino a 300 g. Lancio +20% · più alta probabilità di recuperare il pesce.',p:()=>1000}]},
   {k:'mulinelli',n:'⚙️ Mulinelli',items:[
-    {id:'reel',n:'Mulinello surfcasting bobina lunga',d:'Bobina conica in alluminio, frizione anteriore. Più grande = frizione più potente.',opts:[{k:'t',n:'Taglia',v:['6000','8000','10000','14000']}],p:o=>[45,69,119,189][o.t]},
-    {id:'reelBase',reel:'r6000',n:'Mulinello 6000 base',d:'Semplice e robusto, frizione 8 kg.',p:()=>29},
-    {id:'rm_r5000',reel:'r5000',n:'Mulinello leggero 5000',d:'Per la canna leggera e i pesci di taglia piccola: frizione 7 kg.',p:()=>35},
-    {id:'rm_rRear',reel:'rRear',n:'Mulinello 7000 a frizione posteriore',d:'La frizione si regola senza toccare la bobina: comoda in combattimento, 10 kg.',p:()=>59},
-    {id:'rm_rLC',reel:'rLC',n:'Mulinello Long Cast 12000',d:'Bobina conica da 30 mm a passo corto: il filo esce senza attriti (+4% distanza), 18 kg.',p:()=>159},
-    {id:'rm_rMult',reel:'rMult',n:'Mulinello rotante',d:'Il mulinello a bobina rotante dei campioni di distanza (+6%): frizione a stella 22 kg.',p:()=>229},
-    {id:'reelT',n:'Mulinello Tournament 14000 SA',d:'Corpo in alluminio, 7+1 cuscinetti, frizione 25 kg in carbonio.',p:()=>299}]},
+    {id:'rm_r5000',reel:'r5000',n:'Mulinello 5000 base',d:'Frizione 7 kg · più bassa probabilità di recuperare il pesce.',p:()=>19},
+    {id:'rm_r6000',reel:'r6000',n:'Mulinello 7000 base',d:'Frizione 8 kg · lancio +1% · più bassa probabilità di recuperare il pesce.',p:()=>29},
+    {id:'rm_r8000',reel:'r8000',n:'Mulinello Surf 8000',d:'Frizione 11 kg · lancio +2% · più bassa probabilità di recuperare il pesce.',p:()=>59},
+    {id:'rm_rRear',reel:'rRear',n:'Mulinello Strong 9000',d:'Frizione 14 kg · lancio +3% · probabilità normale di recuperare il pesce.',p:()=>99},
+    {id:'rm_r10000',reel:'r10000',n:'Mulinello Extreme 10000',d:'Frizione 16 kg · lancio +4% · più alta probabilità di recuperare il pesce.',p:()=>149},
+    {id:'rm_rLC',reel:'rLC',n:'Mulinello Tournament 12000',d:'Frizione 19 kg · lancio +5% · più alta probabilità di recuperare il pesce.',p:()=>219},
+    {id:'rm_r14000',reel:'r14000',n:'Mulinello Competition 14000',d:'Frizione 22 kg · lancio +6% · più alta probabilità di recuperare il pesce.',p:()=>299},
+    {id:'rm_rT',reel:'rT',n:'Mulinello Gold Long Cast 13000',d:'Frizione 25 kg · lancio +8% · più alta probabilità di recuperare il pesce.',p:()=>500}]},
   {k:'esche',n:'🪱 Esche',items:BAITS.filter(b=>!b.lim).map(b=>({id:'b_'+b.k,n:b.n+' '+b.e,d:b.d,bait:b.k,pk:{koreano:15,bibi:6,arenicola:7,americano:3,cannolicchio:10,cozza:15,sarda:10,seppia:3,gambero:10,cefalotto:5}[b.k],p:()=>({koreano:5,bibi:7,arenicola:7.5,americano:7.5,cannolicchio:2,cozza:3,sarda:3,seppia:5,gambero:5,cefalotto:10})[b.k]}))},
   {k:'ami',n:'🪝 Ami',items:[{id:'hook',n:'Ami da surfcasting · busta da 10',d:'Aberdeen a filo sottile per vermi e bibi, oppure forgiati per esche dure e pesci grossi.',opts:[{k:'m',n:'Misura',v:['0','2','4','6','8']},{k:'t',n:'Tipo',v:['Aberdeen','Forgiato']}],p:()=>4.5}]},
   {k:'piombi',n:'⚓ Piombi',items:[{id:'lead',n:'Piombi da surfcasting · confezione da 2',d:'Piramidale tiene sulla sabbia, ogiva vola più lontano, a ragno (grip) resta fermo anche con la corrente.',opts:[{k:'g',n:'Peso',v:['80 g','100 g','125 g','150 g','175 g','200 g']},{k:'t',n:'Forma',v:['Piramidale','Ogiva','A ragno']}],p:o=>[3,4.5,5,6,6.5,7][o.g||0]}]},
@@ -1371,7 +1372,7 @@ function skinRod(obj,rodId,reelId){const g=st.gear,U=obj.userData;if(!U.sk){U.sk
   const rc=ROD_COL[rodId]||ROD_COL.surf420;U.sk.m1.color.set('#121212');U.sk.m2.color.set(rc[0]);const fl=rodId!=='beach390';U.sk.m2.emissive.set(fl?rc[0]:'#000');U.sk.m1.emissiveIntensity=.35;U.sk.m1.emissive.set('#000');U.sk.m2.emissiveIntensity=.35;U.sk.m1.metalness=U.sk.m2.metalness=fl?.1:.35;U.sk.mr.color.set(REEL_COL[reelId]||'#3d4550');
   {const isM=reelId==='rMult';U.reel.visible=!isM;if(U.mult){U.mult.visible=isM;U.mult.traverse(o=>{if(o.isMesh&&o.material===MAT.reel)o.material=U.sk.mr;});}}U.reel.scale.setScalar(U.sk.base*({r5000:.85,r10000:1.08,r14000:1.16,rLC:1.12,rMult:.9,rT:1.18,r6000:.92}[reelId]||1));
   if(beadsN()>0){const bm=new T.MeshStandardMaterial({color:'#9dff7a',emissive:'#5aff3a',emissiveIntensity:.5});obj.userData.beads=bm;}}
-function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>id==='rT'?'Tournament 14000':id.slice(1);
+function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>reelN(id);
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
     <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
