@@ -850,7 +850,7 @@ let SUPPLAST='';setInterval(()=>{if(!st.gear||!['wait','atrod','bait','rig'].inc
 function supplyMissing(){const g=st.gear,sum=o=>Object.values(o||{}).reduce((a,b)=>a+b,0),m=[];
   if(sum(g.baits)<=0&&!(st.inv?.granchio>0))m.push('le esche');if(sum(g.hooks)<=0)m.push('gli ami');if(sum(g.leads)<=0)m.push('i piombi');if(!termAny())m.push('il filo per i terminali');if(!(g.swivels>0))m.push('le girelle');if(!(g.snaps>0))m.push('i moschettoni');if(!(g.leader>0))m.push('gli shock leader');if(!(beadsN()>0))m.push('le perline salvanodo');if(!g.bought?.scis)m.push('le forbici');if(!g.bought?.slam)m.push('lo slamatore');if(maxRods()<1)m.push('una canna completa');return m;}
 function shopBanner(m){return m.length?`<div class="gs warn" style="text-align:center">🧺 Hai finito ${m.join(', ')}: senza non puoi pescare.</div><button class="gb big gshop-b" onclick="GAME.goShop()">🛒 Vai al negozio di pesca</button>`:'';}
-G.shopNow=()=>{MP.ret=SPOTS.indexOf(SPOT);G.goShop();};G.goShop=()=>{st.needShop=false;st.phase='busy';openShop();};
+G.shopNow=()=>{MP.ret=SPOTS.findIndex(x=>x===SPOT||x.id===SPOT?.id||x.name===SPOT?.name);MP.resume=st.rods.length&&['wait','atrod','rig','bait','cast'].includes(st.phase)?{gt:st.gt,nRods:st.rods.length,rods:st.rods.map(r=>({bait:r.bait,dist:r.dist,sx:r.sx,sz:r.sz,state:r.state==='fishing'||r.state==='bite'?'fishing':'idle',baitLeft:r.baitLeft,star:r.star,broken:r.broken,lead:r.lead,hook:r.hook,rig:r.rig,leadT:r.leadT,termT:r.termT,landT:r.landT}))}:{gt:st.gt};G.goShop();};G.goShop=()=>{st.needShop=false;st.phase='busy';openShop();};
 // punto della costa vera più vicino; nei dati OSM qui la terra sta a destra della linea
 function coastNear(q,maxD=3){let bd=maxD*maxD,b=null;for(const sg of MP.segs)for(let j=0;j+1<sg.length;j++){const a=sg[j],e=sg[j+1];if(Math.min(a[0],e[0])-q[0]>maxD||q[0]-Math.max(a[0],e[0])>maxD||Math.min(a[1],e[1])-q[1]>maxD||q[1]-Math.max(a[1],e[1])>maxD)continue;const vx=e[0]-a[0],vy=e[1]-a[1],l2=vx*vx+vy*vy||1e-12;const t=clamp(((q[0]-a[0])*vx+(q[1]-a[1])*vy)/l2,0,1),px=a[0]+vx*t,py=a[1]+vy*t,d=(q[0]-px)**2+(q[1]-py)**2;if(d<bd){bd=d;b=[px,py,vx,vy];}}
   if(!b)return null;const [px,py,vx,vy]=b,l=Math.hypot(vx,vy)||1,lx=vy/l,ly=-vx/l;return {px,py,lx,ly,d:Math.sqrt(bd),side:(q[0]-px)*lx+(q[1]-py)*ly};}
@@ -1400,7 +1400,7 @@ function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>r
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
 // ogni canna montata prende dallo zaino un piombo, un amo, una girella, un moschettone e un terminale
-function rigFromBag(){const g=st.gear;for(const r of st.rods){const lw=[r.lead,80,100,125,150,175,200].find(w=>g.leads[w]>0),hk=[hookNum(r.hook),0,2,4,6,8].find(h=>g.hooks[h]>0);
+function rigFromBag(){const g=st.gear;if(st.noRig){st.noRig=false;return;}for(const r of st.rods){const lw=[r.lead,80,100,125,150,175,200].find(w=>g.leads[w]>0),hk=[hookNum(r.hook),0,2,4,6,8].find(h=>g.hooks[h]>0);
   if(lw==null||hk==null||!(g.swivels>0)||!(g.snaps>0)||!termAny()||!(g.leader>0)||!(beadsN()>0)||!g.bought?.scis){r.broken=true;continue;}r.lead=lw;r.hook=hk;g.leads[lw]--;g.hooks[hk]--;g.swivels--;g.snaps--;termTake(r);g.leader--;g.beadsN--;}gearSave();}
 // piano di montaggio: per ogni canna canna, mulinello, lenza madre, piombo, terminale e amo, senza usare più pezzi di quelli che hai
 function planUsed(key,val,except){return (st.plan||[]).reduce((a,q,i)=>a+(i!==except&&q&&q[key]===val?1:0),0);}
@@ -1599,10 +1599,14 @@ G.shopDel=i=>{SH.cart.splice(i,1);shopUI();};
 G.shopPay=()=>{const tot=cartTot();if(!SH.cart.length)return;if(tot>st.money+1e-6){say(SH.clerk,`Mancano ${eur(tot-st.money)}... togli qualcosa o torna dopo una pescata!`,4);st.msg='💸 Non bastano i soldi: togli qualcosa dal carrello.';shopUI();return;}
   st.money-=tot;SH.cart.forEach(x=>giveItem(ITEM[x.id],x.o||{}));SH.cart=[];gearSave();bell(2,.18);vib(40);say(SH.clerk,`Sono ${eur(tot)}. Grazie, a presto!`,4);st.msg=`✅ Pagato ${eur(tot)}. Trovi tutto nello zaino.`;SH.cat='zaino';SH.go='cassa';shopUI();};
 G.useRod=id=>{st.gear.rod=id;gearSave();if(st.phase==='shop')shopUI();else setUI();};
-G.shopExit=()=>{cancelAnimationFrame(raf);stop();MP.skipAsk=true;mount(null);};
+G.shopExit=()=>{cancelAnimationFrame(raf);stop();MP.skipAsk=true;const i=MP.ret,R0=MP.resume;MP.ret=null;MP.resume=null;if(i==null||i<0)return mount(null);mount(null,async()=>{
+  // dal negozio si torna direttamente in spiaggia e si riprende la pescata com'era
+  await G.arrive(i);if(!R0)return;st.gt=R0.gt;if(!R0.rods){return;}st.nRods=R0.nRods;st.noRig=true;G.ready();
+  R0.rods.forEach((q,k)=>{const r=st.rods[k];if(!r)return;Object.assign(r,{lead:q.lead,hook:q.hook,rig:q.rig,leadT:q.leadT,termT:q.termT,broken:q.broken,star:q.star});if(q.state==='fishing'&&q.dist>0){Object.assign(r,{bait:q.bait,dist:q.dist,sx:q.sx,sz:q.sz,baitLeft:q.baitLeft,landT:q.landT,state:'fishing'});r.sinker.visible=true;}});
+  st.msg='🎣 Bentornato in spiaggia: le canne sono come le avevi lasciate.';setUI();});};
 
 /* ---------- interfaccia ---------- */
-function mount(v){setTimeout(appCredit,0);
+function mount(v,resume){setTimeout(appCredit,0);
   stop();root=document.createElement('div');root.id='gamebox';
   root.innerHTML=`<div id="g3"></div><div id="ghud"></div><div id="gui"></div><button id="gx" aria-label="Esci">✕</button><button id="gau" aria-label="Audio">${AU.on?'🔊':'🔇'}</button><button id="glamp" aria-label="Torcia" class="${st.lamp?'':'off'}">🔦</button><button id="gspd" aria-label="Velocità del tempo">⏩ ${st.speed}x</button><div id="gjoy"><i></i></div><div id="gflash" style="position:absolute;inset:0;background:#eef4ff;opacity:0;pointer-events:none;mix-blend-mode:screen"></div>`;
   document.body.appendChild(root);document.body.classList.add('gaming');ui=root.querySelector('#gui');hud=root.querySelector('#ghud');
@@ -1612,7 +1616,7 @@ function mount(v){setTimeout(appCredit,0);
   root.querySelector('#gau').onclick=e=>{AU.on=!AU.on;LSS('audio',AU.on);e.target.textContent=AU.on?'🔊':'🔇';if(!AU.on){seaSound(0);windSound(0);}};
   st.phase='load';st.gt=Date.now();
   if(v)v.innerHTML='<div class="card" style="text-align:center;padding:30px"><p class="mut">Il gioco è aperto a tutto schermo.</p><button class="btn" onclick="GAME.mount()">🎣 Riapri il gioco</button></div>';
-  MP.three=loadThree().catch(e=>{throw e;});startMap();
+  MP.three=loadThree().catch(e=>{throw e;});if(resume)resume();else startMap();
 }
 // arrivo allo spot: meteo e mare reali di quel posto, poi la spiaggia in 3D
 G.arrive=async i=>{cancelAnimationFrame(MP.raf);motor(false);dispose3D();removeEventListener('resize',sizeMap);setSpot(SPOTS[i]);st.phase='load';root.querySelector('#gmapc')?.remove();MP.c=null;
