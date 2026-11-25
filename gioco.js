@@ -1523,7 +1523,7 @@ function size(){if(!renderer)return;const w=root.clientWidth,h=root.clientHeight
 const btn=(t,f,cls='')=>`<button class="gb ${cls}" onclick="GAME.${f}">${t}</button>`;
 const suggestLead=w=>w<.3?100:w<.6?125:w<1?150:w<1.6?175:200;
 function rodStatus(r){if(r.state==='tangled')return '🧶 lenza incrociata';if(r.dismantled)return 'smontata';if(r.broken)return 'terminale rotto';if(r.held)return 'in mano';if(r.state==='hooked')return '🐟 PESCE ALLAMATO!';if(!r.bait)return 'da innescare';if(r.state==='bite')return '🔔 ABBOCCATA!';if(r.baitLeft<=0)return 'esca finita?';return r.baitLeft>20?'in pesca':'esca consumata';}
-function setUI(){const p=st.phase;let h='';if(p==='wait'&&CHAIRG&&scene){const g=st.gear,k=JSON.stringify([g.baits,g.leads,g.hooks,g.swivels>0,g.snaps>0,g.starlight>0,g.term>0,g.leader>0]);if(k!==st.campKey){st.campKey=k;styleCamp();}}
+function setUI(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p==='wait'&&CHAIRG&&scene){const g=st.gear,k=JSON.stringify([g.baits,g.leads,g.hooks,g.swivels>0,g.snaps>0,g.starlight>0,g.term>0,g.leader>0]);if(k!==st.campKey){st.campKey=k;styleCamp();}}
   if(p==='setup'){const w=wxAt(st.gt),sug=suggestLead(w.wave),G9=st.gear;if(!(G9.leads[st.lead]>0)){const l=[sug,125,100,150,80,175,200].find(x=>G9.leads[x]>0);if(l)st.lead=l;}if(!(G9.hooks[st.hook]>0)){const h=[4,2,6,0,8].find(x=>G9.hooks[x]>0);if(h!=null)st.hook=h;}st.nRods=Math.max(1,Math.min(st.nRods,maxRods()||1));
     h=`<div class="gpanel"><b>🎣 ${SPOT.name} · ${gameDate().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</b>
       <div class="gs">Mare ${seaName(w.wave)} (${w.wave.toFixed(1).replace('.',',')} m), vento ${Math.round(w.ws)} km/h da ${windName(w.wd)}, acqua ${Math.round(w.sst)}°</div>
@@ -2191,6 +2191,8 @@ function waveF(sp,h){const [a,o,b]=sp.wave;if(h<a)return .5+.5*(h/(a||1));if(h>b
 function distF(sp,d){const [a,b]=sp.d;return d<a?(sp.dp?Math.max(.01,(d/a)**sp.dp):Math.max(.15,d/a)):d>b?Math.max(.15,1-(d-b)/60):1;}
 // ogni giorno e in ogni spot l'abbondanza di ogni specie cambia un po': non si prendono sempre gli stessi pesci
 function dayVar(sp){const d=gameDate(),k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()+'|'+(SPOT?.id||'')+'|'+sp.n;let h=2166136261;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}const u=((h>>>0)%10000)/10000,main=['Orata','Spigola','Ombrina','Sarago maggiore','Mormora'].includes(sp.n);return main?.65+u*.7:.3+u*1.6;}
+// carniere: solo le catture del giorno di pesca corrente
+function pruneBag(){const d=new Date(st.gt),k=d.toDateString(),n=st.bag.length;st.bag=st.bag.filter(c=>new Date(c.t).toDateString()===k);if(st.bag.length!==n)LSS('bag',st.bag);}
 function speciesWeights(r){const d=gameDate(),w=wxAt(st.gt),m=d.getMonth()+1,per=period(d),temp=w.sst||17;
   return SP.map(sp=>{const b=sp.bait[r.bait]||0;if(!b)return [sp,0];
     let f=sp.ab*(sp.mo[m]||.05)*b*waveF(sp,w.wave||0)*(sp.time[per]||.5)*distF(sp,r.dist)*(SPOT.fishK?.[sp.n]||1)*dayVar(sp);
