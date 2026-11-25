@@ -714,6 +714,12 @@ const LMK=[
   {t:'port',n:'Porto di Gaeta',lat:41.2165,lon:13.5795},
   {t:'tower',n:'Torre di Mola',lat:41.2573,lon:13.6113}];
 // modello in metri: il mare è verso -z, la terra verso +z
+// fiancate delle navi: lamiera bianca con file di oblò e finestre, linea di galleggiamento e striature di ruggine
+const SHIPM={};function shipMat(k){if(SHIPM[k])return SHIPM[k];const t=canvasTex(1024,128,(g,w,h)=>{g.fillStyle='#eef1f3';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=`rgba(120,110,100,${Math.random()*.08})`;g.fillRect(Math.random()*w,0,2+Math.random()*4,h);}
+    if(k==='hull'){g.fillStyle='#1f4fa0';g.fillRect(0,h*.78,w,h*.22);g.fillStyle='#7a2a1e';g.fillRect(0,h*.92,w,h*.08);g.fillStyle='#2b3440';for(let x=12;x<w-12;x+=18)g.beginPath(),g.arc(x,h*.42,3.2,0,7),g.fill();}
+    else{g.fillStyle='#24313d';for(const y of [.18,.48,.78])for(let x=8;x<w-8;x+=14)g.fillRect(x,h*y-5,10,10);g.fillStyle='#c9d1d8';g.fillRect(0,h*.32,w,3);g.fillRect(0,h*.62,w,3);}
+    for(let i=0;i<25;i++){const x=Math.random()*w;const gr=g.createLinearGradient(0,h*.3,0,h);gr.addColorStop(0,'rgba(140,80,40,0)');gr.addColorStop(1,'rgba(140,80,40,.25)');g.fillStyle=gr;g.fillRect(x,h*.3,2,h*.7);}});
+  t.wrapS=T.RepeatWrapping;t.repeat.set(1,1);return SHIPM[k]=new T.MeshStandardMaterial({map:t,roughness:.6,metalness:.2});}
 function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial({color:c,roughness:.85,...o}),add=(geo,mat,x,y,z)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o;};
   const stone=texMat(m('#c9b391'),'beige_wall_001',[2,3],{k:1.4}),white=texMat(m('#f4f2ec'),'white_plaster_02',[1,3],{k:1.15}),red=texMat(m('#c0392b'),'painted_plaster_wall',[1,1],{k:1.6}),t=L.t;
   if(t==='tower'){if(L.sea)add(new T.CylinderGeometry(9,10,3,10),m('#8d8577'),0,1.5,0);add(new T.CylinderGeometry(4.5,5.4,18,12),stone,0,9+(L.sea?2:0),0);for(let i=0;i<10;i++){const a=i/10*Math.PI*2;add(new T.BoxGeometry(1.6,1.6,1.2),stone,Math.cos(a)*4.6,18.8+(L.sea?2:0),Math.sin(a)*4.6);}}
@@ -748,8 +754,8 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
   else if(t==='port'){const bw=texMat(m('#a8a398'),'concrete_wall_008',[6,30],{k:1.5});add(new T.BoxGeometry(14,5,300),bw,-170,1.5,-150);add(new T.BoxGeometry(220,5,14),bw,-60,1.5,-300);add(new T.BoxGeometry(14,5,200),bw,170,1.5,-100);
     add(new T.CylinderGeometry(2,2,10,10),red,50,6,-300);add(new T.CylinderGeometry(2,2,10,10),m('#2e9b4f'),170,6,-200);
     const hull=texMat(m('#f7f7f2'),'white_plaster_02',[1,2],{k:1.1});for(let i=0;i<16;i++){const x=-140+(i%8)*36,z=-40-Math.floor(i/8)*60;add(new T.BoxGeometry(4,2.2,12),i%3?hull:m('#2b62c9'),x,1,z);add(new T.CylinderGeometry(.15,.15,13,4),m('#ddd'),x,8,z);}
-    if(L.ferry)for(let k=0;k<2;k++){const f=new T.Group(),h=new T.Mesh(new T.BoxGeometry(26,14,170),m('#f2f2f2'));h.position.y=6;f.add(h);const st=new T.Mesh(new T.BoxGeometry(26.4,2,170.4),m('#1f4fa0'));st.position.y=3;f.add(st);
-      const sup=new T.Mesh(new T.BoxGeometry(22,10,90),m('#ffffff'));sup.position.set(0,18,10);f.add(sup);const fn=new T.Mesh(new T.CylinderGeometry(3,3.4,10,12),m('#d23a2a'));fn.position.set(0,27,-20);f.add(fn);
+    if(L.ferry)for(let k=0;k<2;k++){const f=new T.Group(),h=new T.Mesh(new T.BoxGeometry(26,14,170),shipMat('hull'));h.position.y=6;f.add(h);const st=new T.Mesh(new T.BoxGeometry(26.4,2,170.4),m('#1f4fa0'));st.position.y=3;f.add(st);
+      const sup=new T.Mesh(new T.BoxGeometry(22,10,90),shipMat('deck'));sup.position.set(0,18,10);f.add(sup);const fn=new T.Mesh(new T.CylinderGeometry(3,3.4,10,12),m('#d23a2a'));fn.position.set(0,27,-20);f.add(fn);
       f.position.set(-60+k*110,0,-140-k*40);f.rotation.y=Math.PI/2*(k?1:.9);g.add(f);}}
   else if(t==='dune'){const sd=m('#e6d09b'),gr=m('#7b8f4c');for(let i=0;i<26;i++){const d=new T.Mesh(new T.SphereGeometry(1,12,6,0,Math.PI*2,0,Math.PI/2),sd);d.scale.set(rnd(25,55),rnd(5,11),rnd(14,24));d.position.set(rnd(-400,400),0,rnd(-10,40));g.add(d);
       for(let k=0;k<4;k++)add(new T.SphereGeometry(rnd(1.5,3),6,4),gr,d.position.x+rnd(-15,15),d.scale.y*.8,d.position.z+rnd(-8,8));}}
@@ -804,7 +810,7 @@ function buildLandmarks(){const rm=texMat(new T.MeshStandardMaterial({color:'#8a
   if(SPOT.pier&&!LMK.some(L=>L.t==='pier'&&azPos(L.lat,L.lon).d<4000)){const pm=new T.MeshStandardMaterial({color:'#9a9488',roughness:.9}),pier=new T.Mesh(new T.BoxGeometry(8,1,260),pm);pier.position.set(380,1.5,-110);scene.add(pier);
     for(let i=0;i<14;i++){const pl=new T.Mesh(new T.CylinderGeometry(.4,.4,5,8),pm);pl.position.set(380,-1,10-i*19);scene.add(pl);}const rot=new T.Mesh(new T.CylinderGeometry(14,14,1.2,24),pm);rot.position.set(380,1.6,-245);scene.add(rot);}
   if(SPOT.city||SPOT.huts){const bm=texMat(new T.MeshStandardMaterial({color:'#d8cfc0',roughness:.9}),'beige_wall_001',[3,4],{k:1.5});for(let i=0;i<40;i++){const side=i%2?1:-1,x=side*rnd(250,1400),z=rnd(30,500),h=rnd(6,28);if(!SPOT.city&&Math.abs(x)<600)continue;const b=new T.Mesh(new T.BoxGeometry(rnd(10,24),h,rnd(10,20)),bm);b.position.set(x,h/2,z);scene.add(b);}}
-  if(SPOT.ship){const sm=new T.MeshStandardMaterial({color:'#3a3f48',roughness:.7});for(let i=0;i<2;i++){const g=new T.Group(),h=new T.Mesh(new T.BoxGeometry(180,18,28),sm);g.add(h);const bd=new T.Mesh(new T.BoxGeometry(40,24,26),new T.MeshStandardMaterial({color:'#e9e9e9'}));bd.position.set(60,20,0);g.add(bd);g.position.set(rnd(-1500,1500),8,-rnd(2500,4500));g.rotation.y=rnd(-.3,.3);scene.add(g);}}
+  if(SPOT.ship){const sm=new T.MeshStandardMaterial({color:'#3a3f48',roughness:.7});for(let i=0;i<2;i++){const g=new T.Group(),h=new T.Mesh(new T.BoxGeometry(180,18,28),shipMat('hull'));g.add(h);const bd=new T.Mesh(new T.BoxGeometry(40,24,26),shipMat('deck'));const fn=new T.Mesh(new T.CylinderGeometry(3,3.4,10,12),new T.MeshStandardMaterial({color:'#d23a2a',roughness:.6}));fn.position.set(60,37,0);g.add(fn);bd.position.set(60,20,0);g.add(bd);g.position.set(rnd(-1500,1500),8,-rnd(2500,4500));g.rotation.y=rnd(-.3,.3);scene.add(g);}}
   // luoghi caratteristici vicini: vecchio faro, pontile, porti e navi, castelli, torri, tempio
   for(const L of LMK){if(L.t==='dune')continue;const p=azPos(L.lat,L.lon);if(p.d>14000)continue;if(L.near&&p.d>L.near)continue;if(L.t==='lighthouse'&&SPOT.id==='ostia')continue;const g=lmModel(L),k=1+Math.max(0,(p.d-500)/700);g.scale.setScalar(k);
     // la spiaggia del gioco è una riva dritta: castelli, torri e fari restano sulla terraferma (la costa vera curva), porti e pontili partono dalla riva
