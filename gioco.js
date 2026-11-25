@@ -463,7 +463,10 @@ function buildWorld(){
   for(let i=0;i<pa.count;i++){const x=pa.getX(i),z=pa.getZ(i)+30;let y=z<-6?-1.2+(z+6)*.05:z<0?z*.06-.15:z<24?z*.035+Math.sin(x*.21+z*.3)*.015:.84+(Math.pow((z-24)/10,1.6)*1.4+Math.sin(x*.07)*.8+Math.sin(x*.19+1)*.35)*DK;
     if(z>24)y+=Math.max(0,Math.sin(x*.13+z*.2))*.6*DK;pa.setXYZ(i,x,y,z);const wet=clamp(1-(z+1)/5,0,1);col.push(lerp(1,.62,wet),lerp(1,.56,wet),lerp(1,.48,wet));}
   sg.setAttribute('color',new T.Float32BufferAttribute(col,3));sg.computeVertexNormals();
-  SAND=new T.Mesh(sg,new T.MeshStandardMaterial({map:sandTex(),vertexColors:true,roughness:1}));SAND.receiveShadow=true;scene.add(SAND);
+  SAND=new T.Mesh(sg,new T.MeshStandardMaterial({map:sandTex(),vertexColors:true,roughness:1}));
+  // sabbia fotografica (Poly Haven, CC0): colore e rilievo dei granelli, ripetuta ogni 2,5 m e tinta col colore della spiaggia
+  {const TL=new T.TextureLoader(),sm=SAND.material,rep=[420/2.5,90/2.5],ld=(f,srgb)=>{const t=TL.load(GBASE+'img/tex/'+f);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(rep[0],rep[1]);t.anisotropy=8;if(srgb)t.encoding=T.sRGBEncoding;return t;};
+    const d=ld('coast_sand_01_diff.jpg',true),n=ld('coast_sand_01_nor_gl.jpg');d.image=undefined;const im=new Image();im.onload=()=>{d.image=im;d.needsUpdate=true;sm.map=d;sm.color.set(SPOT.sand||'#cdb488').lerp(new T.Color('#ffffff'),.3).multiplyScalar(1.95);sm.normalMap=n;sm.normalScale=new T.Vector2(1.2,1.2);sm.needsUpdate=true;};im.src=GBASE+'img/tex/coast_sand_01_diff.jpg';}SAND.receiveShadow=true;scene.add(SAND);
   // macchia mediterranea e ammofila sulle dune
   const bg=new T.SphereGeometry(1,10,8),bm=new T.MeshStandardMaterial({color:'#3a5a2c',roughness:1});bushes=new T.InstancedMesh(bg,bm,260);const mtx=new T.Matrix4(),q=new T.Quaternion();
   const NB=Math.round(260*(SPOT.veg??1));for(let i=0;i<260;i++){const x=i<NB?rnd(-200,200):9999,z=rnd(27,58),s=rnd(.6,1.8),y=.84+(Math.pow((z-24)/10,1.6)*1.4+Math.sin(x*.07)*.8+Math.sin(x*.19+1)*.35)*DK;mtx.compose(new T.Vector3(x,y+s*.25,z),q,new T.Vector3(s*1.4,s*.75,s*1.2));bushes.setMatrixAt(i,mtx);bushes.setColorAt(i,new T.Color().setHSL(.25+rnd(-.03,.04),.35,rnd(.16,.26)));}
