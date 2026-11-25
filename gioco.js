@@ -493,7 +493,7 @@ function buildWorld(){
   const pm=new T.MeshStandardMaterial({color:'#2b4024',roughness:1}),tm=new T.MeshStandardMaterial({color:'#5a4030',roughness:1});
   for(let i=0;i<Math.round(26*(SPOT.pines??0));i++){const x=rnd(-220,220),z=rnd(62,90),h=rnd(9,15),p=new T.Group();const tr=new T.Mesh(new T.CylinderGeometry(.25,.4,h,6),tm);tr.position.y=h/2;p.add(tr);
     const cr=new T.Mesh(new T.SphereGeometry(1,10,8),pm);cr.scale.set(rnd(4,6.5),rnd(1.4,2),rnd(4,6));cr.position.y=h;p.add(cr);p.position.set(x,2,z);scene.add(p);}
-  buildLandmarks();buildBeachLife();
+  buildLandmarks();buildBeachLife();if(GFX()==='alta')loadHDRI();buildPlanes();
   // frangenti: strisce di schiuma che avanzano verso riva, e risacca sulla sabbia
   const ft=foamTex();for(let i=0;i<9;i++){const g=new T.PlaneGeometry(420,3.4,160,2);g.rotateX(-Math.PI/2);const base=Float32Array.from(g.attributes.position.array);
     const tx=foamTex2();const m=new T.Mesh(g,new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,opacity:0}));m.position.y=.06;m.userData={base,cyc:Math.random(),rate:rnd(.75,1.35)};newWave(m);scene.add(m);foams.push(m);}
@@ -797,6 +797,13 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
   return g;}
 function azPos(lat,lon){const dy=(lat-SPOT.lat)*110570,dx=(lon-SPOT.lon)*111320*Math.cos(SPOT.lat*R),d=Math.hypot(dx,dy),az=(Math.atan2(dx,dy)/R+360)%360,a=(az-FACE)*R;return {x:Math.sin(a)*d,z:-Math.cos(a)*d,d};}
 // spiaggia vera: conchiglie, legni e tronchetti, alghe sulla linea del bagnasciuga, pozzanghere e buche, chioschi; di giorno gente che passeggia, corre o porta a spasso il cane
+// grafica alta/bassa (salvata sul telefono): bassa = niente HDRI, meno pixel, ombre ferme
+const GFX=()=>LSG('gfx','alta');G.gfx=()=>{LSS('gfx',GFX()==='alta'?'bassa':'alta');st.msg='🎨 Grafica '+GFX()+': si applica alla prossima spiaggia.';setUI();};
+// luce del cielo vero (HDRI Poly Haven): illumina e dà riflessi naturali, il cielo visibile resta quello che segue l'ora
+function loadHDRI(){const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';loadScript(B+'examples/js/loaders/RGBELoader.js').then(()=>{new T.RGBELoader().setDataType(T.UnsignedByteType).load(GBASE+'img/tex/sky.hdr',tx=>{if(!scene||!renderer)return;const pm=new T.PMREMGenerator(renderer),env=pm.fromEquirectangular(tx).texture;tx.dispose();pm.dispose();scene.environment=env;scene.traverse(m=>{if(m.isMesh&&m.material&&m.material.isMeshStandardMaterial&&m.material.envMapIntensity!==undefined)m.material.envMapIntensity=.55;});});}).catch(()=>{});}
+// aerei in avvicinamento a Fiumicino visibili dagli spot vicini
+let PLANES=[];function buildPlanes(){PLANES=[];const sid=String(SPOT.id||'').replace(/^g_/,'');if(!['fiumicino','ostia','focene','passoscuro','fregene','castelfusano','darzagaia','cancello7','castelporziano'].includes(sid))return;loadProp('plane').then(src=>{if(!src||!scene)return;for(let i=0;i<2;i++){const m=propClone(src,38);const sz=m.userData.size;m.userData.fwd=sz.z>sz.x;m.visible=false;scene.add(m);PLANES.push({m,t:-rnd(10,80)-i*60});}});}
+function updPlanes(dt){for(const P of PLANES){P.t+=dt;const T0=45;if(P.t<0){P.m.visible=false;continue;}if(P.t>T0){P.t=-rnd(70,160);continue;}const u=P.t/T0,fi=String(SPOT.id).includes('fiumicino'),dir=fi?1:-1;P.m.visible=true;P.m.position.set(dir*(-1600+u*3200),260-u*(fi?180:60),-500+u*400);P.m.rotation.set(0,(dir>0?-Math.PI/2:Math.PI/2)+(P.m.userData.fwd?0:Math.PI/2),0);}}
 let WALKERS=[];const WALKN=['ch13','ch22','ch37','ch41','ch07','ch33','ch38','ch12'],FISHN=['ch31','ch08','ch06','ch01','ch12','remy','ch33'],WOMEN=['ch07','ch13','ch22','ch37','ch41'];
 function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMaterial({color:c,roughness:.9,...o}),mtx=new T.Matrix4(),q=new T.Quaternion(),sv=new T.Vector3(),pv=new T.Vector3(),eu=new T.Euler();
   const inst=(geo,mat,n,f)=>{const im=new T.InstancedMesh(geo,mat,n);for(let i=0;i<n;i++){const [x,y,z,sx,sy,sz,rx,ry,rz]=f(i);pv.set(x,y,z);eu.set(rx,ry,rz);q.setFromEuler(eu);sv.set(sx,sy,sz);mtx.compose(pv,q,sv);im.setMatrixAt(i,mtx);}im.receiveShadow=true;scene.add(im);return im;};
@@ -1767,7 +1774,7 @@ function mount(v,resume){setTimeout(appCredit,0);
 G.arrive=async i=>{cancelAnimationFrame(MP.raf);motor(false);dispose3D();removeEventListener('resize',sizeMap);setSpot(SPOTS[i]);st.phase='load';root.querySelector('#gmapc')?.remove();MP.c=null;
   ui.innerHTML=`<div class="gpanel"><b>🏖️ ${SPOT.name}</b><div class="gs">Scendi in spiaggia: leggo meteo e mare reali di questo posto…</div></div>`;
   try{const [three]=await Promise.all([MP.three||loadThree(),loadWx()]);T=three;if(!document.getElementById('gamebox'))return;
-    renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(1.6,devicePixelRatio||1));cvs=renderer.domElement;root.querySelector('#g3').appendChild(cvs);
+    renderer=new T.WebGLRenderer({antialias:GFX()==='alta',powerPreference:'high-performance'});renderer.setPixelRatio(GFX()==='alta'?Math.min(2,devicePixelRatio||1):1);renderer.shadowMap.autoUpdate=GFX()==='alta';cvs=renderer.domElement;root.querySelector('#g3').appendChild(cvs);
     ['#gspd','#glamp'].forEach(q=>{const e=root.querySelector(q);if(e)e.style.display='';});
     buildWorld();size();addEventListener('resize',size);bindLook();
     // all'inizio la mia postazione è ancora da montare
@@ -1795,7 +1802,7 @@ function setUI0(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p===
       ${(st.gear.chairs||[]).length?`<div class="grow" style="gap:4px;flex-wrap:wrap"><span>Sedia</span>${['',...st.gear.chairs].map(k=>`<button class="gc ${(st.gear.chair||'chairStd')===k?'on':''}" onclick="GAME.setGearK('chair','${k}')">${{'':'Sul secchio',chairStd:'Pieghevole',chairHigh:'Alta',chairLevel:'Regolabile',chairArm:'Poltrona'}[k]}</button>`).join('')}</div>`:''}
       ${(st.gear.shelters||[]).length?`<div class="grow" style="gap:4px"><span>Riparo</span>${['',...st.gear.shelters].map(k=>`<button class="gc ${(st.gear.shelter||'')===k?'on':''}" onclick="GAME.setGearK('shelter','${k}')">${{'':'Nessuno',umbrella:'Ombrellone',bivvy:'Tenda'}[k]}</button>`).join('')}</div>`:''}
       <div class="gs">${['waders','neo'].includes(st.outfit)?'Con lo scafandro entri in acqua senza bagnarti (e senza congelarti).':'Senza scafandro, se entri in acqua ti bagni.'}</div>
-      <div class="grow" style="gap:6px"><span>Pescatore</span><button class="gc on" onclick="GAME.pickChar()">👤 ${(CHARL.find(c=>c[0]===(st.gear.char||'remy'))||[0,'Remy'])[1]} · cambia</button></div>${gearChips(true)}
+      <div class="grow" style="gap:6px"><span>Pescatore</span><button class="gc on" onclick="GAME.pickChar()">👤 ${(CHARL.find(c=>c[0]===(st.gear.char||'remy'))||[0,'Remy'])[1]} · cambia</button><button class="gc" onclick="GAME.gfx()">🎨 Grafica ${GFX()}</button></div>${gearChips(true)}
       ${(()=>{const SM=supplyMissing();return SM.length?`<div class="gs warn" style="color:#ffb547">🧺 Per pescare ti manca: <b>${SM.join(', ')}</b>.</div><button class="gb big gshop-b" onclick="GAME.shopNow()">🛒 Vai al negozio di pesca</button>`:btn('🎣 Vai subito in pesca','ready()','big')+btn('🔧 Monta l\'attrezzatura passo passo','start(1)');})()}</div>`;}
   else if(p==='mount'){const S2=st.steps,i=Math.min(st.stepI,S2.length-1),cur=S2[i];h=`<div class="gpanel slim"><div class="grow" style="justify-content:space-between"><b>🔧 Monta la postazione</b><b>${st.stepI}/${S2.length}</b></div>
     <div class="gbar dist" style="height:8px"><i style="width:${st.stepI/S2.length*100}%"></i></div>
@@ -2297,7 +2304,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   const gmul=(st.phase==='wait'&&!st.busy&&!st.rods.some(r=>r.state==='bite'))?st.speed:1;st.gmul=gmul;st.gt+=dt*1000*gmul;const gmin=dt*gmul/60;const w=wxAt(st.gt);
   // pescatore e vicini di spiaggia
   joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();playerReal(dt);updCrabs(dt,t);nearUI(t);
-  updNpcs(dt,t);updBeachLife(dt,t);rpUpd(dt,t);
+  updNpcs(dt,t);updBeachLife(dt,t);updPlanes(dt);rpUpd(dt,t);
   if(st.cast?.on){st.cast.p+=st.cast.dir*dt*1.15;if(st.cast.p>1){st.cast.p=1;st.cast.dir=-1;}if(st.cast.p<0){st.cast.p=0;st.cast.dir=1;}const el=document.getElementById('gpw');if(el)el.style.width=(st.cast.p*100)+'%';}
   // canne
   for(const r of st.rods){
@@ -2467,7 +2474,7 @@ function updCam(dt,t){let p,l;const a=AN.pos;
 function drawHud(w){const d=gameDate(),mp=moonPosG(d,SPOT.lat,SPOT.lon);
   const wi=w.code>=95?'⛈️':w.code>=80?'🌦️':w.code>=51?'🌧️':w.code>=45?'🌫️':w.cc>75?'☁️':w.cc>35?'⛅':sunPos(d,SPOT.lat,SPOT.lon).alt>0?'☀️':'🌙';
   const h=`<div>📍 ${escH(SPOT.name.split(' · ')[0])} · <b>${d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</b>${st.speed>1&&st.phase==='wait'&&!st.busy?' ⏩':''}</div><div>${wi} ${Math.round(w.temp)}° ${['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.round(mp.ph/45)%8]} 🎣${w.idx}${st.sim?' ⚠️':''}</div><br><div>🌬️ ${Math.round(w.ws)} ${windName(w.wd)}</div><div>🌊 ${(w.wave||0).toFixed(1).replace('.',',')} m · ${Math.round(w.sst)}°</div><div>💶 ${eur(st.money)}</div>`;if(hud.innerHTML!==h)hud.innerHTML=h;}
-G._bite=i=>startBite(st.rods[i]);G._walkers=()=>WALKERS;G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
+G._bite=i=>startBite(st.rods[i]);G._walkers=()=>WALKERS;G._sc=()=>scene;G._planes=()=>PLANES;G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
 /* ---------- meteo reale per l'ora di gioco ---------- */
 async function loadWx(){
   try{const r=await window.fetchRaw(SPOT);st.sim=!!r.sim;st.X=window.build(r.w,r.m,SPOT,'coast');}catch(e){st.X=null;st.sim=true;}
