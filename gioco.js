@@ -540,7 +540,7 @@ function buildNpcs(){const defs=[
     NPCS.push(a);}}
 const npcGo=(a,x,z,cb)=>{a.walkTarget={x,z,res:cb};a.moving=true;a.target='stand';};
 function npcFish(bait){const m=gameDate().getMonth()+1,c=SP.filter(sp=>!sp.crab&&(sp.bait[bait]||0)>0).map(sp=>[sp,(sp.mo[m]||.05)*sp.ab*(sp.bait[bait]||0)]);let u=Math.random()*c.reduce((a,x)=>a+x[1],0)||0;
-  for(const [sp,f] of c){u-=f;if(u<=0){const w=sizeOf(sp);return {n:sp.n,w,l:lenOf(sp,w)};}}const sp=SP[4],w=sizeOf(sp);return {n:sp.n,w,l:lenOf(sp,w)};}
+  for(const [sp,f] of c){u-=f;if(u<=0){const w=sizeOf(sp,r);return {n:sp.n,w,l:lenOf(sp,w)};}}const sp=SP[4],w=sizeOf(sp);return {n:sp.n,w,l:lenOf(sp,w)};}
 // fumetti sopra la testa
 function say(a,text,secs=4){if(a.bub){a.obj.remove(a.bub);a.bub.material.map.dispose();}const lines=[];let cur='';for(const w of String(text).split(' ')){if((cur+' '+w).length>26){lines.push(cur);cur=w;}else cur=(cur?cur+' ':'')+w;}lines.push(cur);
   const H=40+lines.length*34,tx=canvasTex(512,H,(g)=>{g.fillStyle='rgba(255,255,255,.93)';g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=3;const r=22;g.beginPath();g.moveTo(r,2);g.arcTo(510,2,510,H-2,r);g.arcTo(510,H-2,2,H-2,r);g.arcTo(2,H-2,2,2,r);g.arcTo(2,2,510,2,r);g.fill();g.stroke();
@@ -2003,15 +2003,15 @@ function startBite(r){
   r.state='bite';r.biteT=0;r.bitePlan={sp,steal,kind,pattern:pats[kind],len:kind==='partenza'?13:kind==='violenta'?12:kind==='decisa'?16:kind==='picchiettata'?17:15};r.bentT=0;r.bentAt=null;
   bell(kind==='picchiettata'?2:kind==='partenza'||kind==='violenta'?5:3,kind==='picchiettata'?.12:.3);try{navigator.vibrate?.(kind==='violenta'||kind==='partenza'?[120,60,200]:[60]);}catch(e){}
   st.msg=`🔔 Canna ${r.i+1}: ${kind==='picchiettata'?'piccole tocche…':kind==='nervosa'?'tocche nervose':kind==='decisa'?'la cima si piega decisa!':'partenza violenta!'}`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
-function beginFight(r,sp){const w=sizeOf(sp);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
+function beginFight(r,sp){const w=sizeOf(sp,r);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
   r.state='fight';pose('reel');st.phase='fight';vib([160,60,90]);setUI();}
 G.fightHooked=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='hooked')return;st.phase='busy';setUI();await pickRod(st.sel);pose('reel');beginFight(r,r.bitePlan.sp);});
 G.strike=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='bite')return;const p=r.bitePlan,strong=p.pattern(r.biteT)>.4,bent0=(r.bentT||0)>=.9||(r.bentAt!=null&&r.biteT-r.bentAt<1.6);
   st.phase='busy';setUI();await pickRod(st.sel);pose('strike');whoosh();await sleep(.35);
-  const bent=bent0;let ok=p.sp&&(bent||!p.steal)&&(bent?1:strong?.35:.1)>Math.random();if(p.sp&&hookCat(st.hook)==='grande'&&p.sp.w[1]<.4)ok=ok&&Math.random()<.5;
+  const bent=bent0;const tap=p.pattern(r.biteT)>.12;let ok=p.sp&&(bent||!p.steal)&&(bent?.92:strong?.55:tap?.3:.08)>Math.random();if(p.sp&&hookCat(st.hook)==='grande'&&p.sp.w[1]<.4)ok=ok&&Math.random()<.5;
   if(!ok){r.state='fishing';const lost=p.steal||Math.random()<.5;if(lost)r.baitLeft=0;pose('hold');await sleep(.4);
     showCatch({fish:false,txt:strong?'Mancato!':'Troppo presto',why:strong?'Hai ferrato troppo presto: aspetta che la cima resti piegata per più di un secondo.':'Erano solo tocche: aspetta che la cima resti piegata per più di un secondo prima di ferrare.',left:!lost});return;}
-  const sp=p.sp,w=sizeOf(sp);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
+  const sp=p.sp,w=sizeOf(sp,r);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
   r.state='fight';pose('reel');st.phase='fight';vib([160,60,90]);setUI();});
 function updFight(dt){const f=st.fight;if(!f||st.phase!=='fight')return;f.t+=dt;const r=f.r,w=wxAt(st.gt),GT=gearTier(r),RB=reelPow(r)*.5,CB=GT.rod*.5,GB=(1+RB)*(1+CB);
   {const K=riskOf();if(f.dist<14&&(K.wave>1.2||K.rocks>.3)&&f.ten>.7&&Math.random()<dt*(.004*K.wave+.01*K.rocks)*(r.lineT==='braid'?.67:1))return endFight(false,K.rocks>.3?'La lenza ha toccato gli scogli e si è spezzata!':'Nei frangenti la lenza ha preso un colpo d\'onda e si è spezzata!');}
@@ -2214,10 +2214,10 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   for(const r of st.rods){
     if(r.state==='fishing'&&r.dist>8){const need=suggestLead(w.wave||0)+(r.leadT==='ragno'?30:r.leadT==='ogiva'?12:-10);if((w.wave||0)>1.2&&(r.lead||st.lead)<need-20&&st.gt-(r.landT||0)>6e5&&(r.drifting=1)){const k=(need-(r.lead||st.lead))/100;r.dist-=gmin*k*6;r.sx+=gmin*k*Math.sin((w.wd-FACE)*R)*3;r.tgT=(r.tgT||0)-gmin;if(r.tgT<=0){r.tgT=1;if(checkTangle(r)&&st.phase==='wait')setUI();}if(!r.driftMsg){r.driftMsg=1;st.msg=`Canna ${r.i+1}: il piombo da ${r.lead} g «ara», la corrente lo trascina verso riva. Metti un piombo più pesante.`;if(st.phase==='wait')setUI();}}}
     if(r.state==='fishing'){const was=r.baitLeft;r.baitLeft-=gmin*(1+(w.wave||0)*.6);if(r.bait&&was>0&&r.baitLeft<=0){baitGone();vib([60,80,60]);st.msg=`🪝 Canna ${r.i+1}: l'esca è finita, va reinnescata.`;if(st.phase==='wait')setUI();}if(Math.random()<biteRate(r)*gmin)startBite(r);}
-    if(r.state==='bite'){r.biteT+=dt;r.bentT=r.bitePlan.pattern(r.biteT)>.55?(r.bentT||0)+dt:0;if(r.bentT>=.9){if(r.bentAt==null||r.biteT-r.bentAt>2){st.msg=`⚡ Canna ${r.i+1}: la cima resta piegata, FERRA ADESSO!`;if(st.phase==='wait'||st.phase==='atrod')setUI();}r.bentAt=r.biteT;}if(r.biteT>r.bitePlan.len){const pl=r.bitePlan,auto={partenza:.6,violenta:.45,decisa:.3,nervosa:.15,picchiettata:.05}[pl.kind]||0;
+    if(r.state==='bite'){r.biteT+=dt;r.bentT=r.bitePlan.pattern(r.biteT)>.55?(r.bentT||0)+dt:0;if(r.bentT>=.9){if(r.bentAt==null||r.biteT-r.bentAt>2){st.msg=`⚡ Canna ${r.i+1}: la cima resta piegata, FERRA ADESSO!`;if(st.phase==='wait'||st.phase==='atrod')setUI();}r.bentAt=r.biteT;}if(r.biteT>r.bitePlan.len){const pl=r.bitePlan,auto=.25;
         if(pl.sp&&!pl.steal&&Math.random()<auto){r.state='hooked';r.hookT=0;bell(4,.3);try{navigator.vibrate?.([200,80,200]);}catch(e){}st.msg=`🐟 Canna ${r.i+1}: il pesce si è allamato da solo! Vai a recuperarlo.`;if(st.phase==='wait'||st.phase==='atrod')setUI();continue;}
         r.state='fishing';r.baitLeft-=pl.steal?999:10;st.msg=`Canna ${r.i+1}: ha smesso di battere${pl.steal?' (forse ti hanno rubato l\'esca)':''}.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}}
-    if(r.state==='hooked'){r.hookT+=dt;if(Math.random()<dt*.012*(1-gearTier(r).all*.6)||r.hookT>150+gearTier(r).all*120){r.state='fishing';r.baitLeft=0;r.bitePlan=null;st.msg=`Canna ${r.i+1}: il pesce si è slamato. Controlla l'esca.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
+    if(r.state==='hooked'){r.hookT+=dt;if(Math.random()<dt*.0015*(1-gearTier(r).all*.6)||r.hookT>600+gearTier(r).all*300){r.state='fishing';r.baitLeft=0;r.bitePlan=null;st.msg=`Canna ${r.i+1}: il pesce si è slamato. Controlla l'esca.`;if(st.phase==='wait'||st.phase==='atrod')setUI();}
       else if(Math.random()<dt*.25)bell(1,.15);}
     const swell=r.dist>0?Math.sin(t*2*Math.PI/Math.max(3,w.wper||5)+r.i)*(w.wave||.3)*.12:0;let bite=r.state==='tangled'?.3+.2*Math.max(0,Math.sin(t*1.7+r.i*2)):r.state==='bite'?r.bitePlan.pattern(r.biteT):r.state==='hooked'?.55+.35*Math.max(0,Math.sin(t*2.3+r.i))*Math.max(0,Math.sin(t*.7)):0;if(st.fight?.r===r)bite=st.fight.ten*1.1;if(r.state==='flying')bite=0;
     r.bend=lerp(r.bend,(r.dist>0?.12:0)+swell+bite,.25);bendRod(r.obj,clamp(r.bend,0,1.3)*(r.held?.8:1));
@@ -2386,10 +2386,10 @@ function speciesWeights(r){const d=gameDate(),w=wxAt(st.gt),m=d.getMonth()+1,per
     return [sp,f];});}
 function biteRate(r){// abboccate per minuto di gioco
   if(!r.bait||r.state!=='fishing'||r.baitLeft<=0)return 0;const w=wxAt(st.gt),idx=clamp(w.idx??50,0,100);
-  const s=speciesWeights(r).reduce((a,[,f])=>a+f,0);return (s*(.35+idx/100*1.3)*.045+.004)*(r.rig==='2ami'?1.25:1)*(.55+gearQuality()*.45); // + piccoli pesci e granchietti che rubano l'esca
+  const s=speciesWeights(r).reduce((a,[,f])=>a+f,0);return (s*(.35+idx/100*1.3)*.045+.004)*(r.rig==='2ami'?1.25:1)*(.55+gearQuality()*.45)*clamp(.6+(r.dist||0)/150*.8,.6,1.7); // + piccoli pesci e granchietti che rubano l'esca
 }
 
-function sizeOf(sp){const [a,t,b]=sp.w;let x=Math.exp(Math.log(t)+(Math.random()+Math.random()+Math.random()-1.5)*.55);if(Math.random()<.04)x*=1.6;return clamp(x,a,b);}
+function sizeOf(sp,r){const [a,t,b]=sp.w,df=r?clamp(.75+(r.dist||60)/200*.7,.75,1.5):1;let x=Math.exp(Math.log(t*df)+(Math.random()+Math.random()+Math.random()-1.5)*.55);if(Math.random()<.04)x*=1.6;return clamp(x,a,b);}
 function lenOf(sp,w){const [a,b]=sp.lw;return Math.round(Math.pow(w*1000/a,1/b)*(sp.crab?.1:1)*10)/10||Math.round(Math.pow(w*1000/a,1/b));}
 function record(rel){const c=st.catchShow,r=st.rods[st.sel];{const gain=Math.round((10+c.w*20+(rel?10:0))*100)/100;earn('catch',gain,rel?'pesce rilasciato (+10 € di premio)':c.rec?'cattura da record':'cattura');}const e={n:c.sp.n,w:Math.round(c.w*100)/100,l:c.l,t:st.gt,rel,bait:c.bait||''};st.bag.push(e);LSS('bag',st.bag.slice(-200));
   if(c.rec){st.best[c.sp.n]=e.w;LSS('best',st.best);}st.total.n++;st.total.kg+=e.w;st.total.pts+=Math.round(e.w*100)+(rel?50:0)+(c.sp.ab<.1?300:0);LSS('total',st.total);}
