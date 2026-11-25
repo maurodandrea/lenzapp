@@ -2315,9 +2315,10 @@ function updEnv(w,t,dt){const d=gameDate(),s0=sunPos(d,SPOT.lat,SPOT.lon),sun=su
     f.material.opacity=clamp(.55+wh*.6,.55,1)*u.str*Math.pow(Math.sin(cyc*Math.PI),.6)*(NIGHT>.6?.4:1);f.material.map.offset.x+=dt*u.w[1]*.004;});
   const sw=(Math.sin(t*2*Math.PI/per)*.5+.5);swash.position.set(0,.02+sw*.03,-.4-wh*.5+sw*(1.2+wh*2.2));swash.material.opacity=(.25+wh*.3)*(1-sw*.5)*(NIGHT>.6?.35:1);
   // pioggia
-  const rainOn=w.pr>.05||(w.code>=51&&w.code<=99);rain.material.opacity=rainOn?clamp(.25+w.pr*.15,0,.6):0;if(rainOn){rain.position.copy(camera.position);rain.position.y=0;const a=rain.geometry.attributes.position;for(let i=0;i<a.count;i+=2){let y=a.getY(i)-dt*14;if(y<0)y+=25;a.setY(i,y);a.setY(i+1,y-.45);}a.needsUpdate=true;}
+  // piove solo se c'è davvero precipitazione; con 'possibile pioggia' o rovesci va e viene, e l'intensità segue i mm/h
+  const shw=(w.code>=80&&w.code<=82)||(w.code>=51&&w.code<=57)||w.pr<.6,cyc=Math.sin(st.gt/9e5)+Math.sin(st.gt/2.3e6+1.7)*.6,rainOn=w.pr>=.15&&(!shw||cyc>-.1),ri=clamp(w.pr/4,.08,1);rain.material.opacity=rainOn?clamp(.12+ri*.45,0,.6):0;rain.geometry.setDrawRange(0,Math.floor(rain.geometry.attributes.position.count*(rainOn?.15+ri*.85:0)/2)*2);if(rainOn){rain.position.copy(camera.position);rain.position.y=0;const a=rain.geometry.attributes.position;for(let i=0;i<a.count;i+=2){let y=a.getY(i)-dt*14;if(y<0)y+=25;a.setY(i,y);a.setY(i+1,y-.45);}a.needsUpdate=true;}
   // temporale: saette sul mare, lampo e tuono (che arriva dopo, secondo la distanza)
-  if(w.code>=95&&!st.bolt&&Math.random()<dt*.07)strikeBolt();
+  if(w.code>=95&&w.pr>=1.5&&rainOn&&!st.bolt&&Math.random()<dt*.015*clamp(w.pr/5,.3,1))strikeBolt();
   if(st.bolt){const b=st.bolt;b.t+=dt;const fl=b.t<.08||(b.t>.16&&b.t<.24)||(b.t>.34&&b.t<.4)?1:0;b.obj.visible=fl>0;st.lightning=Math.max(st.lightning,fl*b.k);if(b.t>.55){scene.remove(b.obj);b.obj.traverse(o=>{o.geometry?.dispose();});st.bolt=null;}}
   st.lightning=Math.max(0,st.lightning-dt*4);if(st.lightning>0){hemi.intensity+=st.lightning*2.2;if(overcast)overcast.material.color.offsetHSL(0,0,st.lightning*.35);}
   {const fl=document.getElementById('gflash');if(fl)fl.style.opacity=(st.lightning*.45).toFixed(2);}
