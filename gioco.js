@@ -1343,7 +1343,7 @@ function earn(kind,v,why){const e=earnDay(),max=kind==='fish'?EARN.fishMax:1e9,a
 function moneyPop(v,why){if(!root)return;const d=document.createElement('div');d.className='gmoney';d.textContent='💶 +'+eur(v)+(why?' · '+why:'');root.appendChild(d);setTimeout(()=>d.remove(),2600);}
 function appCredit(){try{const v=+JSON.parse(localStorage.getItem('lenza.gioco.pend')||'0');if(v>0){localStorage.setItem('lenza.gioco.pend','0');st.money+=v;gearSave();setTimeout(()=>moneyPop(v,'uso dell\'app'),1500);}}catch(e){}}
 function earnTick(dt){if(document.hidden||!['wait','atrod','fight','cast','bait','rig','busy','catch','snag','talk','rtalk','pilot','gear','bag'].includes(st.phase))return;st.fishSec=(st.fishSec||0)+dt;if(st.fishSec>=60){st.fishSec-=60;earn('fish',EARN.fish,'un minuto di pesca');}}
-const gearSave=()=>{{const g=st.gear;for(const t of ['grip','ogiva'])for(const w in g[t]||{})if(g[t][w]>(g.leads?.[w]||0))g[t][w]=g.leads?.[w]||0;}LSS('gear',st.gear);LSS('money',Math.round(st.money*100)/100);LSS('gearT',Date.now());cloudGameSave();};
+const gearSave=()=>{{const g=st.gear;if(st.rods?.length)g.rigs=st.rods.map(r=>({lead:r.lead,hook:r.hook,broken:!!r.broken}));for(const t of ['grip','ogiva'])for(const w in g[t]||{})if(g[t][w]>(g.leads?.[w]||0))g[t][w]=g.leads?.[w]||0;}LSS('gear',st.gear);LSS('money',Math.round(st.money*100)/100);LSS('gearT',Date.now());cloudGameSave();};
 // salvataggio nel profilo dell'utente (Firestore: users/{uid}/game/state): soldi virtuali, attrezzatura, totali e record
 const gameCloud=()=>{const C=window.CLOUD;return C&&C.user&&C.db&&C.ff?C:null;};let CGT=null,CGL=null;
 function cloudGameSave(){if(!gameCloud()||CGL!==gameCloud().user.uid)return;clearTimeout(CGT);CGT=setTimeout(()=>{const C=gameCloud();if(!C)return;
@@ -1514,7 +1514,7 @@ function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>r
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
 // ogni canna montata prende dallo zaino un piombo, un amo, una girella, un moschettone e un terminale
-function rigFromBag(){const g=st.gear;if(st.noRig){st.noRig=false;return;}for(const r of st.rods){const lw=[r.lead,80,100,125,150,175,200].find(w=>g.leads[w]>0),hk=[hookNum(r.hook),0,2,4,6,8].find(h=>g.hooks[h]>0);
+function rigFromBag(){const g=st.gear;if(st.noRig){st.noRig=false;return;}g.rigs=g.rigs||[];for(const r of st.rods){const old=g.rigs[r.i];if(old&&!old.broken&&old.lead&&old.hook!=null){r.lead=old.lead;r.hook=old.hook;continue;}const lw=[r.lead,80,100,125,150,175,200].find(w=>g.leads[w]>0),hk=[hookNum(r.hook),0,2,4,6,8].find(h=>g.hooks[h]>0);
   if(lw==null||hk==null||!(g.swivels>0)||!(g.snaps>0)||!termAny()||!(g.leader>0)||!(beadsN()>0)||!g.bought?.scis){r.broken=true;continue;}r.lead=lw;r.hook=hk;g.leads[lw]--;g.hooks[hk]--;g.swivels--;g.snaps--;termTake(r);g.leader--;g.beadsN--;}gearSave();}
 // piano di montaggio: per ogni canna canna, mulinello, lenza madre, piombo, terminale e amo, senza usare più pezzi di quelli che hai
 function planUsed(key,val,except){return (st.plan||[]).reduce((a,q,i)=>a+(i!==except&&q&&q[key]===val?1:0),0);}
