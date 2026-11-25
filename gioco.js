@@ -858,7 +858,7 @@ function mapPhys(dt){const c=MP.car;if(MP.parking){const P=MP.parking;P.t+=dt;c.
   const sp=document.getElementById('gkmh');if(sp)sp.textContent=Math.round(c.v/1.3*130)+' km/h';}
 function mapUI(){ui.innerHTML=`<div class="gpanel slim"><div class="grow" style="justify-content:space-between"><b style="font-size:16px">🚗 Lungo la costa del Lazio</b><b id="gkmh">0 km/h</b></div>
   <div id="gpark" class="gs" style="min-height:22px"></div>
-  <div class="grow"><button class="gb" style="flex:.7;margin:0" onclick="GAME.turnSig(-1)">⬅</button><button class="gb" id="gbrk" style="flex:1;background:#4a1f26">🛑 Frena</button><button class="gb big" id="gacc" style="flex:2">⬆ Accelera</button><button class="gb" style="flex:.7;margin:0" onclick="GAME.turnSig(1)">➡</button></div>
+  <div class="grow"><button class="gb" style="flex:.7;margin:0" onclick="GAME.turnSig(-1)" title="Freccia a sinistra">⬅️</button><button class="gb" id="gbrk" style="flex:1;background:#4a1f26">🛑 Frena</button><button class="gb big" id="gacc" style="flex:2">⬆ Accelera</button><button class="gb" style="flex:.7;margin:0" onclick="GAME.turnSig(1)" title="Freccia a destra">➡️</button></div>
   <div class="grow" style="justify-content:center"><button class="gc" onclick="GAME.flip()">🔄 Inverti senso</button><button class="gc" onclick="GAME.spotList()">📍 Scegli lo spot</button>${M3.on?'<button class="gc" onclick="GAME.mapView()">🎯 Visuale</button>':''}</div>${M3.on?'<div style="font-size:10.5px;opacity:.55;text-align:center;margin-top:4px">Trascina per girare la visuale, due dita per lo zoom · Immagini © Esri, Maxar · Strade © OpenStreetMap (OSRM)</div>':''}</div>`;
   const hold=(id,k)=>{const b=document.getElementById(id);const on=e=>{e.preventDefault();ac();MP.car[k]=1;},off=()=>{MP.car[k]=0;};b.onpointerdown=on;b.onpointerup=off;b.onpointerleave=off;b.onpointercancel=off;};hold('gacc','acc');hold('gbrk','brk');mapPark();}
 function mapPark(){const e=document.getElementById('gpark');if(!e)return;const i=MP.near;
@@ -1108,13 +1108,23 @@ function exitUI(nx,near){const e=document.getElementById('gpark');if(!e)return;
   else e.innerHTML=`🛣️ Prossima uscita: <b>${n}</b> tra <b id="gexd"></b>`;}
 G.appDir=d=>{const c=MP.car;if(!c.app)return;c.app.dir=d;c.app.chosen=true;MP.key='';click();};G.mapView=()=>{M3.zoom=1;M3.orb=0;M3.tilt=1;};G.takeExit=i=>{MP.arm=i;MP.key='';click();};
 // frecce: vicino a un'uscita si entra nello spot
-G.turnSig=()=>{if(st.phase!=='map'||!MP.car)return;const c=MP.car;if(M3.on){if(c.ramp||c.app||MP.arm!=null)return;const nx=MP.nx;if(nx==null||nx<0)return;const d=(MP.spots[nx].ramps[c.dir].rs-c.s)*c.dir;if(d>0&&d<3)G.takeExit(nx);else{const e=document.getElementById('gpark');if(e)e.innerHTML=`Nessuna uscita vicina: la prossima è tra ${d.toFixed(1).replace('.',',')} km`;MP.key='x';}}
-  else if(MP.near>=0){if(c.v>.3)c.v=.29;G.park(MP.near);}};
-if(!window.__lzArrows){window.__lzArrows=1;addEventListener('keydown',e=>{if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&window.GAME?.turnSig)GAME.turnSig();});}G._mp=()=>({MP,M3});
+G.turnSig=side=>{if(st.phase!=='map'||!MP.car||!side)return;const c=MP.car,msg=t=>{const e=document.getElementById('gpark');if(e)e.innerHTML=t;MP.key='x';};click();
+  if(!M3.on){if(MP.near>=0){if(c.v>.3)c.v=.29;G.park(MP.near);}return;}
+  if(c.ramp)return;
+  // incrocio con la litoranea: la freccia sceglie dove girare
+  if(c.app){const A=c.app,d=A.len-A.u;if(A.chosen||d>2.5){msg('Nessun incrocio vicino: prosegui verso la costa.');return;}if(A.left==null){const P=A.pts,n=P.length,hx=P[n-1][0]-P[Math.max(0,n-4)][0],hy=P[n-1][1]-P[Math.max(0,n-4)][1],t=roadAt(c.s);A.left=hx*t.ty-hy*t.tx>0?1:-1;}G.appDir(side<0?A.left:-A.left);return;}
+  // uscita per lo spot: è sempre dal lato del mare
+  const exitSide=c.dir===1?1:-1,nx=MP.nx;if(nx==null||nx<0)return;const d=(MP.spots[nx].ramps[c.dir].rs-c.s)*c.dir;
+  if(MP.arm!=null){if(side!==exitSide){MP.arm=null;MP.key='';}return;}
+  if(d>3){msg(`Nessuna uscita vicina: la prossima (<b>${MP.spots[nx].sp.name}</b>) è tra ${d.toFixed(1).replace('.',',')} km`);return;}
+  if(side!==exitSide){msg(`L'uscita per <b>${MP.spots[nx].sp.name}</b> è a ${exitSide>0?'destra ➡️':'sinistra ⬅️'}`);return;}
+  G.takeExit(nx);};
+if(!window.__lzArrows){window.__lzArrows=1;addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){window.GAME?.turnSig?.(e.key==='ArrowLeft'?-1:1);}});}
+G._mp=()=>({MP,M3});
 function draw3D(dt){const c=MP.car,P=carPose(),car=M3.car;M3.t+=dt;const t=M3.t;
   const yaw=Math.atan2(P.hx,-P.hy);if(M3.yaw==null)M3.yaw=yaw;let dy=yaw-M3.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));M3.yaw+=dy*Math.min(1,dt*6);
   car.position.set(P.x,0,-P.y);car.rotation.y=M3.yaw;car.userData.brake.color.set(c.brk?0xff2a2a:0x661111);
-  const bl=(MP.arm!=null||c.ramp&&!c.ramp.done)&&(t*2.2%1)<.5,side=(c.app?1:c.ramp?c.ramp.r===MP.spots[c.ramp.i].ramps[1]:c.dir===1)?1:0;car.userData.blink.forEach((pr,k)=>pr.forEach(b=>b.visible=bl&&k===(side?0:1)));
+  const bl=(MP.arm!=null||c.ramp&&!c.ramp.done||c.app?.chosen)&&(t*2.2%1)<.5,side=(c.app?(c.app.chosen?c.app.dir===-c.app.left:1):c.ramp?c.ramp.r===MP.spots[c.ramp.i].ramps[1]:c.dir===1)?1:0;car.userData.blink.forEach((pr,k)=>pr.forEach(b=>b.visible=bl&&k===(side?0:1)));
   // telecamera dall'alto, un po' dietro
   const fx=Math.sin(M3.yaw),fz=Math.cos(M3.yaw),back=.22+Math.min(c.v,8)*.1,hgt=.52+Math.min(c.v,8)*.16,cam=M3.cam,sn2=c.ramp?MP.spots[c.ramp.i].n:seaN(roadAt(c.app?MP.app.s??c.s:c.s));if(!M3.sn)M3.sn=[...sn2];M3.sn[0]=lerp(M3.sn[0],sn2[0],Math.min(1,dt*2));M3.sn[1]=lerp(M3.sn[1],sn2[1],Math.min(1,dt*2));const nx=M3.sn[0],nz=-M3.sn[1],Z=M3.zoom||1,TL=M3.tilt||1,co=Math.cos(M3.orb||0),si=Math.sin(M3.orb||0),ox=(-fx*back+nx*.08)*Z/TL,oz=(-fz*back+nz*.08)*Z/TL,tp=new T.Vector3(P.x+ox*co-oz*si,hgt*Z*TL,-P.y+ox*si+oz*co);
   if(!M3.cp)M3.cp=tp.clone();M3.cp.lerp(tp,Math.min(1,dt*3));cam.position.copy(M3.cp);cam.lookAt(P.x+fx*.05+nx*.06,0,-P.y+fz*.05+nz*.06);car.scale.setScalar((1+Math.min(c.v,8)*.28)*Math.max(1,Z*.7));
