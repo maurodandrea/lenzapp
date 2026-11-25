@@ -157,7 +157,7 @@ async function loadThree(){if(window.THREE&&THREE.Water&&THREE.Sky)return THREE;
 // personaggi realistici (Mixamo): modelli glb e animazioni condivise, caricati una volta sola
 let CHARS=null;
 function loadChars(){if(CHARS)return CHARS;const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';CHARS=(async()=>{await loadScript(B+'examples/js/loaders/GLTFLoader.js');await loadScript(B+'examples/js/utils/SkeletonUtils.js');await loadScript(B+'examples/js/libs/meshopt_decoder.js');
-  const gl=u=>new Promise((res,rej)=>{const L=new T.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);L.load(GBASE+u,res,undefined,rej);});const NAMES=['remy','boss','ch01','ch12','ch13','ch22','ch33','ch38'];const [A,...G]=await Promise.all([fetch(GBASE+'chars/anims.json').then(r=>r.json()),...NAMES.map(n=>gl('chars/'+n+'.glb').catch(()=>null))]);const models={};NAMES.forEach((n,i)=>{if(G[i]){const sc=G[i].scene;sc.traverse(o=>{if(o.isBone)o.name=o.name.replace(/^mixamorig\d*/,'mixamorig');});models[n]=sc;}});
+  const gl=u=>new Promise((res,rej)=>{const L=new T.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);L.load(GBASE+u,res,undefined,rej);});const NAMES=['remy','ch01','ch12','ch13','ch22','ch33','ch38','ch41','ch37','ch31','ch08','ch07','ch06'];const [A,...G]=await Promise.all([fetch(GBASE+'chars/anims.json').then(r=>r.json()),...NAMES.map(n=>gl('chars/'+n+'.glb').catch(()=>null))]);const models={};NAMES.forEach((n,i)=>{if(G[i]){const sc=G[i].scene;sc.traverse(o=>{if(o.isBone)o.name=o.name.replace(/^mixamorig\d*/,'mixamorig');});models[n]=sc;}});
   const clips={};for(const k in A){const c=T.AnimationClip.parse(A[k]);for(const t of c.tracks)if(/Hips\.position$/.test(t.name)){const v=t.values,x0=v[0],z0=v[2];for(let i=0;i<v.length;i+=3){v[i]=x0;v[i+2]=z0;}}clips[k]=c;}
   // l'altezza dei fianchi nelle animazioni va riportata alla scala di ogni personaggio
   const per={};for(const [nm,sc] of Object.entries(models)){let hy=null;sc.traverse(o=>{if(o.isBone&&o.name==='mixamorigHips'&&hy==null)hy=o.position.y;});per[nm]={};
@@ -547,7 +547,7 @@ function buildNpcs(){const defs=[
   const tw=TOWNS[(SPOT.id||'').replace(/^g_/,'')]||TOWNS.castelporziano;
   defs.forEach((d,k)=>d.per={...PERS[k],town:tw[k%tw.length]});defs.length=Math.min(defs.length,SPOT.npcs||4);
   for(const d of defs){const a={per:d.per,bag:Array.from({length:Math.floor(rnd(0,3))},()=>npcFish(d.per.bait)),obj:makeAngler(d.col),pose:JSON.parse(JSON.stringify(POSES.sit)),target:'sit',walk:0,moving:false,speed:1.2,pos:new T.Vector3(d.x,12*.035,12),rotY:rnd(-.2,.2),holding:-1,reelSpin:0,crank:0,faceTo:null,
-      home:{x:d.x,z:12},rods:[],t:rnd(5,30),st:'sit'};scene.add(a.obj);
+      home:{x:d.x,z:12},rods:[],t:rnd(5,30),st:'sit'};scene.add(a.obj);{const k=NPCS.length;loadChars().then(C=>{if(!C||!scene||!a.obj.parent)return;const g=makeChar(C,FISHN[(k+Math.floor(Math.random()*3))%FISHN.length],rnd(1.68,1.84));scene.add(g);a.obj.traverse(o=>{if(o.isMesh&&!o.userData.keep)o.visible=false;});a.real=g;});}
     const ch=new T.Mesh(new T.BoxGeometry(.42,.03,.36),new T.MeshStandardMaterial({color:'#4b5a36'}));ch.position.set(d.x,12*.035+.56,12.05);scene.add(ch);
     for(const sx of[-1,1])for(const sz of[-1,1]){const l=new T.Mesh(new T.CylinderGeometry(.014,.014,.58,6),MAT.chairF);l.position.set(d.x+sx*.2,12*.035+.28,12.05+sz*.16);scene.add(l);}
     const bk=new T.Mesh(new T.BoxGeometry(.4,.32,.02),ch.material);bk.position.set(d.x,12*.035+.78,12.24);bk.rotation.x=-.2;scene.add(bk);
@@ -587,6 +587,7 @@ function updNpcs(dt,t){const w=wxAt(st.gt);
     if(a.st==='chatting'&&a.other){a.faceTo=Math.atan2(-(a.other.pos.x-a.pos.x),-(a.other.pos.z-a.pos.z));a.chatT-=dt;if(a.chatT<=0){a.chatT=rnd(3.5,6);const who=Math.random()<.5?a:a.other;if(!who.bub)say(who,NPC_LINES.chat(),3.2);}}
     else if(!a.moving&&a.st!=='reel'&&AN.pos.distanceTo(a.pos)<5)a.faceTo=Math.atan2(-(AN.pos.x-a.pos.x),-(AN.pos.z-a.pos.z));else if(!a.moving&&a.faceTo!==0&&a.st!=='reel'&&AN.pos.distanceTo(a.pos)>=5)a.faceTo=0;
     moveActor(a,dt);lerpPose(dt,6,a);applyPose(t,a);
+    if(a.real){const g=a.real;g.position.copy(a.pos);g.rotation.y=a.rotY+Math.PI;g.userData.play(a.moving?'walk':a.target==='sit'?'sit':(a.holding>=0||a.target==='reel')?'fishidle':'idle',a.moving?a.speed/1.3:1);g.userData.mixer.update(dt);}
     // mangia: la mano porta il panino alla bocca
     if(!a.sand){a.sand=new T.Mesh(new T.BoxGeometry(.09,.04,.06),new T.MeshStandardMaterial({color:'#d9b27a'}));a.sand.position.set(0,-.05,-.03);a.obj.userData.J.rHand.add(a.sand);}a.sand.visible=a.eating>0;
     if(a.eating>0&&a.target==='sit'){const J=a.obj.userData.J,k=Math.max(0,Math.sin(t*1.3+ai));J.rSh.rotation.x=.35+k*1.25;J.rSh.rotation.z=-.35*k;J.rEl.rotation.x=.9+k*1.2;J.head.rotation.x=-.1+k*.1;}
@@ -743,7 +744,7 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
   return g;}
 function azPos(lat,lon){const dy=(lat-SPOT.lat)*110570,dx=(lon-SPOT.lon)*111320*Math.cos(SPOT.lat*R),d=Math.hypot(dx,dy),az=(Math.atan2(dx,dy)/R+360)%360,a=(az-FACE)*R;return {x:Math.sin(a)*d,z:-Math.cos(a)*d,d};}
 // spiaggia vera: conchiglie, legni e tronchetti, alghe sulla linea del bagnasciuga, pozzanghere e buche, chioschi; di giorno gente che passeggia, corre o porta a spasso il cane
-let WALKERS=[];
+let WALKERS=[];const WALKN=['ch13','ch22','ch33','ch38','ch12','remy'],FISHN=['ch41','ch37','ch31','ch08','ch07','ch06','ch01'];
 function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMaterial({color:c,roughness:.9,...o}),mtx=new T.Matrix4(),q=new T.Quaternion(),sv=new T.Vector3(),pv=new T.Vector3(),eu=new T.Euler();
   const inst=(geo,mat,n,f)=>{const im=new T.InstancedMesh(geo,mat,n);for(let i=0;i<n;i++){const [x,y,z,sx,sy,sz,rx,ry,rz]=f(i);pv.set(x,y,z);eu.set(rx,ry,rz);q.setFromEuler(eu);sv.set(sx,sy,sz);mtx.compose(pv,q,sv);im.setMatrixAt(i,mtx);}im.receiveShadow=true;scene.add(im);return im;};
   // conchiglie
@@ -773,10 +774,10 @@ function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMateria
       for(const ex of[-1,1]){const ear=new T.Mesh(new T.BoxGeometry(.04,.09,.05),c);ear.position.set(ex*.06,.63,-.3);d.add(ear);}d.userData.legs=[];for(const [lx,lz] of [[-.06,-.2],[.06,-.2],[-.06,.2],[.06,.2]]){const lg=new T.Group();lg.position.set(lx,.3,lz);const m=new T.Mesh(new T.BoxGeometry(.05,.3,.05),c);m.position.y=-.15;lg.add(m);d.add(lg);d.userData.legs.push(lg);}
       const tl=new T.Mesh(new T.BoxGeometry(.03,.03,.22),c);tl.position.set(0,.5,.33);tl.rotation.x=-.7;d.add(tl);scene.add(d);a.dog=d;}
     WALKERS.push(a);}
-  loadChars().then(C=>{if(!C||!scene)return;WALKERS.forEach((a,i)=>{if(a.still)return;a.wait=i<2?0:rnd(20,160);const g=makeChar(C,C.names[Math.floor(Math.random()*C.names.length)],rnd(1.62,1.86));scene.add(g);a.real=g;a.obj.visible=false;a.obj.position.y=-50;g.userData.play(a.speed>3?'run':'walk',a.speed>3?.9:a.speed/1.3);});
+  loadChars().then(C=>{if(!C||!scene)return;WALKERS.forEach((a,i)=>{if(a.still)return;a.wait=i<2?0:rnd(20,160);const g=makeChar(C,WALKN[Math.floor(Math.random()*WALKN.length)],rnd(1.62,1.86));scene.add(g);a.real=g;a.obj.visible=false;a.obj.position.y=-50;g.userData.play(a.speed>3?'run':'walk',a.speed>3?.9:a.speed/1.3);});
     const ks=[...scene.children].filter(o=>o.userData?.kiosk);ks.forEach((k,i)=>{const g=makeChar(C,['remy','ch01','ch12'][i%3],1.76);g.position.set(k.position.x+1.2,k.position.y+.48,k.position.z-2.6);g.rotation.y=Math.PI;g.userData.play(i%2?'idle':'sit');if(!(i%2))g.position.y-=.05;scene.add(g);WALKERS.push({still:g});});});}
 function respawnWalker(a){a.dir=Math.random()<.5?1:-1;a.pos.x=-a.dir*200;const run=Math.random()<.3;a.speed=run?rnd(3,3.8):rnd(1,1.5);a.z0=run?rnd(.3,1.4):rnd(1.4,5.5);a.pos.z=a.z0;
-  CHARS?.then(C=>{if(!C||!scene)return;if(a.real)scene.remove(a.real);const g=makeChar(C,C.names[Math.floor(Math.random()*C.names.length)],rnd(1.62,1.86));scene.add(g);a.real=g;g.userData.play(run?'run':'walk',run?.9:a.speed/1.3);});}
+  CHARS?.then(C=>{if(!C||!scene)return;if(a.real)scene.remove(a.real);const g=makeChar(C,WALKN[Math.floor(Math.random()*WALKN.length)],rnd(1.62,1.86));scene.add(g);a.real=g;g.userData.play(run?'run':'walk',run?.9:a.speed/1.3);});}
 function updBeachLife(dt,t){const day=night()<.45;for(const a of WALKERS){if(a.still){a.still.visible=day;a.still.userData.mixer.update(dt);continue;}if(!a.real)a.obj.visible=day;else a.real.visible=day;if(a.dog)a.dog.visible=day;if(!day)continue;
     if(a.wait>0){a.wait-=dt;if(a.real)a.real.visible=false;if(a.dog)a.dog.visible=false;if(a.wait<=0)respawnWalker(a);continue;}
     const sp=a.speed;a.pos.x+=a.dir*sp*dt;if(Math.abs(a.pos.x)>200){a.wait=rnd(40,180);continue;}a.pos.y=Math.max(sandY(a.z0),0)+(a.z0<0?0:0);a.pos.z=a.z0;a.walk+=dt*sp*5.2;a.moving=true;a.rotY=lerpAng(a.rotY,a.dir>0?-Math.PI/2:Math.PI/2,1-Math.exp(-6*dt));
