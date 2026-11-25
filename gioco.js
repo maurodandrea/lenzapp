@@ -1481,6 +1481,22 @@ async function openShop(){st.phase='shop';stop();root=null;mountShell();try{T=aw
     renderer.render(scene,camera);};lp();}
 function mountShell(){root=document.createElement('div');root.id='gamebox';root.innerHTML=`<div id="g3"></div><div id="ghud"></div><div id="gui"></div><button id="gx" aria-label="Esci">✕</button><button id="gau" aria-label="Audio">${AU.on?'🔊':'🔇'}</button>`;document.body.appendChild(root);document.body.classList.add('gaming');ui=root.querySelector('#gui');hud=root.querySelector('#ghud');root.querySelector('#gx').onclick=()=>G.shopExit();root.querySelector('#gau').onclick=e=>{AU.on=!AU.on;LSS('audio',AU.on);e.target.textContent=AU.on?'🔊':'🔇';};}
 const cartTot=()=>SH.cart.reduce((a,c)=>a+c.price,0);
+// vendita dell'usato: canne, mulinelli e attrezzatura al 30% del prezzo d'acquisto
+const SELL_FLAGS=['tripod','oxy','boat','drone','box','bucket','cooler','bagTackle','bagRod','bagBack','cart','windbreak','lampB','lampF','lamp1000','lampRed','lanternLED','boots','scis','slam','needle','elastic'];
+function sellList(){const g=st.gear,b=g.bought||{},L=[],pr=it=>it?Math.round(it.p(fullO(it,{}))*.3*100)/100:0;
+  for(const id of g.rods)L.push({k:'rod',id,n:rodN(id),c:g.rodCnt[id]||1,v:pr(ITEM[id])});
+  for(const id of g.reels){const it=Object.values(ITEM).find(x=>x.reel===id);L.push({k:'reel',id,n:'Mulinello '+reelN(id),c:g.reelCnt[id]||1,v:pr(it)||5});}
+  for(const id of g.chairs||[])L.push({k:'chair',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
+  for(const id of g.shelters||[])L.push({k:'shelter',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
+  for(const id of SELL_FLAGS){const has=id==='needle'?g.needle:id==='elastic'?g.elastic:b[id];if(has&&ITEM[id])L.push({k:'flag',id,n:ITEM[id].n,c:1,v:pr(ITEM[id])});}
+  return L.filter(x=>x.v>0);}
+function sellHtml(){const L=sellList();return `<div class="gs" style="margin-top:10px"><b>💰 Vendi usato</b> · ti diamo il 30% del prezzo d'acquisto, accreditato sul conto</div><div class="glist">${L.map((x,i)=>`<div style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span>${escH(x.n)}${x.c>1?' ×'+x.c:''}</span><button class="gc" onclick="GAME.sellUsed(${i})">Vendi ${eur(x.v)}</button></div>`).join('')||'<div class="gs">Niente da vendere.</div>'}</div>`;}
+G.sellUsed=i=>{const x=sellList()[i];if(!x)return;const g=st.gear,b=g.bought=g.bought||{};
+  if(x.k==='rod')loseGear('rod',x.id);else if(x.k==='reel')loseGear('reel',x.id);
+  else if(x.k==='chair'){g.chairs=g.chairs.filter(c=>c!==x.id);if(g.chair===x.id)g.chair='';b[x.id]=false;}
+  else if(x.k==='shelter'){g.shelters=g.shelters.filter(c=>c!==x.id);if(g.shelter===x.id)g.shelter='';b[x.id]=false;}
+  else{b[x.id]=false;if(x.id==='needle')g.needle=false;if(x.id==='elastic')g.elastic=false;if(x.id==='tripod'&&g.spikeT==='tripod')g.spikeT='alu';if(['lampB','lampF','lamp1000'].includes(x.id))g.torch=b.lamp1000?3:b.lampF?2:b.lampB?1:0;if(x.id==='lampRed')g.red=false;if(x.id==='boots')g.boots=false;}
+  st.money+=x.v;gearSave();moneyPop(x.v,'venduto usato: '+x.n);click();shopUI();};
 function shopUI(){const c=CAT.find(x=>x.k===SH.cat),tot=cartTot();hud.innerHTML=`<div>🛒 Pesca Sport</div><div>💶 <b>${eur(st.money)}</b> virtuali</div>${SH.cart.length?`<div>🧺 ${SH.cart.length} · ${eur(tot)}</div>`:''}`;
   if(SH.cat==='zaino'){const g=st.gear;ui.innerHTML=`<div class="gpanel"><div class="grow" style="justify-content:space-between"><b>🎒 Il tuo zaino</b>${btn('↩ Negozio',"shopCat('canne')")}</div>
     <div class="gs">Canne: <b>${g.rods.map(id=>rdot(id)+rodN(id)+(g.rodCnt[id]>1?' ×'+g.rodCnt[id]:'')).join(', ')||'nessuna'}</b></div>
@@ -1488,7 +1504,7 @@ function shopUI(){const c=CAT.find(x=>x.k===SH.cat),tot=cartTot();hud.innerHTML=
     <div class="gs">Esche: ${BAITS.filter(b=>!b.lim).map(b=>`${b.n} ${g.baits[b.k]||0}`).join(' · ')}</div>
     <div class="gs">Ami: ${[0,2,4,6,8].map(m=>`n.${m}: ${g.hooks[m]||0}`).join(' · ')}</div>
     <div class="gs">Piombi: ${[80,100,125,150,175,200].map(w=>`${w} g: ${g.leads[w]||0}${g.grip[w]?' ('+g.grip[w]+' aerodinamico)':''}`).join(' · ')}</div>
-    <div class="gs">Starlight ${g.starlight} · girelle ${g.swivels} · moschettoni ${g.snaps} · ago ${g.needle?'sì':'no'} · elastico ${g.elastic?'sì':'no'} · frontale ${['nessuna','100 lm','500 lm','1000 lm'][g.torch||0]}${Object.keys(g.own).length?' · '+Object.keys(g.own).map(k=>ITEM[k]?.n.split(' ')[0]).join(', '):''}</div></div>`;return;}
+    <div class="gs">Starlight ${g.starlight} · girelle ${g.swivels} · moschettoni ${g.snaps} · ago ${g.needle?'sì':'no'} · elastico ${g.elastic?'sì':'no'} · frontale ${['nessuna','100 lm','500 lm','1000 lm'][g.torch||0]}${Object.keys(g.own).length?' · '+Object.keys(g.own).map(k=>ITEM[k]?.n.split(' ')[0]).join(', '):''}</div>${sellHtml()}</div>`;return;}
   const items=SH.cat==='cassa'?null:c.items.slice().sort((a,b)=>a.p(fullO(a,{}))-b.p(fullO(b,{})));// dal più economico
   ui.innerHTML=`<div class="gpanel" style="max-height:56vh"><div class="grow" style="flex-wrap:nowrap;overflow-x:auto;gap:5px;scrollbar-width:none">${CAT.map(x=>`<button class="gc ${SH.cat===x.k?'on':''}" style="flex:none" onclick="GAME.shopCat('${x.k}')">${x.n}</button>`).join('')}<button class="gc" style="flex:none" onclick="GAME.shopCat('zaino')">🎒 Zaino</button></div>
     ${items?items.map(it=>{const o=SH.sel[it.id]||(SH.sel[it.id]={});const G2=st.gear,own=(it.chair&&(G2.chairs||[]).includes(it.id))||(it.outfit&&(G2.outfits||[]).includes(it.outfit))||(it.hat&&(G2.hats||[]).includes(it.hat))||(it.shelter&&(G2.shelters||[]).includes(it.id))||(['lampB','lampF','lamp1000','lampRed','lanternLED','boots','bagTackle','bagRod','bagBack','cart','windbreak','elastic','box','bucket','scis','slam','cooler','tripod','oxy','boat','drone','needle'].includes(it.id)&&G2.bought?.[it.id]),nOwn=it.rod?G2.rodCnt?.[it.id]||0:it.reel?G2.reelCnt?.[it.reel]||0:it.id==='reelT'?G2.reelCnt?.rT||0:0;return `<div class="gitem"><div style="flex:1;min-width:0"><b>${it.rod?rdot(it.id):''}${it.n}${it.rod&&ROD_MAXG[it.id]?` · max ${ROD_MAXG[it.id]} g`:''}</b><div class="gs" style="margin:2px 0">${it.d}${it.rod&&ROD_COL[it.id]?` Colore ${ROD_COL[it.id][2]}.`:''}${it.pk?` · confezione da ${it.pk} innesci (ne hai ${st.gear.baits[it.bait]||0})`:''}${nOwn?` · ne hai ${nOwn}`:''}${['spikePVC','spike','spikeLong','tripod'].includes(it.id)?` · posti canna: ${G2.spikes||0}`:''}</div>
