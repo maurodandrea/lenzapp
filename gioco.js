@@ -1570,7 +1570,9 @@ G.sellUsed=i=>{const x=sellList()[i];if(!x)return;const g=st.gear,b=g.bought=g.b
   else if(x.k==='shelter'){g.shelters=g.shelters.filter(c=>c!==x.id);if(g.shelter===x.id)g.shelter='';b[x.id]=false;}
   else{b[x.id]=false;if(x.id==='needle')g.needle=false;if(x.id==='elastic')g.elastic=false;if(x.id==='tripod'&&g.spikeT==='tripod')g.spikeT='alu';if(['lampB','lampF','lamp1000'].includes(x.id))g.torch=b.lamp1000?3:b.lampF?2:b.lampB?1:0;if(x.id==='lampRed')g.red=false;if(x.id==='boots')g.boots=false;}
   if(g.own)delete g.own[x.id];st.money+=x.v;gearSave();moneyPop(x.v,'venduto usato: '+x.n);click();shopUI();};
-function shopUI(){const c=CAT.find(x=>x.k===SH.cat),tot=cartTot();hud.innerHTML=`<div>🛒 Pesca Sport</div><div>💶 <b>${eur(st.money)}</b> virtuali</div>${SH.cart.length?`<div>🧺 ${SH.cart.length} · ${eur(tot)}</div>`:''}`;
+// ridisegnando le liste resta dove eri (non torna in cima)
+function shopUI(){const el=ui?.querySelector('.gpanel'),t=el?el.scrollTop:0,same=SH.lastCat===SH.cat;shopUI0();SH.lastCat=SH.cat;if(same&&t){const n=ui.querySelector('.gpanel');if(n)n.scrollTop=t;}}
+function shopUI0(){const c=CAT.find(x=>x.k===SH.cat),tot=cartTot();hud.innerHTML=`<div>🛒 Pesca Sport</div><div>💶 <b>${eur(st.money)}</b> virtuali</div>${SH.cart.length?`<div>🧺 ${SH.cart.length} · ${eur(tot)}</div>`:''}`;
   if(SH.cat==='zaino'){const g=st.gear;ui.innerHTML=`<div class="gpanel gshopp" style="max-height:38vh;overflow-y:auto"><div class="grow" style="justify-content:space-between"><b>🎒 Il tuo zaino</b>${btn('↩ Negozio',"shopCat('canne')")}</div>
     ${(()=>{const L=[],add=(t,v)=>{if(v)L.push(`<div class="gs">${t}: ${v}</div>`);},J=a=>a.filter(Boolean).join(' · ');
       add('Canne','<b>'+g.rods.map(id=>rdot(id)+rodN(id)+(g.rodCnt[id]>1?' ×'+g.rodCnt[id]:'')).join(', ')+'</b>');
@@ -1631,7 +1633,8 @@ function size(){if(!renderer)return;const w=root.clientWidth,h=root.clientHeight
 const btn=(t,f,cls='')=>`<button class="gb ${cls}" onclick="GAME.${f}">${t}</button>`;
 const suggestLead=w=>w<.3?100:w<.6?125:w<1?150:w<1.6?175:200;
 function rodStatus(r){if(r.state==='tangled')return '🧶 lenza incrociata';if(r.dismantled)return 'smontata';if(r.broken)return 'terminale rotto';if(r.held)return 'in mano';if(r.state==='hooked')return '🐟 PESCE ALLAMATO!';if(!r.bait)return 'da innescare';if(r.state==='bite')return '🔔 ABBOCCATA!';if(r.baitLeft<=0)return 'esca finita?';return r.baitLeft>20?'in pesca':'esca consumata';}
-function setUI(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p==='wait'&&CHAIRG&&scene){const g=st.gear,k=JSON.stringify([g.baits,g.leads,g.hooks,g.swivels>0,g.snaps>0,g.starlight>0,termAny(),g.leader>0]);if(k!==st.campKey){st.campKey=k;styleCamp();}}
+function setUI(){const el=ui?.querySelector('.gpanel'),t=el?el.scrollTop:0,same=st.lastPh===st.phase;setUI0();st.lastPh=st.phase;if(same&&t){const n=ui?.querySelector('.gpanel');if(n)n.scrollTop=t;}}
+function setUI0(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p==='wait'&&CHAIRG&&scene){const g=st.gear,k=JSON.stringify([g.baits,g.leads,g.hooks,g.swivels>0,g.snaps>0,g.starlight>0,termAny(),g.leader>0]);if(k!==st.campKey){st.campKey=k;styleCamp();}}
   if(p==='setup'){const w=wxAt(st.gt),sug=suggestLead(w.wave),G9=st.gear;if(!(G9.leads[st.lead]>0)){const l=[sug,125,100,150,80,175,200].find(x=>G9.leads[x]>0);if(l)st.lead=l;}if(!(G9.hooks[st.hook]>0)){const h=[4,2,6,0,8].find(x=>G9.hooks[x]>0);if(h!=null)st.hook=h;}st.nRods=Math.max(1,Math.min(st.nRods,maxRods()||1));
     h=`<div class="gpanel"><b>🎣 ${SPOT.name} · ${gameDate().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</b>
       <div class="gs">Mare ${seaName(w.wave)} (${w.wave.toFixed(1).replace('.',',')} m), vento ${Math.round(w.ws)} km/h da ${windName(w.wd)}, acqua ${Math.round(w.sst)}°</div>
