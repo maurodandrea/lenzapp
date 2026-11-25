@@ -1490,10 +1490,25 @@ function sellList(){const g=st.gear,b=g.bought||{},L=[],pr=it=>it?Math.round(it.
   for(const id of g.chairs||[])L.push({k:'chair',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
   for(const id of g.shelters||[])L.push({k:'shelter',id,n:ITEM[id]?.n||id,c:1,v:pr(ITEM[id])});
   for(const id of SELL_FLAGS){const has=id==='needle'?g.needle:id==='elastic'?g.elastic:b[id];if(has&&ITEM[id])L.push({k:'flag',id,n:ITEM[id].n,c:1,v:pr(ITEM[id])});}
+  // pezzi singoli: picchetti, piombi, ami, minuterie, fili, cappelli e vestiti (le esche no)
+  const one=(k,id,n,c,unit)=>{if(c>0)L.push({k,id,n,c,v:Math.round(unit*.3*100)/100});};
+  const spk={pvc:'spikePVC',alu:'spike',long:'spikeLong'}[g.spikeT==='tripod'?(b.spikeLong?'long':b.spike?'alu':'pvc'):g.spikeT]||'spikePVC';one('spikes',spk,'Picchetto',g.spikes||0,ITEM[spk]?.p({})||6);
+  [80,100,125,150,175,200].forEach((w,i)=>one('lead',w,`Piombo ${w} g`,g.leads?.[w]||0,[3,4.5,5,6,6.5,7][i]/2));
+  [0,2,4,6,8].forEach(m=>one('hook',m,`Amo n. ${m}`,g.hooks?.[m]||0,4.5/10));
+  one('swivels',0,'Girella',g.swivels||0,2.9/15);one('snaps',0,'Moschettone',g.snaps||0,2.9/15);one('starlight',0,'Starlight',g.starlight||0,3.9/10);
+  one('beadsN',0,'Perlina salvanodo',g.beadsN||0,2/20);one('leader',0,'Shock leader',g.leader||0,8.9/5);
+  one('term',0,'Terminale nylon (2 m)',g.term||0,4.5/25);one('termF',0,'Terminale fluorocarbon (2 m)',g.termF||0,8/25);
+  one('braidN',0,'Bobina di trecciato',g.braidN||0,29);
+  for(const h of (g.hats||[]).filter(h=>h!=='none')){const it=Object.values(ITEM).find(x=>x.hat===h);if(it)L.push({k:'hat',id:h,n:it.n,c:1,v:pr(it)});}
+  for(const o of (g.outfits||[])){const it=Object.values(ITEM).find(x=>x.outfit===o);if(it)L.push({k:'outfit',id:o,n:it.n,c:1,v:pr(it)});}
   return L.filter(x=>x.v>0).sort((a,b)=>b.v-a.v||a.n.localeCompare(b.n));}
 function sellHtml(){const L=sellList();return `<div class="gs" style="margin-top:10px"><b>💰 Vendi usato</b> · ti diamo il 30% del prezzo d'acquisto, accreditato sul conto</div><div class="glist">${L.map((x,i)=>`<div style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span>${escH(x.n)}${x.c>1?' ×'+x.c:''}</span><button class="gc" onclick="GAME.sellUsed(${i})">Vendi ${eur(x.v)}</button></div>`).join('')||'<div class="gs">Niente da vendere.</div>'}</div>`;}
 G.sellUsed=i=>{const x=sellList()[i];if(!x)return;const g=st.gear,b=g.bought=g.bought||{};
-  if(x.k==='rod')loseGear('rod',x.id);else if(x.k==='reel')loseGear('reel',x.id);
+  if(['spikes','swivels','snaps','starlight','beadsN','leader','term','termF','braidN'].includes(x.k)){g[x.k]=Math.max(0,(g[x.k]||0)-1);if(x.k==='braidN'&&!g.braidN)g.braid=0;}
+  else if(x.k==='lead')g.leads[x.id]=Math.max(0,g.leads[x.id]-1);else if(x.k==='hook')g.hooks[x.id]=Math.max(0,g.hooks[x.id]-1);
+  else if(x.k==='hat'){g.hats=g.hats.filter(h=>h!==x.id);if(g.hat===x.id)g.hat='none';}
+  else if(x.k==='outfit'){g.outfits=g.outfits.filter(o=>o!==x.id);if(st.outfit===x.id){st.outfit='jeans';LSS('outfit','jeans');}}
+  else if(x.k==='rod')loseGear('rod',x.id);else if(x.k==='reel')loseGear('reel',x.id);
   else if(x.k==='chair'){g.chairs=g.chairs.filter(c=>c!==x.id);if(g.chair===x.id)g.chair='';b[x.id]=false;}
   else if(x.k==='shelter'){g.shelters=g.shelters.filter(c=>c!==x.id);if(g.shelter===x.id)g.shelter='';b[x.id]=false;}
   else{b[x.id]=false;if(x.id==='needle')g.needle=false;if(x.id==='elastic')g.elastic=false;if(x.id==='tripod'&&g.spikeT==='tripod')g.spikeT='alu';if(['lampB','lampF','lamp1000'].includes(x.id))g.torch=b.lamp1000?3:b.lampF?2:b.lampB?1:0;if(x.id==='lampRed')g.red=false;if(x.id==='boots')g.boots=false;}
