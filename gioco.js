@@ -733,7 +733,7 @@ function setupRods(){if(TRIG){scene.remove(TRIG);TRIG=null;}if(holder().k==='tri
     const hit=new T.Mesh(new T.CylinderGeometry(.6,.6,4.6,8),new T.MeshBasicMaterial({visible:false}));hit.position.set(x,2.2,ROD_Z-.3);hit.rotation.x=-8*R;scene.add(hit);
     return {rodId:rid,reelId:lid,lineT:PQ.lineT||'nylon',leadT:PQ.leadT||'piramidale',hookT:PQ.hookT||'aberdeen',grip:PQ.leadT==='ragno',lead:PQ.lead??st.lead,hook:PQ.hook??st.hook,rig:PQ.rig||'lungo',broken:false,dismantled:false,i,x,spike,obj,line,sinker,hit,bait:null,dist:0,state:'idle',baitLeft:0,bend:0,bitePlan:null,held:false,sx:x,sz:-1};});}
 function placeRodOnSpike(r){const by=ROD_Z*.035,cy=r.spike?.userData.cupY??.62,t=SPIKE_TILT*R;// calcio nella tazza, fusto parallelo al picchetto
-  r.obj.position.set(r.x,by+cy*Math.cos(t)+.035*Math.sin(t),ROD_Z+cy*Math.sin(t)-.035*Math.cos(t));r.obj.rotation.set(t,0,0,'YXZ');}
+  r.obj.position.set(r.x,by+cy*Math.cos(t)+.035*Math.sin(t),ROD_Z+cy*Math.sin(t)-.035*Math.cos(t));r.obj.rotation.set(-t,Math.PI,0,'YXZ');}
 function rodInHand(r,a=AN){const J=a.obj.userData.J,hp=new T.Vector3();J.rHand.getWorldPosition(hp);const p=a.pose.rod||{p:45,f:0,y:0};
   r.obj.rotation.set((p.p-90)*R,a.rotY+(p.y||0),0,'YXZ');const dir=new T.Vector3(0,1,0).applyEuler(r.obj.rotation);r.obj.position.copy(hp).addScaledVector(dir,-.5);}
 
