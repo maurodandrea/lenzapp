@@ -1585,7 +1585,7 @@ function buildSteps(){const S2=[],q=st.auto?.55:1,sp=st.auto?3.4:2.4;
   S2.push({e:'🪑',t:st.gear.chair?'Apri la sedia':'Capovolgi il secchio per sederti',f:async()=>{pose('bend');await sleep(.8*q);CHAIRG.visible=!!st.gear.chair;click();pose('stand');}});
   st.rods.forEach((r,i)=>S2.push({e:'📍',t:`Pianta il picchetto ${i+1}`,f:async()=>{await walkTo(r.x+.5,ROD_Z+.9,sp);AN.faceTo=0;pose('bend');await sleep(1*q);burst(new T.Vector3(r.x,.1,ROD_Z),.25);r.spike.visible=true;click();pose('stand');}}));
   st.rods.forEach((r,i)=>S2.push({e:'🎣',t:`Monta la canna ${i+1}: mulinello, anelli e terminale`,f:async()=>{await walkTo(CHAIR.x+1.4,CHAIR.z+.4,sp);pose('bend');await sleep(1.8*q);r.obj.visible=true;r.held=true;AN.holding=i;pose('hold');await sleep(.3);
-    await walkTo(r.x+.55,ROD_Z+1.3,sp);AN.faceTo=0;await putRod(i);}}));
+    await walkTo(r.x+rodOff(),ROD_Z+1.3,sp);AN.faceTo=0;await putRod(i);}}));
   S2.push({e:'⚓',t:'Prepara piombi e terminali di scorta',f:async()=>{await walkTo(CHAIR.x+1,CHAIR.z-.3,sp);pose('bend');await sleep(1.2*q);pose('stand');}});
   if(night()>.3)S2.push({e:'🏮',t:'Accendi la lanterna e le luci chimiche',f:async()=>{pose('bend');await sleep(.7*q);click();pose('stand');}});
   return S2;}
@@ -1603,10 +1603,11 @@ function walkTo(x,z,speed=1.4){return new Promise(res=>{AN.walkTarget={x,z,res};
 function faceSea(){AN.faceTo=0;}
 async function standUp(){if(AN.target!=='sit')return;pose('stand');AN.pos.z-=.05;await sleep(.4);}
 async function sitDown(){AN.faceTo=0;pose('sit');await sleep(.45);}
-async function goToRod(i,run){const r=st.rods[i];await standUp();await walkTo(r.x+.55,ROD_Z+1.3,run?4.6:2.8);AN.faceTo=0;await sleep(.25);}
+async function goToRod(i,run){const r=st.rods[i];await standUp();await walkTo(r.x+rodOff(),ROD_Z+1.3,run?4.6:2.8);AN.faceTo=0;await sleep(.25);}
+const rodOff=()=>holder().k==='tripod'?-.38:.55;
 async function pickRod(i){const r=st.rods[i];pose('bend');await sleep(.55);r.held=true;AN.holding=i;pose('hold');await sleep(.5);}
 async function putRod(i){const r=st.rods[i];pose('bend');await sleep(.55);r.held=false;AN.holding=-1;placeRodOnSpike(r);pose('stand');await sleep(.4);}
-async function stepBack(i){const r=st.rods[i];await walkTo(r.x+.9,ROD_Z+3,2);AN.faceTo=0;pose('stand');}
+async function stepBack(i){const r=st.rods[i];await walkTo(r.x+(holder().k==='tripod'?-.2:.9),ROD_Z+3,2);AN.faceTo=0;pose('stand');}
 G.sit=()=>seq(async()=>{st.phase='busy';st.msg='';setUI();if(AN.holding>=0)await putRod(AN.holding);await backToChair();LOOK.yaw=0;LOOK.pitch=0;st.msg='';st.phase='wait';setUI();});
 async function backToChair(){await walkTo(CHAIR.x,CHAIR.z-.05,2.8);await sitDown();}
 const seq=async f=>{if(st.busy)return;st.busy=true;try{await f();}finally{st.busy=false;if(st.phase==='wait')setUI();}};
@@ -1636,7 +1637,7 @@ G.snagSwim=()=>seq(async()=>{const sn=st.snag;if(!sn)return;const r=sn.r,w=wxAt(
   if(r.held)await putRod(r.i);const back={x:AN.pos.x,z:AN.pos.z};const far=Math.min(r.dist*.7,45),tx=lerp(r.x,r.sx,far/Math.max(1,r.dist));
   await walkTo(r.x+.3,-.5,2.6);st.msg=(w.sst<18&&!['waders','wetsuit'].includes(st.outfit))?`🥶 Brrr, l'acqua è a ${Math.round(w.sst)}°!`:'🏊 Nuota lungo la lenza…';setUI();
   await walkTo(tx,-far,2.4);st.msg='🤿 Si immerge e libera il piombo…';setUI();AN.dive=1;splash(.3);burst(new T.Vector3(AN.pos.x,0,AN.pos.z),.6);await sleep(2.2);AN.dive=0;burst(new T.Vector3(AN.pos.x,0,AN.pos.z),.6);
-  const ok=Math.random()<.85;st.msg=ok?'Liberato! Torna a riva.':'Non ci arriva: è troppo profondo.';setUI();await walkTo(r.x+.55,ROD_Z+1.3,2.6);AN.faceTo=0;await pickRod(r.i);
+  const ok=Math.random()<.85;st.msg=ok?'Liberato! Torna a riva.':'Non ci arriva: è troppo profondo.';setUI();await walkTo(r.x+rodOff(),ROD_Z+1.3,2.6);AN.faceTo=0;await pickRod(r.i);
   if(!ok){st.snag.msg='A nuoto non ci sei arrivato. Tira forte o cambia angolo.';st.phase='snag';setUI();return;}
   st.snag=null;if(sn.stage==='fight'){if(Math.random()<.5&&st.fight){st.fight.snag=false;st.fight.dist=Math.max(5,st.fight.dist*.8);st.phase='fight';pose('reel');st.msg='';setUI();return;}const f=st.fight;st.fight=null;r.state='idle';r.bait=null;r.dist=0;r.sinker.visible=false;showCatch({fish:false,txt:'Liberato, ma il pesce è scappato',why:'Mentre nuotavi il pesce si è slamato.'});return;}
   pose('reel');for(let t=0;t<1;t+=.08){r.dist*=.9;AN.reelSpin=1;await sleep(.06);}AN.reelSpin=0;afterRecover(r);});
