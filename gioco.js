@@ -1588,11 +1588,11 @@ function buildSteps(){const S2=[],q=st.auto?.55:1,sp=st.auto?3.4:2.4;
   if(night()>.3)S2.push({e:'🏮',t:'Accendi la lanterna e le luci chimiche',f:async()=>{pose('bend');await sleep(.7*q);click();pose('stand');}});
   return S2;}
 G.doStep=()=>seq(async()=>{const S2=st.steps;if(st.stepI>=S2.length)return;setUI();await S2[st.stepI].f();st.stepI++;if(st.stepI>=S2.length)return mountDone();setUI();});
-G.autoSteps=()=>seq(async()=>{st.auto=true;const S2=st.steps;while(st.stepI<S2.length){setUI();await S2[st.stepI].f();st.stepI++;}mountDone();});
-function mountDone(){st.phase='wait';st.msg='';setUI();}
+G.autoSteps=()=>seq(async()=>{st.auto=true;const S2=st.steps;while(st.stepI<S2.length){setUI();await S2[st.stepI].f();st.stepI++;}await mountDone();});
+async function mountDone(){st.phase='busy';setUI();await stepBack(Math.floor((st.rods.length-1)/2));st.phase='wait';st.msg='';setUI();}
 G.start=auto=>{if(maxRods()<1){st.msg='Non hai una canna completa: passa dal negozio.';setUI();return;}st.nRods=Math.min(st.nRods,maxRods());setPlayerLook();setupRods();rigFromBag();st.rods.forEach(r=>{placeRodOnSpike(r);r.spike.visible=false;r.obj.visible=false;});st.auto=!!auto;st.steps=buildSteps();st.stepI=0;st.phase='mount';setUI();if(auto)G.autoSteps();};
 G.ready=()=>{if(maxRods()<1){st.msg='Non hai una canna completa: passa dal negozio.';setUI();return;}MYG.forEach(o=>o.visible=true);if(CHAIRG)CHAIRG.visible=!!st.gear.chair;AN.pos.set(CHAIR.x,CHAIR.z*.035,CHAIR.z-.05);AN.target='sit';AN.pose=JSON.parse(JSON.stringify(POSES.sit));AN.rotY=0;AN.faceTo=0;G.startOld();};
-G.startOld=()=>{if(maxRods()<1){st.msg='Non hai una canna completa: passa dal negozio.';setUI();return;}st.nRods=Math.min(st.nRods,maxRods());setPlayerLook();setupRods();rigFromBag();st.rods.forEach(placeRodOnSpike);st.phase='wait';st.msg='';setUI();};
+G.startOld=()=>{if(maxRods()<1){st.msg='Non hai una canna completa: passa dal negozio.';setUI();return;}st.nRods=Math.min(st.nRods,maxRods());setPlayerLook();setupRods();rigFromBag();st.rods.forEach(placeRodOnSpike);{const r=st.rods[Math.floor((st.rods.length-1)/2)],z=ROD_Z+3;AN.pos.set(r.x+.9,z*.035,z);AN.target='stand';AN.pose=JSON.parse(JSON.stringify(POSES.stand));AN.rotY=0;AN.faceTo=0;}st.phase='wait';st.msg='';setUI();};
 
 /* ---------- movimenti del pescatore (sequenze) ---------- */
 const sleep=s=>new Promise(r=>setTimeout(r,s*1000));
