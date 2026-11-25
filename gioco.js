@@ -1237,7 +1237,7 @@ async function cloudGameLoad(){const C=gameCloud();if(!C||CGL===C.user.uid)retur
     else{if(!d&&lu&&lu!==uid){st.gear=JSON.parse(JSON.stringify(GEAR0));st.money=10000;LSS('gear',st.gear);LSS('money',st.money);}LSS('gearU',uid);cloudGameSave();if(root&&st.phase)setUI();}}catch(e){console.warn('game load',e);}}
 setInterval(cloudGameLoad,3000);setTimeout(cloudGameLoad,500);
 const eur=v=>'€ '+v.toFixed(2).replace('.',',');
-const ROD={surf420:{n:'Surf 4,20 m 3 pz',mul:1},beach390:{n:'Beach 3,90 m telescopica',mul:.9},tele420:{n:'Telescopica 4,20 m',mul:.92},surf420s:{n:'Spiaggia 4,20 m leggera 3 pz',mul:1.02},surf420c:{n:'Surf 4,20 m carbonio 3 pz',mul:1.04},surf420c2:{n:'Surf 4,20 m carbonio 2 pz',mul:1.06},surf450:{n:'Surf 4,50 m carbonio 3 pz',mul:1.06},surf450_2:{n:'Surf 4,50 m carbonio 2 pz',mul:1.08},surf450h:{n:'Surf 4,50 m ibrida 3 pz',mul:1.08},surf470:{n:'Surf 4,70 m parabolica 3 pz',mul:1.1},surf480:{n:'Tournament 4,80 m 3 pz',mul:1.12},surf480_2:{n:'Tournament 4,80 m 2 pz',mul:1.14},surf500:{n:'Long Cast 5,00 m 3 pz',mul:1.16},surf500_2:{n:'Long Cast 5,00 m 2 pz',mul:1.18}};
+const ROD={beach390:{n:'Travel Telescopica 3,90 m',mul:0.9},tele420:{n:'Surf Telescopica 4,20 m',mul:0.92},surf420:{n:'Surf 4,20 m 3 pz vetro/carbonio',mul:0.96},surf420s:{n:'Surf 4,20 m 3 pz carbonio',mul:0.99},surf420c:{n:'Surf 4,50 m 3 pz',mul:0.99},surf420c2:{n:'Surf Hybrid 4,50 m 3 pz',mul:1.04},surf450:{n:'Extreme 4,50 m 3 pz',mul:1.06},surf450_2:{n:'Tournament 4,30 m 3 pz',mul:1.08},surf450h:{n:'Tournament 4,20 m 2 pz',mul:1.11},surf470:{n:'Competition 4,50 m 3 pz',mul:1.12},surf480:{n:'Competition 4,28 m 2 pz',mul:1.13},surf480_2:{n:'ProTeam 4,40 m 3 pz',mul:1.17},surf500:{n:'ProTeam 4,28 m 2 pz',mul:1.18},surf500_2:{n:'Gold Long Cast 4,45 m 2 pz',mul:1.2}};
 const REELS={r5000:{n:'5000 leggero',drag:7,cast:1},r6000:{n:'6000',drag:8,cast:1},r8000:{n:'8000',drag:12,cast:1},r10000:{n:'10000',drag:15,cast:1},r14000:{n:'14000',drag:20,cast:1.01},rRear:{n:'7000 frizione posteriore',drag:10,cast:1},rLC:{n:'Long Cast 12000',drag:18,cast:1.04},rMult:{n:'Mulinello rotante',drag:22,cast:1.06},rT:{n:'Tournament 14000',drag:25,cast:1.03}};
 const reelN=id=>REELS[id]?.n||id,reelDrag=id=>REELS[id]?.drag||12;
 // livello dell'attrezzatura montata su una canna: 0 = di base, 1 = il top (canna Long Cast + Tournament)
@@ -1246,20 +1246,20 @@ function gearTier(r){const g=st.gear,rt=clamp(((ROD[r?.rodId||g.rod]?.mul||1)-.9
 // prezzi e confezioni realistici; o = opzioni scelte
 const CAT=[
   {k:'canne',n:'🎣 Canne',items:[
-    {id:'beach390',rod:1,n:'Canna Beach 3,90 m · telescopica',d:'Vetro pieno, 80-150 g: indistruttibile, perfetta per la pesca sotto riva (-10% distanza).',p:()=>39},
-    {id:'tele420',rod:1,n:'Canna telescopica 4,20 m · da viaggio',d:'Si chiude in 1,2 m, sta nel bagagliaio. Lancia un po\' meno (-8%).',p:()=>45},
-    {id:'surf420',rod:1,n:'Canna surfcasting 4,20 m · 3 pezzi',d:'Vetro-carbonio, lancio fino a 125 g. Robusta, ideale per iniziare.',p:()=>69},
-    {id:'surf420s',rod:1,n:'Canna Spiaggia 4,20 m leggera · 3 pezzi',d:'Carbonio, fino a 100 g, vetta in fibra piena sensibile: mormore e orate con mare calmo.',p:()=>89},
-    {id:'surf420c',rod:1,n:'Canna surfcasting 4,20 m carbonio · 3 pezzi',d:'Carbonio 30 t, fino a 125 g, anelli SiC: leggera e reattiva (+4%).',p:()=>119},
-    {id:'surf420c2',rod:1,n:'Canna surfcasting 4,20 m carbonio · 2 pezzi',d:'Fino a 125 g, un solo innesto: azione più continua e sensibile (+6%). Si trasporta lunga 2,15 m.',p:()=>149},
-    {id:'surf450',rod:1,n:'Canna surfcasting 4,50 m carbonio · 3 pezzi',d:'Carbonio, 100-250 g, azione di punta: più distanza (+6%).',p:()=>139},
-    {id:'surf450_2',rod:1,n:'Canna surfcasting 4,50 m carbonio · 2 pezzi',d:'Carbonio 36 t, 100-250 g, un solo innesto: più potenza nel lancio (+8%).',p:()=>189},
-    {id:'surf450h',rod:1,n:'Canna surfcasting 4,50 m ibrida · 3 pezzi',d:'Fusto tubolare e vetta in carbonio pieno, fino a 175 g: lancia lontano (+8%) e segnala le tocche delicate.',p:()=>169},
-    {id:'surf470',rod:1,n:'Canna surfcasting 4,70 m parabolica · 3 pezzi',d:'Azione progressiva, 120-250 g: perdona gli errori nel lancio pendolare (+10%).',p:()=>199},
-    {id:'surf480',rod:1,n:'Canna Tournament 4,80 m · 3 pezzi',d:'Carbonio alto modulo, fino a 200 g, per i lanci lunghi (+12%). Da veri agonisti.',p:()=>279},
-    {id:'surf480_2',rod:1,n:'Canna Tournament 4,80 m · 2 pezzi',d:'Carbonio alto modulo, fino a 200 g, un solo innesto: la scelta dei campioni (+14%).',p:()=>339},
-    {id:'surf500',rod:1,n:'Canna Long Cast 5,00 m · 3 pezzi',d:'Carbonio 46 t, fino a 250 g, anelli Low Rider: la regina della distanza (+16%).',p:()=>389},
-    {id:'surf500_2',rod:1,n:'Canna Long Cast 5,00 m · 2 pezzi',d:'Carbonio 46 t, fino a 250 g, un solo innesto da 2,55 m: il massimo della distanza (+18%).',p:()=>459}]},
+    {id:'beach390',rod:1,n:'Canna Travel Telescopica 3,90 m',d:'Fibra di vetro, lancia fino a 125 g. Lancio -10% · tirare fuori i pesci -30%.',p:()=>34},
+    {id:'tele420',rod:1,n:'Canna Surf Telescopica 4,20 m',d:'Vetro, lancia fino a 150 g. Lancio -8% · tirare fuori i pesci -23%.',p:()=>45},
+    {id:'surf420',rod:1,n:'Canna Surf 4,20 m · 3 pz vetro/carbonio',d:'Vetro/carbonio, lancia fino a 150 g. Lancio -4% · tirare fuori i pesci -11%.',p:()=>69},
+    {id:'surf420s',rod:1,n:'Canna Surf 4,20 m · 3 pz carbonio',d:'Carbonio, lancia fino a 200 g. Lancio -1% · tirare fuori i pesci -4%.',p:()=>89},
+    {id:'surf420c',rod:1,n:'Canna Surf 4,50 m · 3 pz',d:'Carbonio, lancia fino a 200 g. Lancio -1% · tirare fuori i pesci -2%.',p:()=>99},
+    {id:'surf420c2',rod:1,n:'Canna Surf Hybrid 4,50 m · 3 pz',d:'Carbonio 36 t, lancia fino a 175 g. Lancio +4% · tirare fuori i pesci +13%.',p:()=>169},
+    {id:'surf450',rod:1,n:'Canna Extreme 4,50 m · 3 pz',d:'Carbonio 36 t, lancia fino a 250 g. Lancio +6% · tirare fuori i pesci +17%.',p:()=>199},
+    {id:'surf450_2',rod:1,n:'Canna Tournament 4,30 m · 3 pz',d:'Carbonio alto modulo, lancia fino a 200 g. Lancio +8% · tirare fuori i pesci +23%.',p:()=>249},
+    {id:'surf450h',rod:1,n:'Canna Tournament 4,20 m · 2 pz',d:'Carbonio alto modulo, lancia fino a 200 g. Lancio +11% · tirare fuori i pesci +32%.',p:()=>349},
+    {id:'surf470',rod:1,n:'Canna Competition 4,50 m · 3 pz',d:'Carbonio 46 t, lancia fino a 250 g. Lancio +12% · tirare fuori i pesci +35%.',p:()=>389},
+    {id:'surf480',rod:1,n:'Canna Competition 4,28 m · 2 pz',d:'Carbonio 46 t, lancia fino a 250 g. Lancio +13% · tirare fuori i pesci +40%.',p:()=>479},
+    {id:'surf480_2',rod:1,n:'Canna ProTeam 4,40 m · 3 pz',d:'Carbonio 46 t, lancia fino a 275 g. Lancio +17% · tirare fuori i pesci +50%.',p:()=>689},
+    {id:'surf500',rod:1,n:'Canna ProTeam 4,28 m · 2 pz',d:'Carbonio 46 t, lancia fino a 275 g. Lancio +18% · tirare fuori i pesci +53%.',p:()=>759},
+    {id:'surf500_2',rod:1,n:'Canna Gold Long Cast 4,45 m · 2 pz',d:'Carbon Fiber Ultra, lancia fino a 300 g. Lancio +20% · tirare fuori i pesci +60%.',p:()=>1000}]},
   {k:'mulinelli',n:'⚙️ Mulinelli',items:[
     {id:'reel',n:'Mulinello surfcasting bobina lunga',d:'Bobina conica in alluminio, frizione anteriore. Più grande = frizione più potente.',opts:[{k:'t',n:'Taglia',v:['6000','8000','10000','14000']}],p:o=>[45,69,119,189][o.t]},
     {id:'reelBase',reel:'r6000',n:'Mulinello 6000 base',d:'Semplice e robusto, frizione 8 kg.',p:()=>29},
@@ -1707,7 +1707,7 @@ function updCastAnim(dt){const A=st.castAnim;if(A){const seq=A.q[A.phase];A.t+=d
 G.cstyle=k=>{st.castStyle=k;LSS('cstyle',k);setUI();};
 // probabilità degli imprevisti: scogli, sabbia smossa dalle onde, alghe, lenza che si spezza
 function riskOf(){const w=wxAt(st.gt),rk=SPOT.rocks||0,wv=w.wave||0;return {rocks:rk,wave:wv,snag:.05+.1*rk+.035*wv,weed:.05+(wv>1?.06:0)+(SPOT.veg||0)*.02,brk:.015+.04*rk+(wv>1.5?.04:0),sand:wv>.8?.05+.03*wv:.02};}
-const ROD_MAXG={beach390:150,tele420:150,surf420:125,surf420s:100,surf420c:125,surf420c2:125,surf450:250,surf450_2:250,surf450h:175,surf470:250,surf480:200,surf480_2:200,surf500:250,surf500_2:250};
+const ROD_MAXG={beach390:125,tele420:150,surf420:150,surf420s:200,surf420c:200,surf420c2:175,surf450:250,surf450_2:200,surf450h:200,surf470:250,surf480:250,surf480_2:275,surf500:275,surf500_2:300};
 function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.gt),S=cSty();
   if(['tele420','beach390'].includes(r.rodId||st.gear.rod)&&st.castStyle==='pendulum'){const rid=r.rodId||st.gear.rod;st.cast=null;seq(async()=>{st.phase='busy';setUI();castAnimStart('fire');await sleep(.35);whoosh();st.castLead=null;await sleep(.3);st.castAnim=null;st.castCam=false;st.replayCam=false;st.camYaw=null;CAM.cl=null;vib([300,80,300]);r.bait=null;r.state='idle';r.dist=0;r.sinker.visible=false;pose('hold');loseGear('rod',rid);r.dismantled=true;r.obj.visible=false;r.held=false;AN.holding=-1;st.needShop=true;st.msg='💥 Crack! La canna telescopica non regge il lancio a pendolo: si è spezzata. Con la telescopica usa above o side, o compra una canna a innesti.';st.phase='wait';setUI();});return;}
   // piombo troppo pesante per la canna: oltre il 50% in più si spezza il terminale; vicino al doppio può spezzarsi la canna
