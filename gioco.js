@@ -1838,21 +1838,21 @@ G.strike=()=>seq(async()=>{const r=st.rods[st.sel];if(r.state!=='bite')return;co
     showCatch({fish:false,txt:strong?'Mancato!':'Troppo presto',why:strong?'Hai ferrato troppo presto: aspetta che la cima resti piegata per più di un secondo.':'Erano solo tocche: aspetta che la cima resti piegata per più di un secondo prima di ferrare.',left:!lost});return;}
   const sp=p.sp,w=sizeOf(sp);st.fight={r,sp,w,len:lenOf(sp,w),dist:r.dist,ten:.3,reel:false,drag:5,run:0,slack:0,t:0,pow:sp.pow*(0.6+Math.min(1.6,w/sp.w[1])*.45)};
   r.state='fight';pose('reel');st.phase='fight';vib([160,60,90]);setUI();});
-function updFight(dt){const f=st.fight;if(!f||st.phase!=='fight')return;f.t+=dt;const r=f.r,w=wxAt(st.gt);
+function updFight(dt){const f=st.fight;if(!f||st.phase!=='fight')return;f.t+=dt;const r=f.r,w=wxAt(st.gt),GT=gearTier(r),GP=(GT.rod+reelPow(r))/2,BIG=f.w>2?(.75+GP*.7):1;
   {const K=riskOf();if(f.dist<14&&(K.wave>1.2||K.rocks>.3)&&f.ten>.7&&Math.random()<dt*(.004*K.wave+.01*K.rocks)*(r.lineT==='braid'?.5:1))return endFight(false,K.rocks>.3?'La lenza ha toccato gli scogli e si è spezzata!':'Nei frangenti la lenza ha preso un colpo d\'onda e si è spezzata!');}
   if(!f.snag&&f.dist>15&&Math.random()<dt*.005){f.snag=true;f.reel=false;AN.reelSpin=0;st.snag={r,stage:'fight',msg:'Il pesce si è infilato tra i detriti sul fondo e la lenza si è incagliata.'};st.phase='snag';vib([150,60,150]);setUI();return;}
-  if(f.run<=0&&Math.random()<dt*.5*f.pow){f.run=rnd(.6,2)*f.pow*(1-reelPow(r)*.35);vib([90+Math.round(f.pow*60),50,140+Math.round(f.pow*80)]);}f.run=Math.max(0,f.run-dt*(1+reelPow(r)*.6));
+  if(f.run<=0&&Math.random()<dt*.5*f.pow){f.run=rnd(.6,2)*f.pow*(1.35-GP*.85);vib([90+Math.round(f.pow*60),50,140+Math.round(f.pow*80)]);}f.run=Math.max(0,f.run-dt*(1+reelPow(r)*.6));
   // durante la fuga e con la tensione alta: piccoli strattoni
   f.vt=(f.vt||0)-dt;if(f.vt<=0&&(f.run>0||f.ten>.75)){vib(f.run>0?Math.round(35+f.pow*30):25);f.vt=f.run>0?rnd(.25,.5):rnd(.6,1.1);}
-  const GT=gearTier(r),pull=((f.run>0?.6:.18)*f.pow)*(1-GT.rod*.22)+(w.wave||0)*.08*Math.max(0,Math.sin(performance.now()/700));const dragMax=.35+f.drag*.07+(reelDrag(r.reelId||st.gear.reel)-12)*.012;
+  const pull=((f.run>0?.6:.18)*f.pow)*(1-GT.rod*.22)+(w.wave||0)*.08*Math.max(0,Math.sin(performance.now()/700));const dragMax=.35+f.drag*.07+(reelDrag(r.reelId||st.gear.reel)-12)*.012;
   let ten=(f.reel?.45:.12)+pull;if(ten>dragMax){const out=(ten-dragMax)*dt*25;f.dist+=out;ten=dragMax+(ten-dragMax)*.25;AN.reelSpin=-.6;
     // la frizione cede: crepitio tanto più fitto quanto più filo esce, e vibrazione continua
     f.dAcc=(f.dAcc||0)+out;let n=0;while(f.dAcc>.05&&n<4){f.dAcc-=.05;n++;dragTick(n*.012);}f.dv=(f.dv||0)-dt;if(f.dv<=0){f.dv=.22;vib(Math.round(40+Math.min(80,out/dt*6)));}}
   else AN.reelSpin=f.reel?1:0;
-  if(f.reel&&f.run<=0)f.dist-=dt*(7-f.pow*1.5)*(1.15-f.drag*.02)*(1+reelPow(r)*1.4);else if(f.reel)f.dist-=dt*1.2*(1+reelPow(r)*1.2);
+  if(f.reel&&f.run<=0)f.dist-=dt*(7-f.pow*1.5)*(1.15-f.drag*.02)*(.55+GP*1.6)*BIG;else if(f.reel)f.dist-=dt*1.2*(.55+GP*1.4)*BIG;
   f.ten=lerp(f.ten,clamp(ten,0,1.2),.15);r.dist=Math.max(0,f.dist);
-  const lim=(f.sp.teeth&&hookCat(st.hook)!=='grande'?.92:1)*(1+GT.all*.12+reelPow(r)*.12)*Math.min(1.12,Math.pow((st.gear.line||.25)/.25,.5))*(r.lineT==='braid'?1.08:1);if(f.ten>lim){f.over=(f.over||0)+dt;if(f.over>(r.lineT==='braid'?.7:.35))return endFight(false,f.sp.teeth?'Il serra ha tranciato la lenza con i denti!':'Lenza rotta: troppa tensione. Apri un po\' la frizione.');}else f.over=0;
-  if(f.ten<.16)f.slack+=dt;else f.slack=Math.max(0,f.slack-dt*2);if(f.slack>2.6+GT.all*2)return endFight(false,'Slamato: con la lenza lenta il pesce si è liberato.');
+  const lim=(f.sp.teeth&&hookCat(st.hook)!=='grande'?.92:1)*(.82+GP*.4)*Math.min(1.12,Math.pow((st.gear.line||.25)/.25,.5))*(r.lineT==='braid'?1.08:1);if(f.ten>lim){f.over=(f.over||0)+dt;if(f.over>(r.lineT==='braid'?.7:.35))return endFight(false,f.sp.teeth?'Il serra ha tranciato la lenza con i denti!':'Lenza rotta: troppa tensione. Apri un po\' la frizione.');}else f.over=0;
+  if(f.ten<.16)f.slack+=dt;else f.slack=Math.max(0,f.slack-dt*2);if(f.slack>1.6+GP*3.6)return endFight(false,'Slamato: con la lenza lenta il pesce si è liberato.');
   if(hookCat(st.hook)==='piccolo'&&r.hookT!=='forgiato'&&f.w>2.5&&f.ten>.85&&Math.random()<dt*.6)return endFight(false,'L\'amo piccolo si è aperto: pesce troppo grosso.');
   if(f.run>0&&Math.random()<dt*4)burst(new T.Vector3(r.sx*(f.dist/Math.max(1,-r.sz))+r.x*(1-f.dist/Math.max(1,-r.sz)),0,-f.dist),.4);
   if(!f.sp.crab&&!f.jump&&(f.jumps||0)<2&&f.w>=Math.max(1.1,f.sp.w[1]*1.25)&&f.dist<32&&f.dist>7&&Math.random()<dt*.22){f.jumps=(f.jumps||0)+1;f.jump={t:0};if(!f.obj){f.obj=makeFish3D(f.sp,f.len/100);f.obj.visible=false;scene.add(f.obj);}burst(lineEnd(r,f.dist),.6);splash(.2);}
