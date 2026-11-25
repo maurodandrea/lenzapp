@@ -1498,7 +1498,7 @@ function mount(v){setTimeout(appCredit,0);
   document.body.appendChild(root);document.body.classList.add('gaming');ui=root.querySelector('#gui');hud=root.querySelector('#ghud');
   root.querySelector('#gx').onclick=()=>G.exit();
   root.querySelector('#gspd').onclick=()=>{const L=[1,2,4,8,16,32];G.setSpeed(L[(L.indexOf(st.speed)+1)%L.length]);};
-  root.querySelector('#glamp').onclick=e=>{if(!(st.gear.torch>0)){st.msg='🔦 Non hai una torcia frontale: la trovi al negozio (Abbigliamento e torce).';st.needShop=true;setUI();return;}st.lamp=!st.lamp;LSS('lamp',st.lamp);e.currentTarget.classList.toggle('off',!st.lamp);click();};
+  root.querySelector('#glamp').onclick=e=>{if(!(st.gear.torch>0)){const t='🔦 Torcia non presente nella dotazione, acquistarla!';st.msg=t;st.needShop=true;setUI();{const d=document.createElement('div');d.textContent=t;d.style.cssText='position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:50;background:rgba(20,26,32,.94);color:#ffd76a;font:700 15px Outfit,sans-serif;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,215,106,.5);box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:center;max-width:86%';root.appendChild(d);setTimeout(()=>d.remove(),2600);}click();return;}st.lamp=!st.lamp;LSS('lamp',st.lamp);e.currentTarget.classList.toggle('off',!st.lamp);click();};
   root.querySelector('#gau').onclick=e=>{AU.on=!AU.on;LSS('audio',AU.on);e.target.textContent=AU.on?'🔊':'🔇';if(!AU.on){seaSound(0);windSound(0);}};
   st.phase='load';st.gt=Date.now();
   if(v)v.innerHTML='<div class="card" style="text-align:center;padding:30px"><p class="mut">Il gioco è aperto a tutto schermo.</p><button class="btn" onclick="GAME.mount()">🎣 Riapri il gioco</button></div>';
