@@ -751,16 +751,16 @@ let WALKERS=[];const WALKN=['ch13','ch22','ch33','ch38','ch12','remy'],FISHN=['c
 function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMaterial({color:c,roughness:.9,...o}),mtx=new T.Matrix4(),q=new T.Quaternion(),sv=new T.Vector3(),pv=new T.Vector3(),eu=new T.Euler();
   const inst=(geo,mat,n,f)=>{const im=new T.InstancedMesh(geo,mat,n);for(let i=0;i<n;i++){const [x,y,z,sx,sy,sz,rx,ry,rz]=f(i);pv.set(x,y,z);eu.set(rx,ry,rz);q.setFromEuler(eu);sv.set(sx,sy,sz);mtx.compose(pv,q,sv);im.setMatrixAt(i,mtx);}im.receiveShadow=true;scene.add(im);return im;};
   // conchiglie
-  inst(new T.SphereGeometry(1,7,5),M('#efe6d6',{roughness:.6}),520,()=>{const z=rnd(-.3,14),s0=rnd(.012,.03);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.35,s0*.8,0,rnd(0,6),0];});
-  inst(new T.SphereGeometry(1,7,5),M('#c9a98a',{roughness:.6}),220,()=>{const z=rnd(0,12),s0=rnd(.01,.022);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.4,s0,0,rnd(0,6),0];});
+  inst(new T.SphereGeometry(1,7,5),M('#efe6d6',{roughness:.6}),110,()=>{const z=rnd(-.3,14),s0=rnd(.012,.03);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.35,s0*.8,0,rnd(0,6),0];});
+  inst(new T.SphereGeometry(1,7,5),M('#c9a98a',{roughness:.6}),45,()=>{const z=rnd(0,12),s0=rnd(.01,.022);return [rnd(-200,200),sandY(z)+.004,z,s0,s0*.4,s0,0,rnd(0,6),0];});
   // alghe e detriti sulla linea dell'ultima mareggiata
-  inst(new T.BoxGeometry(1,1,1),M('#3b3326'),900,()=>{const z=1.2+Math.sin(rnd(0,99))*.35+rnd(-.25,.25);return [rnd(-210,210),sandY(z)+.005,z,rnd(.05,.25),.012,rnd(.02,.06),0,rnd(0,6),0];});
+  inst(new T.BoxGeometry(1,1,1),M('#3b3326'),220,()=>{const z=1.2+Math.sin(rnd(0,99))*.35+rnd(-.25,.25);return [rnd(-210,210),sandY(z)+.005,z,rnd(.05,.25),.012,rnd(.02,.06),0,rnd(0,6),0];});
   // legni, rametti e tronchetti portati dal mare
-  inst(new T.CylinderGeometry(1,1,1,7),M('#9c8f7c'),70,i=>{const z=rnd(.8,20),big=i<14,L=big?rnd(1.2,3.2):rnd(.25,.9),r=big?rnd(.06,.16):rnd(.012,.03);return [rnd(-200,200),sandY(z)+r*.7,z,r,L,r,Math.PI/2,rnd(0,6),rnd(-.1,.1)];});
+  inst(new T.CylinderGeometry(1,1,1,7),M('#9c8f7c'),16,i=>{const z=rnd(.8,20),big=i<4,L=big?rnd(1.2,3.2):rnd(.25,.9),r=big?rnd(.06,.16):rnd(.012,.03);return [rnd(-200,200),sandY(z)+r*.7,z,r,L,r,Math.PI/2,rnd(0,6),rnd(-.1,.1)];});
   // pozzanghere vicino alla riva
-  const pm=new T.MeshStandardMaterial({color:'#7f97a6',roughness:.08,metalness:.5,transparent:true,opacity:.75});for(let i=0;i<16;i++){const z=rnd(.4,2.6),p=new T.Mesh(new T.CircleGeometry(1,18),pm);p.rotation.x=-Math.PI/2;p.scale.set(rnd(.5,2.2),rnd(.3,1.1),1);p.position.set(rnd(-190,190),sandY(z)+.008,z);scene.add(p);}
+  const pm=new T.MeshStandardMaterial({color:'#7f97a6',roughness:.08,metalness:.5,transparent:true,opacity:.75});for(let i=0;i<5;i++){const z=rnd(.4,2.6),p=new T.Mesh(new T.CircleGeometry(1,18),pm);p.rotation.x=-Math.PI/2;p.scale.set(rnd(.5,2.2),rnd(.3,1.1),1);p.position.set(rnd(-190,190),sandY(z)+.008,z);scene.add(p);}
   // buche scavate e castelli di sabbia smontati
-  const hm=M('#8f7a58'),rm=new T.MeshStandardMaterial({map:sandTex(),color:'#d8c49a',roughness:1});for(let i=0;i<14;i++){const z=rnd(3,16),x=rnd(-190,190);if(Math.abs(x)<12)continue;const r=rnd(.25,.6),h=new T.Mesh(new T.CircleGeometry(r,16),hm);h.rotation.x=-Math.PI/2;h.position.set(x,sandY(z)+.006,z);scene.add(h);const rg=new T.Mesh(new T.TorusGeometry(r+.08,.08,6,18),rm);rg.rotation.x=-Math.PI/2;rg.scale.z=.5;rg.position.set(x,sandY(z)+.02,z);scene.add(rg);}
+  const hm=M('#8f7a58'),rm=new T.MeshStandardMaterial({map:sandTex(),color:'#d8c49a',roughness:1});for(let i=0;i<4;i++){const z=rnd(3,16),x=rnd(-190,190);if(Math.abs(x)<12)continue;const r=rnd(.25,.6),h=new T.Mesh(new T.CircleGeometry(r,16),hm);h.rotation.x=-Math.PI/2;h.position.set(x,sandY(z)+.006,z);scene.add(h);const rg=new T.Mesh(new T.TorusGeometry(r+.08,.08,6,18),rm);rg.rotation.x=-Math.PI/2;rg.scale.z=.5;rg.position.set(x,sandY(z)+.02,z);scene.add(rg);}
   // chioschi sulla spiaggia, ogni tanto
   const wood=M('#8a6a48'),wood2=M('#6b4f35'),roofM=M('#c9b18a');for(let i=0;i<3;i++){const x=(i-1)*130+rnd(-15,15)+(i===1?75:0),z=26;const g=new T.Group();g.position.set(x,sandY(z),z);g.userData.kiosk=1;scene.add(g);
     const deck=new T.Mesh(new T.BoxGeometry(9,.25,6),wood2);deck.position.y=.35;g.add(deck);const hut=new T.Mesh(new T.BoxGeometry(5,2.8,3.4),wood);hut.position.set(0,1.85,.8);g.add(hut);
@@ -833,11 +833,17 @@ function rodInHand(r,a=AN){const J=a.obj.userData.J,hp=new T.Vector3();J.rHand.g
 const MP={zoom:42};
 const LAT0=41.75,LON0=12.4,KX=111.32*Math.cos(41.75*R),KY=110.57;
 const PJ=(lat,lon)=>[(lon-LON0)*KX,(lat-LAT0)*KY];
+// scelta del personaggio con cui andare a pesca (salvata nell'attrezzatura, quindi anche nel profilo)
+const CHARL=[['remy','Remy'],['ch01','Franco'],['ch06','Dario'],['ch07','Giulia'],['ch08','Stefano'],['ch12','Marco'],['ch13','Sara'],['ch22','Anna'],['ch31','Luca'],['ch33','Paolo'],['ch37','Chiara'],['ch38','Davide'],['ch41','Elena']];
+function pickChar(){return new Promise(res=>{const d=document.createElement('div');d.id='gpick';d.style.cssText='position:absolute;inset:0;z-index:40;background:#0b1622;color:#fff;overflow:auto;padding:calc(env(safe-area-inset-top) + 16px) 14px 20px;font:500 15px Outfit,sans-serif';
+  d.innerHTML=`<div style="text-align:center;margin-bottom:10px"><b style="font-size:20px">Chi va a pesca?</b><div style="opacity:.75;font-size:13px">Scegli il tuo pescatore: lo puoi cambiare quando vuoi dalla preparazione.</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${CHARL.map(([k,n])=>`<button data-k="${k}" style="border:2px solid ${st.gear.char===k?'#2fe0cf':'rgba(255,255,255,.15)'};border-radius:14px;background:#13263a;padding:4px;color:#fff;font:700 14px Outfit,sans-serif;cursor:pointer"><img src="${GBASE}chars/thumbs/${k}.jpg" style="width:100%;border-radius:10px;display:block" alt=""><span style="display:block;padding:4px 0">${n}</span></button>`).join('')}</div>`;
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{st.gear.char=b.dataset.k;gearSave();click();d.remove();res();});root.appendChild(d);});}
+G.pickChar=async()=>{await pickChar();setUI();};
 async function startMap(){st.phase='map';
   if(!MP.skipAsk&&!MP.from){const ch=await new Promise(res=>{G.startChoice=v=>{root.querySelector('#gstart')?.remove();res(v);};ui.innerHTML='';const d=document.createElement('div');d.id='gstart';
       d.innerHTML=`<div class="gst-h"><b>Dove andiamo?</b><span>💶 Portafoglio del gioco <b>${eur(st.money)}</b></span><span style="font-size:12.5px;opacity:.8">Sono soldi virtuali: si spendono solo nel negozio di pesca del gioco.</span></div><div class="gst-row"><div class="gst-c"><canvas id="gsc1" width="300" height="620"></canvas><button class="gb big gst-b" onclick="GAME.startChoice('pesca')">🎣 A Pesca</button></div><div class="gst-c"><canvas id="gsc2" width="300" height="620"></canvas><button class="gb big gst-b gst-shop" onclick="GAME.startChoice('negozio')">🛒 Al Negozio</button></div></div>
         <div class="gst-f">Euro virtuali: li guadagni pescando (2 € al minuto), 10 € per ogni pesce più 20 € al kg, usando l'app e con il bonus giornaliero del negozio.</div>`;root.appendChild(d);for(const [id,fn] of [['#gsc1',paintBeach],['#gsc2',paintShop]]){const c=d.querySelector(id);if(c.clientWidth&&c.clientHeight)c.width=Math.round(c.height*c.clientWidth/c.clientHeight);fn(c);}});
-    if(ch==='negozio'){openShop();return;}}
+    if(ch==='negozio'){openShop();return;}if(!st.gear.char)await pickChar();}
   MP.skipAsk=false;
   ['#gspd','#glamp','#gjoy'].forEach(q=>{const e=root.querySelector(q);if(e)e.style.display='none';});hud.innerHTML='';
   const c=document.createElement('canvas');c.id='gmapc';root.insertBefore(c,root.firstChild);MP.c=c;MP.g=c.getContext('2d');
@@ -1732,7 +1738,7 @@ function setUI0(){if(st.bag?.length)pruneBag();const p=st.phase;let h='';if(p===
       ${(st.gear.chairs||[]).length?`<div class="grow" style="gap:4px;flex-wrap:wrap"><span>Sedia</span>${['',...st.gear.chairs].map(k=>`<button class="gc ${(st.gear.chair||'chairStd')===k?'on':''}" onclick="GAME.setGearK('chair','${k}')">${{'':'Sul secchio',chairStd:'Pieghevole',chairHigh:'Alta',chairLevel:'Regolabile',chairArm:'Poltrona'}[k]}</button>`).join('')}</div>`:''}
       ${(st.gear.shelters||[]).length?`<div class="grow" style="gap:4px"><span>Riparo</span>${['',...st.gear.shelters].map(k=>`<button class="gc ${(st.gear.shelter||'')===k?'on':''}" onclick="GAME.setGearK('shelter','${k}')">${{'':'Nessuno',umbrella:'Ombrellone',bivvy:'Tenda'}[k]}</button>`).join('')}</div>`:''}
       <div class="gs">${['waders','neo'].includes(st.outfit)?'Con lo scafandro entri in acqua senza bagnarti (e senza congelarti).':'Senza scafandro, se entri in acqua ti bagni.'}</div>
-      ${gearChips(true)}
+      <div class="grow" style="gap:6px"><span>Pescatore</span><button class="gc on" onclick="GAME.pickChar()">👤 ${(CHARL.find(c=>c[0]===(st.gear.char||'remy'))||[0,'Remy'])[1]} · cambia</button></div>${gearChips(true)}
       ${(()=>{const SM=supplyMissing();return SM.length?`<div class="gs warn" style="color:#ffb547">🧺 Per pescare ti manca: <b>${SM.join(', ')}</b>.</div><button class="gb big gshop-b" onclick="GAME.shopNow()">🛒 Vai al negozio di pesca</button>`:btn('🎣 Vai subito in pesca','ready()','big')+btn('🔧 Monta l\'attrezzatura passo passo','start(1)');})()}</div>`;}
   else if(p==='mount'){const S2=st.steps,i=Math.min(st.stepI,S2.length-1),cur=S2[i];h=`<div class="gpanel slim"><div class="grow" style="justify-content:space-between"><b>🔧 Monta la postazione</b><b>${st.stepI}/${S2.length}</b></div>
     <div class="gbar dist" style="height:8px"><i style="width:${st.stepI/S2.length*100}%"></i></div>
@@ -2233,7 +2239,7 @@ G.center=()=>{LOOK.yaw=0;LOOK.pitch=0;};
 function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;earnTick(dt);
   const gmul=(st.phase==='wait'&&!st.busy&&!st.rods.some(r=>r.state==='bite'))?st.speed:1;st.gmul=gmul;st.gt+=dt*1000*gmul;const gmin=dt*gmul/60;const w=wxAt(st.gt);
   // pescatore e vicini di spiaggia
-  joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();updCrabs(dt,t);nearUI(t);
+  joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();playerReal(dt);updCrabs(dt,t);nearUI(t);
   updNpcs(dt,t);updBeachLife(dt,t);rpUpd(dt,t);
   if(st.cast?.on){st.cast.p+=st.cast.dir*dt*1.15;if(st.cast.p>1){st.cast.p=1;st.cast.dir=-1;}if(st.cast.p<0){st.cast.p=0;st.cast.dir=1;}const el=document.getElementById('gpw');if(el)el.style.width=(st.cast.p*100)+'%';}
   // canne
@@ -2283,6 +2289,13 @@ function moveActor(a,dt){
     if(a===AN){const dp=sandY(a.pos.z);a.swim=dp<-1;a.pos.y=a.swim?(a.dive?-1.1:-.2):dp;}else a.pos.y=Math.max(0,a.pos.z*.035);if(a.target==='sit'||a.target==='bend')a.target=a.holding>=0?'hold':'stand';}
   else if(a.faceTo!=null){a.rotY=lerpAng(a.rotY,a.faceTo,1-Math.exp(-(a===AN&&st.castAnim?6*(st.slow||1):8)*dt));}}
 function maxDepth(){const o=st.outfit,g=st.gear;if(o==='wetsuit')return 99;if(o==='waders'||o==='neo')return 1.05;if(g.boots)return .45;return .12;}
+// il tuo pescatore con un personaggio realistico: lo scheletro semplice resta invisibile e regge la canna, il corpo vero segue posizione e azioni
+let PREAL=null,PREALP=null;
+function playerReal(dt){if(!AN.obj)return;if(!PREAL&&!PREALP&&T){PREALP=loadChars().then(C=>{if(!C||!scene)return;PREAL=makeChar(C,st.gear.char||'remy',1.78);PREAL.userData.ch=st.gear.char||'remy';scene.add(PREAL);});}
+  if(!PREAL)return;if(PREAL.userData.ch!==(st.gear.char||'remy')){PREAL.parent?.remove(PREAL);PREAL=null;PREALP=null;return;}if(PREAL.parent!==scene)scene.add(PREAL);if(AN._hid!==AN.obj){AN.obj.traverse(o=>{if(o.isMesh&&!o.userData.keep&&!o.userData.onHand)o.visible=false;});AN._hid=AN.obj;}
+  PREAL.position.copy(AN.pos);PREAL.rotation.y=AN.rotY+Math.PI;PREAL.visible=AN.obj.visible!==false;
+  const tg=AN.target||'',k=AN.moving||AN.joying?((AN.speed||1)>3.2?'run':'walk'):tg==='sit'?'sit':st.castAnim?'cast':AN.swim?'swim':(AN.holding>=0||/reel|hold|strike|bend/.test(tg))?'fishidle':'idle';
+  PREAL.userData.play(k,k==='walk'?clamp((AN.speed||1.2)/1.3,.6,1.4):1);PREAL.userData.mixer.update(dt*(st.slow||1));}
 function joyMove(dt,t){const m=Math.hypot(JOY.x,JOY.y);const free=st.phase==='wait'&&!st.busy;
   if(!JOY.on||m<.15||!free){if(AN.joying){AN.joying=false;AN.moving=false;}return;}
   if(AN.target==='sit'){pose('stand');AN.pos.z-=.35;}
