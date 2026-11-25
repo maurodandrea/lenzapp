@@ -523,7 +523,7 @@ function buildNpcs(){const defs=[
     for(const sx of[-1,1])for(const sz of[-1,1]){const l=new T.Mesh(new T.CylinderGeometry(.014,.014,.58,6),MAT.chairF);l.position.set(d.x+sx*.2,12*.035+.28,12.05+sz*.16);scene.add(l);}
     const bk=new T.Mesh(new T.BoxGeometry(.4,.32,.02),ch.material);bk.position.set(d.x,12*.035+.78,12.24);bk.rotation.x=-.2;scene.add(bk);
     for(let k=0;k<2;k++){const x=d.x+(k?2.5:-2.5),sp=makeSpike('alu');sp.position.set(x,ROD_Z*.035,ROD_Z);scene.add(sp);const rod=makeRod();scene.add(rod);
-      const r={x,spike:sp,obj:rod,dist:rnd(70,115),bend:0,held:false,line:null,sx:x+rnd(-4,4)};const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(20*3),3));r.line=new T.Line(lg,MAT.line);r.line.frustumCulled=false;scene.add(r.line);placeRodOnSpike(r);a.rods.push(r);}
+      const r={x,spike:sp,obj:rod,dist:rnd(70,115),bend:0,held:false,line:null,sx:x};const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(20*3),3));r.line=new T.Line(lg,MAT.line);r.line.frustumCulled=false;scene.add(r.line);placeRodOnSpike(r);a.rods.push(r);}
     NPCS.push(a);}}
 const npcGo=(a,x,z,cb)=>{a.walkTarget={x,z,res:cb};a.moving=true;a.target='stand';};
 function npcFish(bait){const m=gameDate().getMonth()+1,c=SP.filter(sp=>!sp.crab&&(sp.bait[bait]||0)>0).map(sp=>[sp,(sp.mo[m]||.05)*sp.ab*(sp.bait[bait]||0)]);let u=Math.random()*c.reduce((a,x)=>a+x[1],0)||0;
@@ -1690,7 +1690,7 @@ function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.g
   r.star=night()>.25?(st.gear.starlight>0?(st.gear.starlight--,gearSave(),true):false):r.star;
   seq(async()=>{st.phase='busy';const q=CSEQ[st.castStyle]||CSEQ.above,H=q.hit,SL=.35,T0=x=>(x||[]).reduce((a,y)=>a+y[1],0);st.replayCam=true;st.slow=SL;st.msg='⏪ Il tuo lancio al rallentatore';setUI();if(POSES.hold)AN.pose=JSON.parse(JSON.stringify(POSES.hold));castAnimStart('load');await sleep(T0(q.load)/SL+.4);castAnimStart('fire');await sleep(H*.6/SL);whoosh();await sleep(H*.4/SL);st.slow=1;st.msg='';setUI();const L0=st.castLead;st.castLead=null;
     // il piombo vola: parabola dalla cima al punto d'arrivo
-    const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);if(L0)tip.copy(L0.p);const drift=(Math.sin((w.wd-FACE)*R))*w.ws/40*3;const dir=(st.castDir||0)*.21*dist,end=new T.Vector3(r.x+dir+drift*(green?.3:1)+rnd(-S.spr,S.spr)*(green?.12:1)+(st.castStyle==='side'&&!green?S.spr*.5:0),0,-dist);
+    const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);if(L0)tip.copy(L0.p);const drift=(Math.sin((w.wd-FACE)*R))*w.ws/40*3;const dir=(st.castDir||0)*.21*dist,end=new T.Vector3(r.x+dir+drift*dist/120,0,-dist);
     r.flight={a:tip.clone(),b:end,t:0,dur:1.1+dist/120,low:st.castStyle==='side'};r.sinker.visible=true;r.dist=0.01;r.state='flying';
     await sleep(r.flight.dur);splash();burst(end,1);r.flight=null;setTimeout(()=>{st.castCam=false;st.replayCam=false;CAM.cl=null;},700);r.dist=dist;r.sx=end.x;r.sz=end.z;r.state='fishing';r.landT=st.gt;r.drifting=0;
     st.msg=(q>=1?`Lancio ${S.n} perfetto: ${Math.round(dist)} m!`:q>.8?`Buon lancio ${S.n}: ${Math.round(dist)} m`:`Lancio ${S.n} corto: ${Math.round(dist)} m`);checkTangle(r);setUI();
@@ -1775,7 +1775,7 @@ G.deliver=()=>{const r=st.rods[st.sel],w=wxAt(st.gt),boat=st.castMode==='barchin
 // ogni lenza in acqua è un segmento dalla canna al piombo: se due si tagliano o i piombi sono a meno di 3 m, si incrociano
 function lineSeg(x,sx,dist){return [x,ROD_Z,sx,-dist];}
 function segX(a,b){const [x1,y1,x2,y2]=a,[x3,y3,x4,y4]=b,d=(x2-x1)*(y4-y3)-(y2-y1)*(x4-x3);if(Math.abs(d)<1e-9)return false;
-  const t=((x3-x1)*(y4-y3)-(y3-y1)*(x4-x3))/d,u=((x3-x1)*(y2-y1)-(y3-y1)*(x2-x1))/d;return t>.08&&t<1&&u>.08&&u<1;}
+  const t=((x3-x1)*(y4-y3)-(y3-y1)*(x4-x3))/d,u=((x3-x1)*(y2-y1)-(y3-y1)*(x2-x1))/d;return t>.002&&t<1&&u>.002&&u<1;}
 function checkTangle(r){if(r.state!=='fishing'||!(r.dist>5))return false;const me=lineSeg(r.x,r.sx,r.dist),near=(a,b)=>r.drifting&&Math.hypot(a[2]-b[2],a[3]-b[3])<3;
   for(const o of st.rods){if(o===r||o.state!=='fishing'&&o.state!=='bite'&&o.state!=='hooked'||!(o.dist>5))continue;const os=lineSeg(o.x,o.sx,o.dist);
     if(segX(me,os)||near(me,os)){r.state='tangled';r.tangle={own:o.i};o.state='tangled';o.tangle={own:r.i};o.bitePlan=null;vib([80,40,80]);st.msg=`🧶 La canna ${r.i+1} si è incrociata con la canna ${o.i+1}!`;return true;}}
