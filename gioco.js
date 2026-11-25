@@ -461,7 +461,7 @@ function buildWorld(){
   sky=new T.Sky();sky.scale.setScalar(15000);scene.add(sky);
   // coltre grigia del cielo coperto (pioggia, nuvolosità alta)
   overcast=new T.Mesh(new T.SphereGeometry(9000,32,12,0,Math.PI*2,0,Math.PI/2),new T.MeshBasicMaterial({color:0x9aa3ab,side:T.BackSide,transparent:true,opacity:0,fog:false,depthWrite:false}));overcast.renderOrder=-1;scene.add(overcast);
-  sunLight=new T.DirectionalLight(0xffffff,1);sunLight.castShadow=true;sunLight.shadow.mapSize.set(1024,1024);Object.assign(sunLight.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:120});scene.add(sunLight);scene.add(sunLight.target);
+  sunLight=new T.DirectionalLight(0xffffff,1);sunLight.castShadow=true;sunLight.shadow.mapSize.set(GFX()==='alta'?2048:1024,GFX()==='alta'?2048:1024);sunLight.shadow.radius=GFX()==='alta'?3:1;sunLight.shadow.bias=-.0004;Object.assign(sunLight.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:120});scene.add(sunLight);scene.add(sunLight.target);
   hemi=new T.HemisphereLight(0xbfd8ff,0xc9a878,.6);scene.add(hemi);
   moonLight=new T.DirectionalLight(0x9fb4ff,0);scene.add(moonLight);
   // mare con riflessi
@@ -493,7 +493,7 @@ function buildWorld(){
   const pm=new T.MeshStandardMaterial({color:'#2b4024',roughness:1}),tm=new T.MeshStandardMaterial({color:'#5a4030',roughness:1});
   for(let i=0;i<Math.round(26*(SPOT.pines??0));i++){const x=rnd(-220,220),z=rnd(62,90),h=rnd(9,15),p=new T.Group();const tr=new T.Mesh(new T.CylinderGeometry(.25,.4,h,6),tm);tr.position.y=h/2;p.add(tr);
     const cr=new T.Mesh(new T.SphereGeometry(1,10,8),pm);cr.scale.set(rnd(4,6.5),rnd(1.4,2),rnd(4,6));cr.position.y=h;p.add(cr);p.position.set(x,2,z);scene.add(p);}
-  buildLandmarks();buildBeachLife();if(GFX()==='alta')loadHDRI();buildPlanes();
+  buildLandmarks();buildBeachLife();if(GFX()==='alta'){loadHDRI();addGlare();}buildPlanes();
   // frangenti: strisce di schiuma che avanzano verso riva, e risacca sulla sabbia
   const ft=foamTex();for(let i=0;i<9;i++){const g=new T.PlaneGeometry(420,3.4,160,2);g.rotateX(-Math.PI/2);const base=Float32Array.from(g.attributes.position.array);
     const tx=foamTex2();const m=new T.Mesh(g,new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,opacity:0}));m.position.y=.06;m.userData={base,cyc:Math.random(),rate:rnd(.75,1.35)};newWave(m);scene.add(m);foams.push(m);}
@@ -808,6 +808,12 @@ const GFX=()=>LSG('gfx','alta');G.gfx=()=>{LSS('gfx',GFX()==='alta'?'bassa':'alt
 // luce del cielo vero (HDRI Poly Haven): illumina e dà riflessi naturali, il cielo visibile resta quello che segue l'ora
 function loadHDRI(){const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';loadScript(B+'examples/js/loaders/RGBELoader.js').then(()=>{new T.RGBELoader().setDataType(T.UnsignedByteType).load(GBASE+'img/tex/sky.hdr',tx=>{if(!scene||!renderer)return;const pm=new T.PMREMGenerator(renderer),env=pm.fromEquirectangular(tx).texture;tx.dispose();pm.dispose();scene.environment=env;scene.traverse(m=>{if(m.isMesh&&m.material&&m.material.isMeshStandardMaterial&&m.material.envMapIntensity!==undefined)m.material.envMapIntensity=.55;});});}).catch(()=>{});}
 // aerei in avvicinamento a Fiumicino visibili dagli spot vicini
+// step 4: effetti finali in grafica alta: bagliore del sole e riflesso sul mare, foschia all'orizzonte
+let GLARE=null;function addGlare(){const gt=glowTex('rgba(255,244,214,1)'),m=new T.SpriteMaterial({map:gt,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.55,fog:false});GLARE=new T.Sprite(m);GLARE.scale.set(900,900,1);scene.add(GLARE);
+  const rm=new T.MeshBasicMaterial({map:glowTex('rgba(255,236,190,1)'),transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.35});const rf=new T.Mesh(new T.PlaneGeometry(260,1400),rm);rf.rotation.x=-Math.PI/2;rf.position.y=.12;scene.add(rf);GLARE.userData.rf=rf;
+  if(scene.fog)scene.fog.density=(scene.fog.density||0)*1.15;}
+function updGlare(){if(!GLARE||!sunLight)return;const d=sunLight.position.clone().normalize(),up=Math.max(0,d.y),day=night()<.5;GLARE.visible=day&&up>.02;GLARE.position.copy(camera.position).addScaledVector(d,3000);GLARE.material.opacity=.25+.45*(1-up);
+  const rf=GLARE.userData.rf;rf.visible=GLARE.visible&&d.z<0;rf.position.set(camera.position.x+d.x*600,.12,camera.position.z+d.z*600);rf.rotation.z=Math.atan2(d.x,-d.z);rf.material.opacity=.15+.3*(1-up);}
 let PLANES=[];function buildPlanes(){PLANES=[];const sid=String(SPOT.id||'').replace(/^g_/,'');if(!['fiumicino','ostia','focene','passoscuro','fregene','castelfusano','darzagaia','cancello7','castelporziano'].includes(sid))return;loadProp('plane').then(src=>{if(!src||!scene)return;for(let i=0;i<2;i++){const m=propClone(src,38);const sz=m.userData.size;m.userData.fwd=sz.z>sz.x;m.visible=false;scene.add(m);PLANES.push({m,t:-rnd(10,80)-i*60});}});}
 function updPlanes(dt){for(const P of PLANES){P.t+=dt;const T0=45;if(P.t<0){P.m.visible=false;continue;}if(P.t>T0){P.t=-rnd(70,160);continue;}const u=P.t/T0,fi=String(SPOT.id).includes('fiumicino'),dir=fi?1:-1;P.m.visible=true;P.m.position.set(dir*(-1600+u*3200),260-u*(fi?180:60),-500+u*400);P.m.rotation.set(0,(dir>0?-Math.PI/2:Math.PI/2)+(P.m.userData.fwd?0:Math.PI/2),0);}}
 let WALKERS=[];const WALKN=['ch13','ch22','ch37','ch41','ch07','ch33','ch38','ch12'],FISHN=['ch31','ch08','ch06','ch01','ch12','remy','ch33'],WOMEN=['ch07','ch13','ch22','ch37','ch41'];
@@ -2315,7 +2321,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   const gmul=(st.phase==='wait'&&!st.busy&&!st.rods.some(r=>r.state==='bite'))?st.speed:1;st.gmul=gmul;st.gt+=dt*1000*gmul;const gmin=dt*gmul/60;const w=wxAt(st.gt);
   // pescatore e vicini di spiaggia
   joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();playerReal(dt);updCrabs(dt,t);nearUI(t);
-  updNpcs(dt,t);updBeachLife(dt,t);updPlanes(dt);rpUpd(dt,t);
+  updNpcs(dt,t);updBeachLife(dt,t);updPlanes(dt);updGlare();rpUpd(dt,t);
   if(st.cast?.on){st.cast.p+=st.cast.dir*dt*1.15;if(st.cast.p>1){st.cast.p=1;st.cast.dir=-1;}if(st.cast.p<0){st.cast.p=0;st.cast.dir=1;}const el=document.getElementById('gpw');if(el)el.style.width=(st.cast.p*100)+'%';}
   // canne
   for(const r of st.rods){
