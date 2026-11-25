@@ -760,7 +760,7 @@ async function startMap(){st.phase='map';
   MP.skipAsk=false;
   ['#gspd','#glamp','#gjoy'].forEach(q=>{const e=root.querySelector(q);if(e)e.style.display='none';});hud.innerHTML='';
   const c=document.createElement('canvas');c.id='gmapc';root.insertBefore(c,root.firstChild);MP.c=c;MP.g=c.getContext('2d');
-  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">Carico la costa e cerco la tua posizione GPS (fino a 5 s, poi dalla rete)…</div></div>';
+  ui.innerHTML='<div class="gpanel"><b>🚗 Lazio</b><div class="gs">📡 Recupero posizione…</div></div>';
   const r0=root,from=MP.from;MP.from=null;const posP=from?Promise.resolve(null):gamePos();let C=null;try{C=await window.costa();}catch(e){}if(root!==r0)return;
   if(!C){ui.innerHTML=`<div class="gpanel"><b>Mappa non disponibile</b><div class="gs">Scegli direttamente lo spot.</div><div class="gtalk">${SPOTS.map((sp,i)=>`<button class="gc" onclick="GAME.arrive(${i})">${sp.name}</button>`).join('')}</div></div>`;return;}
   const pts=[],segs=[];
@@ -963,10 +963,10 @@ function nearRoad(q){let bi=0,bd=1e9;const r=MP.road;for(let i=0;i<r.length;i+=2
 // posizione attuale: GPS del telefono, altrimenti quella già nota all'app
 function gamePos(){if(window.GP_POS)return Promise.resolve(window.GP_POS);return new Promise(res=>{let done=false,net=null,dev=null;const fin=v=>{if(!done){done=true;res(v);}};
   const app=(()=>{try{const h=(0,eval)('S').spots.find(x=>x.here&&x.approx!==true);return h?{lat:+h.lat,lon:+h.lon}:null;}catch(e){return null;}})();
-  // prima il GPS (aspetta fino a 5 secondi); se non arriva, la posizione dalla rete cellulare/Wi-Fi del telefono; poi quella da IP o già nota all'app
+  // prima il GPS (aspetta fino a 2 secondi); se non arriva, la posizione dalla rete cellulare/Wi-Fi del telefono; poi quella da IP o già nota all'app
   fetch('https://get.geojs.io/v1/ip/geo.json').then(r=>r.json()).then(j=>{const la=+j.latitude,lo=+j.longitude;if(!isNaN(la)&&!isNaN(lo))net={lat:la,lon:lo};}).catch(()=>{});
   const G0=navigator.geolocation,cell=()=>{if(done)return;if(!G0)return fin(net||app);G0.getCurrentPosition(p=>fin({lat:p.coords.latitude,lon:p.coords.longitude}),()=>fin(net||app),{enableHighAccuracy:false,timeout:3500,maximumAge:600000});setTimeout(()=>fin(net||app),4000);};
-  if(G0){G0.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>cell(),{enableHighAccuracy:true,timeout:5000,maximumAge:30000});setTimeout(cell,5100);}else cell();});}
+  if(G0){G0.getCurrentPosition(p=>{dev={lat:p.coords.latitude,lon:p.coords.longitude};fin(dev);},()=>cell(),{enableHighAccuracy:true,timeout:2000,maximumAge:30000});setTimeout(cell,2100);}else cell();});}
 // strada vera (OSRM, dati OpenStreetMap) da dove sei fino alla strada costiera; se non risponde, una strada diritta
 async function approachRoute(pos){const q=PJ(pos.lat,pos.lon),nr=nearRoad(q),dist=Math.hypot(q[0]-nr.t.x,q[1]-nr.t.y);
   if(dist<1.2)return {s:nr.s};if(dist>250)return null;
