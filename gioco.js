@@ -1362,10 +1362,11 @@ function giveItem(it,o){const g=st.gear;(g.bought=g.bought||{})[it.id]=true;swit
     if(it.hat){g.hats=g.hats||['cap'];if(!g.hats.includes(it.hat))g.hats.push(it.hat);g.hat=it.hat;break;}
     if(it.shelter){g.shelters=g.shelters||[];if(!g.shelters.includes(it.id))g.shelters.push(it.id);g.shelter=it.id;break;}if(it.bait){g.baits[it.bait]=(g.baits[it.bait]||0)+it.pk;}else g.own[it.id]=(g.own[it.id]||0)+1;}}
 // premi: un bonus al giorno e un compenso per ogni cattura
-function gearQuality(){const g=st.gear,b=g.bought||{},w=wxAt(st.gt);let q=.7;
-  q+={surf420:0,surf420s:(w.wave||0)<.6?.12:.04,surf450:.1,surf480:.14}[g.rod]||0;q+={r6000:.02,r8000:0,r10000:.05,r14000:.06,rT:.09}[g.reel]||0;
-  if(b.fluo)q+=g.fluo<=.25?.07:g.fluo<=.3?.05:.03;if(b.line)q+=.02;if(b.hook)q+=.03;if(beadsN()>0&&night()>.3)q+=.05;if(g.red&&night()>.3)q+=.04;if(b.bucket)q+=.03;if(Object.keys(b).some(k=>k.startsWith('b_')))q+=.04;
-  return Math.min(1.2,q);}
+// efficacia dell'attrezzatura: senza canna o mulinello è 0; poi pesano la canna e il mulinello migliori che hai, e i fili e le minuterie che hai davvero
+function gearQuality(){const g=st.gear,b=g.bought||{};if(!(g.rods||[]).length||!(g.reels||[]).length)return 0;
+  const rt=Math.max(...g.rods.map(id=>clamp(((ROD[id]?.mul||1)-.9)/.28,0,1))),rp=Math.max(...g.reels.map(id=>REEL_POW[id]??.3));
+  let q=.55+rt*.2+rp*.15;if((g.termF||0)>0)q+=.05;if(g.braidN>0||g.braid)q+=.03;if(beadsN()>0)q+=.03;if(g.leader>0)q+=.02;if(b.bucket)q+=.02;if(b.slam&&b.scis&&g.needle)q+=.03;if(night()>.3&&g.red)q+=.02;
+  return Math.min(1,q);}
 const rodN=id=>(ROD[id]?.n||'')+(ROD_MAXG[id]?` · max ${ROD_MAXG[id]} g`:'');
 const rdot=id=>{const c=ROD_COL[id]||ROD_COL.surf420;return `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;background:linear-gradient(90deg,${c[0]} 50%,${c[1]} 50%);border:1px solid #0006"></span>`;};
 const ROD_COL={beach390:['#c9ccd0','#e6e8ea','grigio'],surf420:['#ff7a00','#ff7a00','arancio fluo'],tele420:['#ffe600','#ffe600','giallo fluo'],surf420s:['#39ff14','#39ff14','verde fluo'],surf420c:['#ff1a1a','#ff1a1a','rosso fluo'],surf420c2:['#1f5bff','#1f5bff','blu'],surf450:['#00d4ff','#00d4ff','azzurro fluo'],surf450_2:['#ff2bd6','#ff2bd6','fucsia fluo'],surf450h:['#c6ff00','#c6ff00','lime fluo'],surf470:['#9b3dff','#9b3dff','viola'],surf480:['#ff7a00','#101010','arancio/nero'],surf480_2:['#ffe600','#101010','giallo/nero'],surf500:['#39ff14','#101010','verde/nero'],surf500_2:['#00d4ff','#101010','azzurro/nero']},REEL_COL={r5000:'#6b7480',r6000:'#2b2f36',r8000:'#3d4550',r10000:'#b8352a',r14000:'#c9a24a',rRear:'#2f6fb5',rLC:'#d4d8dc',rMult:'#8a1c20',rT:'#d9dde2'};
@@ -1379,7 +1380,7 @@ function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>r
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
     <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
-    <div class="gs" style="color:${q<.8?'#ffb547':'#5ee08a'}">${q<.8?'⚠️ Attrezzatura di base: pescherai meno. Al negozio trovi di meglio.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia.'}</div>`;}
+    <div class="gs" style="color:${q<.7?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.7?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia.'}</div>`;}
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
 // ogni canna montata prende dallo zaino un piombo, un amo, una girella, un moschettone e un terminale
