@@ -1664,17 +1664,19 @@ const CSEQ={above:{drop:1.2,load:[['castBack',.5]],fire:[['castOverTop',.13],['c
   side:{drop:1.6,load:[['castSide',.6]],fire:[['sideSweep',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3},
   ground:{drop:2,load:[['otgAddress',.7]],fire:[['otgTurn',.16],['castOverTop',.12],['castFwd',.1],['castFollow',.7]],hit:.34},
   pendulum:{drop:1.5,load:[['pendStart',.45],['pendOut',.45],['castPend',.5]],fire:[['otgTurn',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3}};
-function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=AN.faceTo??AN.rotY;if(st.castStyle==='ground'){AN.faceTo=st.camYaw+Math.PI/2;AN.rotY=AN.faceTo;}}if(phase==='fire'&&st.camYaw!=null)AN.faceTo=st.camYaw;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
+function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=0;if(st.castStyle==='ground'){AN.faceTo=st.camYaw+Math.atan2(.6,.85);AN.rotY=AN.faceTo;}}if(phase==='fire'&&st.camYaw!=null)AN.faceTo=st.camYaw;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
   const r=st.rods[st.sel];if(phase==='load'&&r){const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const p=tip.clone();p.y-=q.drop;
     // ground: piombo appoggiato sulla sabbia a ore 3 (ore 6 = mare, ore 12 = spiaggia); side: a ore 12, dietro al pescatore
     let drop=q.drop;if(st.castStyle==='ground'||st.castStyle==='side'){const a=st.camYaw??AN.rotY,fx=-Math.sin(a),fz=-Math.cos(a),rx=-fz,rz=fx,P=AN.pos,D=3.2;
-      if(st.castStyle==='ground')p.set(P.x+rx*D-fx*.4,0,P.z+rz*D-fz*.4);else p.set(P.x-fx*D,0,P.z-fz*D);p.y=sandY(p.z)+.04;drop=Math.max(q.drop,p.distanceTo(tip)+.15);}
+      if(st.castStyle==='ground')p.set(P.x+rx*D*.6-fx*D*.85,0,P.z+rz*D*.6-fz*D*.85);else p.set(P.x-fx*D,0,P.z-fz*D);p.y=sandY(p.z)+.04;drop=Math.max(q.drop,p.distanceTo(tip)+.15);}
     st.castLead={r,p,q:p.clone(),drop};r.sinker.visible=true;r.sinker.position.copy(p);}}
 function updCastAnim(dt){const A=st.castAnim;if(A){const seq=A.q[A.phase];A.t+=dt;while(A.i<seq.length-1&&A.t>=seq[A.i][1]){A.t-=seq[A.i][1];A.i++;AN.target=seq[A.i][0];
     if(A.phase==='load'&&seq[A.i][0]==='pendOut'&&st.castLead){st.castLead.q.z+=.09;}}
     if(A.phase==='fire'&&A.i===seq.length-1&&A.t>=seq[A.i][1])st.castAnim=null;}
   // piombo: pendolo appeso alla cima, che si appoggia sulla sabbia
-  const L=st.castLead;if(!L)return;const r=L.r,tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const h=Math.min(dt,.033);
+  const L=st.castLead;if(!L)return;const r=L.r,tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);
+  // ground: in carica il pescatore si gira finché la canna punta verso il piombo appoggiato sulla sabbia
+  if(A&&A.phase==='load'&&st.castStyle==='ground'&&AN.faceTo!=null){const P=AN.pos,at=Math.atan2(tip.x-P.x,tip.z-P.z),al=Math.atan2(L.p.x-P.x,L.p.z-P.z);let dd=al-at;dd=Math.atan2(Math.sin(dd),Math.cos(dd));AN.faceTo+=dd*Math.min(1,dt*4);}const h=Math.min(dt,.033);
   const v=L.p.clone().sub(L.q).multiplyScalar(.985);L.q.copy(L.p);L.p.add(v);L.p.y-=9.8*h*h;
   const d=L.p.clone().sub(tip);if(d.length()>L.drop)L.p.copy(tip).add(d.setLength(L.drop));
   const gy=sandY(L.p.z)+.04;if(L.p.y<gy){L.p.y=gy;L.q.x=lerp(L.q.x,L.p.x,.3);L.q.z=lerp(L.q.z,L.p.z,.3);}
