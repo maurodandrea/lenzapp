@@ -346,7 +346,7 @@ function reelIK(){const r=st.rods[AN.holding];if(!r||!r.held||!AN.obj)return;con
   const err=()=>{J.lSh.updateMatrixWorld(true);J.lHand.getWorldPosition(hp);return hp.distanceTo(tg);};let e=err(),st0=.12;
   for(let it=0;it<7;it++){for(const [o,k] of P){const v=o[k];o[k]=v+st0;let e1=err();if(e1<e){e=e1;continue;}o[k]=v-st0;e1=err();if(e1<e){e=e1;continue;}o[k]=v;}st0*=.6;}}
 function applyPose(t,a=AN){const J=a.obj.userData.J,p=a.pose,set=(o,v)=>o.rotation.set(v[0],v[1],v[2]);
-  const dtp=(a.lt!=null?clamp(t-a.lt,0,.1):0)*(a===AN?(st.slow||1):1);a.lt=t;const mv0=a.moving&&!a.swim,spd=a.speed||1.4,run=mv0&&spd>3.2;a.gA=lerp(a.gA||0,mv0?clamp(spd/1.5,.55,1.5):0,1-Math.exp(-dtp*7));const A1=a.gA,mv=A1>.02,ph=a.walk,s1=Math.sin(ph),c1=Math.cos(ph);
+  const dtp=(a.lt!=null?clamp(t-a.lt,0,.1):0)*(a===AN?(st.slow||1):1);a.lt=t;const mv0=a.moving&&!a.swim,spd=(a.speed||1.4)*(a===AN&&!a.joying?.6:1),run=mv0&&spd>3.2;a.gA=lerp(a.gA||0,mv0?clamp(spd/1.5,.55,1.5):0,1-Math.exp(-dtp*7));const A1=a.gA,mv=A1>.02,ph=a.walk,s1=Math.sin(ph),c1=Math.cos(ph);
   // bacino: sale e scende, ruota e oscilla; il busto compensa e la testa resta stabile
   J.hips.position.y=p.hy+(mv?Math.abs(c1)*.045*A1-.035*A1:Math.sin(t*1.3)*.004);J.hips.rotation.set(0,mv?s1*.09*A1:0,mv?Math.sin(2*ph)*.03*A1:0);
   set(J.spine,[p.sp[0]+(mv?(.05+(run?.2:0))*Math.min(1,A1)+Math.abs(c1)*.015*A1:0),p.sp[1]-(mv?s1*.12*A1:0),p.sp[2]-(mv?Math.sin(2*ph)*.02*A1:0)]);
