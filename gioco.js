@@ -1131,8 +1131,8 @@ function build3D(){SAT.cache.clear();SAT.any=false;
   deco.add(TT,TC);
   // luoghi caratteristici della costa con il loro nome
   for(const L of LMK){const q=PJ(L.lat,L.lon),nr=nearRoad(q),g=lmModel(L);
-    if(L.t==='temple')g.scale.set(.001,.0016,.001);else if(L.t==='pier')g.scale.set(.003,.0025,.001);else if(L.t==='port'||L.t==='dune')g.scale.set(.001,.0025,.001);else g.scale.setScalar(.0022);
-    let gp=q,sv=nr.n;if(L.t==='pier'||L.t==='port'){const c=coastNear(q);if(c){gp=[c.px,c.py];sv=[-c.lx,-c.ly];}}
+    if(L.t==='temple')g.scale.set(.001,.0016,.001);else if(L.t==='pier')g.scale.set(.003,.0025,.001);else if(L.t==='port'||L.t==='canal'||L.t==='dune')g.scale.set(.001,.0025,.001);else g.scale.setScalar(.0022);
+    let gp=q,sv=nr.n;if(L.t==='pier'||L.t==='port'||L.t==='canal'||L.t==='dune'){const c=coastNear(q);if(c){gp=L.t==='dune'?[c.px+c.lx*.12,c.py+c.ly*.12]:[c.px,c.py];sv=[-c.lx,-c.ly];}}
     g.position.set(gp[0],0,-gp[1]);g.rotation.y=Math.atan2(-sv[0],sv[1]);S.add(g);
     const lb=labelSprite(L.n,{fs:40,k:.024,col:'#ffe9a8',bg:'rgba(30,20,4,.72)'});lb.userData.n=L.n;lb.position.set(q[0],{tower:.06,lighthouse:.11,castle:.08,fort:.05,temple:.3,pier:.03,port:.04,dune:.04}[L.t],-q[1]);S.add(lb);}
   // auto: la mia (con le canne sul tetto) e il traffico
