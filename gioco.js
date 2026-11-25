@@ -1365,7 +1365,13 @@ function giveItem(it,o){const g=st.gear;(g.bought=g.bought||{})[it.id]=true;swit
 // efficacia dell'attrezzatura: senza canna o mulinello è 0; poi pesano la canna e il mulinello migliori che hai, e i fili e le minuterie che hai davvero
 function gearQuality(){const g=st.gear,b=g.bought||{};if(!(g.rods||[]).length||!(g.reels||[]).length)return 0;
   const rt=Math.max(...g.rods.map(id=>clamp(((ROD[id]?.mul||1)-.9)/.28,0,1))),rp=Math.max(...g.reels.map(id=>REEL_POW[id]??.3));
-  let q=.55+rt*.2+rp*.15;if((g.termF||0)>0)q+=.05;if(g.braidN>0||g.braid)q+=.03;if(beadsN()>0)q+=.03;if(g.leader>0)q+=.02;if(b.bucket)q+=.02;if(b.slam&&b.scis&&g.needle)q+=.03;if(night()>.3&&g.red)q+=.02;
+  const bk=Object.entries(g.baits||{}).filter(([,n])=>n>0).map(([k])=>k),good=['bibi','arenicola','cannolicchio','cefalotto','sarda','gambero'],bs=Math.min(1,(bk.length+bk.filter(k=>good.includes(k)).length)/8);
+  const hs=Object.values(g.hooks||{}).filter(n=>n>0).length,ls=Object.values(g.leads||{}).filter(n=>n>0).length;
+  let q=rt*.30+rp*.25+bs*.15;                                                     // canna, mulinello, esche
+  q+=((g.braidN>0||g.braid)?.03:0)+((g.termF||0)>0?.04:0)+(g.leader>0?.03:0);      // fili
+  q+=(beadsN()>0?.015:0)+(g.swivels>0?.015:0)+(g.snaps>0?.01:0)+Math.min(1,hs/3)*.02+Math.min(1,ls/4)*.02; // minuterie, ami e piombi assortiti
+  q+=(g.needle?.015:0)+(g.elastic?.015:0)+(b.scis?.015:0)+(b.slam?.015:0);         // attrezzi
+  q+=(b.oxy||b.bucket?.02:0)+(g.torch>0?.02:0)+(g.starlight>0?.02:0);              // secchio/ossigenatore, frontale, starlight
   return Math.min(1,q);}
 const rodN=id=>(ROD[id]?.n||'')+(ROD_MAXG[id]?` · max ${ROD_MAXG[id]} g`:'');
 const rdot=id=>{const c=ROD_COL[id]||ROD_COL.surf420;return `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;background:linear-gradient(90deg,${c[0]} 50%,${c[1]} 50%);border:1px solid #0006"></span>`;};
@@ -1380,7 +1386,7 @@ function gearChips(noRR){const g=st.gear,b=g.bought||{},q=gearQuality(),rn=id=>r
   return `${noRR?'':`<div class="grow" style="flex-wrap:wrap;gap:4px"><span>Canna</span>${g.rods.map(id=>`<button class="gc ${g.rod===id?'on':''}" onclick="GAME.useRod('${id}')">${rdot(id)+rodN(id)}</button>`).join('')}</div>
     <div class="grow" style="flex-wrap:wrap;gap:4px"><span>Mulinello</span>${g.reels.map(id=>`<button class="gc ${g.reel===id?'on':''}" onclick="GAME.useReel('${id}')">${reelN(id)}</button>`).join('')}</div>`}
     <div class="gs">🎒 ${g.braid?'Trecciato '+String(g.braid).replace('.',',')+' mm':'Filo '+String(g.line).replace('.',',')+' mm'}${b.leader||g.leader?` · shock leader ${g.leader}`:''}${b.fluo?` · fluorocarbon ${String(g.fluo).replace('.',',')}`:''} · starlight ${g.starlight}${beadsN()>0?' · perline '+beadsN():''}${b.elastic?' · elastico':''}${b.lamp||b.lampF?' · frontale LED':''}${b.spike?' · picchetti in alluminio':''}${b.box?' · cassetta':' · busta per la minuteria'}${b.bucket?' · secchio esche':''}</div>
-    <div class="gs" style="color:${q<.7?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.7?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia.'}</div>`;}
+    <div class="gs" style="color:${q<.5?'#ffb547':'#5ee08a'}">${q<=0?'⛔ Non hai una canna e un mulinello: comprali al negozio per pescare.':q<.5?'⚠️ Attrezzatura di base ('+Math.round(q*100)+'% di efficacia): pescherai meno. Al negozio trovi di meglio.':(q>=.99?'🏆 Attrezzatura al top: 100% di efficacia.':'✅ Attrezzatura buona: '+Math.round(q*100)+'% di efficacia. Per il 100% serve tutto al top: canna, mulinello, esche e accessori.')}</div>`;}
 G.useReel=id=>{const g=st.gear;g.reel=id;g.drag=reelDrag(id);gearSave();if(st.phase==='shop')shopUI();else setUI();};
 G.gearView=()=>{st.phaseBack=st.phase;st.phase='gear';setUI();};G.gearBack=()=>{st.phase=st.phaseBack||'wait';setUI();};
 // ogni canna montata prende dallo zaino un piombo, un amo, una girella, un moschettone e un terminale
@@ -2261,7 +2267,7 @@ function speciesWeights(r){const d=gameDate(),w=wxAt(st.gt),m=d.getMonth()+1,per
     return [sp,f];});}
 function biteRate(r){// abboccate per minuto di gioco
   if(!r.bait||r.state!=='fishing'||r.baitLeft<=0)return 0;const w=wxAt(st.gt),idx=clamp(w.idx??50,0,100);
-  const s=speciesWeights(r).reduce((a,[,f])=>a+f,0);return (s*(.35+idx/100*1.3)*.045+.004)*(r.rig==='2ami'?1.25:1)*gearQuality(); // + piccoli pesci e granchietti che rubano l'esca
+  const s=speciesWeights(r).reduce((a,[,f])=>a+f,0);return (s*(.35+idx/100*1.3)*.045+.004)*(r.rig==='2ami'?1.25:1)*(.55+gearQuality()*.45); // + piccoli pesci e granchietti che rubano l'esca
 }
 
 function sizeOf(sp){const [a,t,b]=sp.w;let x=Math.exp(Math.log(t)+(Math.random()+Math.random()+Math.random()-1.5)*.55);if(Math.random()<.04)x*=1.6;return clamp(x,a,b);}
