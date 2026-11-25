@@ -318,14 +318,14 @@ const POSES={
   bend:{hy:.82,sp:[-.75,0,0],hd:[.3,0,0],lSh:[.9,0,.1],rSh:[1.2,0,-.1],lEl:[.3,0,0],rEl:[.2,0,0],lHip:[.55,0,0],rHip:[.55,0,0],lKnee:[-.5,0,0],rKnee:[-.5,0,0],rod:{p:20,f:.5}},
   hold:{hy:.95,sp:[-.05,0,0],hd:[-.05,0,0],lSh:[.75,0,.25],rSh:[.85,0,-.05],lEl:[1.1,0,0],rEl:[.85,0,0],lHip:[.05,0,0],rHip:[-.1,0,0],lKnee:[-.05,0,0],rKnee:[-.1,0,0],rod:{p:45,f:0}},
   castBack:{hy:.93,sp:[.2,.55,0],hd:[-.1,-.3,0],lSh:[2.5,0,.3],rSh:[2.8,0,-.3],lEl:[.6,0,0],rEl:[.4,0,0],lHip:[.15,0,0],rHip:[-.35,0,0],lKnee:[-.1,0,0],rKnee:[-.25,0,0],rod:{p:180,f:0,y:0}},
-  castSide:{hy:.9,sp:[.05,.95,0],hd:[-.05,-.7,0],lSh:[1.35,0,.55],rSh:[1.5,0,-.95],lEl:[.35,0,0],rEl:[.2,0,0],lHip:[.15,0,0],rHip:[-.3,0,0],lKnee:[-.15,0,0],rKnee:[-.3,0,0],rod:{p:158,f:0,y:1.35}},
+  castSide:{hy:.9,sp:[.05,1.2,0],hd:[-.05,-.9,0],lSh:[1.35,0,.55],rSh:[1.5,0,-.95],lEl:[.35,0,0],rEl:[.2,0,0],lHip:[.15,0,0],rHip:[-.3,0,0],lKnee:[-.15,0,0],rKnee:[-.3,0,0],rod:{p:172,f:0,y:1.35}},
   castSideFwd:{hy:.92,sp:[-.15,-.85,0],hd:[-.1,.4,0],lSh:[1.2,0,.4],rSh:[1.45,0,-.5],lEl:[.25,0,0],rEl:[.15,0,0],lHip:[-.25,0,0],rHip:[.2,0,0],lKnee:[-.25,0,0],rKnee:[-.05,0,0],rod:{p:40,f:0,y:-.7}},
   castGround:{hy:.8,sp:[.3,1.3,0],hd:[-.15,-.95,0],lSh:[1.0,0,.65],rSh:[1.2,0,-1.05],lEl:[.25,0,0],rEl:[.15,0,0],lHip:[.55,0,0],rHip:[-.2,0,0],lKnee:[-.8,0,0],rKnee:[-.45,0,0],rod:{p:166,f:0,y:.95}},
   castPendUp:{hy:.95,sp:[-.05,0,0],hd:[-.25,0,0],lSh:[2.2,0,.2],rSh:[2.5,0,-.2],lEl:[.4,0,0],rEl:[.3,0,0],lHip:[0,0,0],rHip:[0,0,0],lKnee:[0,0,0],rKnee:[0,0,0],rod:{p:68,f:0,y:0}},
   castPend:{hy:.86,sp:[.2,1.15,0],hd:[-.1,-.85,0],lSh:[1.3,0,.55],rSh:[1.6,0,-.95],lEl:[.3,0,0],rEl:[.2,0,0],lHip:[.4,0,0],rHip:[-.25,0,0],lKnee:[-.5,0,0],rKnee:[-.35,0,0],rod:{p:150,f:0,y:1.05}},
   castOverTop:{hy:.95,sp:[-.05,.15,0],hd:[-.2,-.1,0],lSh:[2.4,0,.25],rSh:[2.9,0,-.2],lEl:[.9,0,0],rEl:[.35,0,0],lHip:[-.05,0,0],rHip:[.05,0,0],lKnee:[-.05,0,0],rKnee:[-.15,0,0],rod:{p:95,f:0,y:.1}},
   castFollow:{hy:.93,sp:[-.35,-.2,0],hd:[-.2,.1,0],lSh:[1.0,0,.15],rSh:[1.65,0,-.05],lEl:[.6,0,0],rEl:[.05,0,0],lHip:[-.35,0,0],rHip:[.35,0,0],lKnee:[-.35,0,0],rKnee:[-.05,0,0],rod:{p:22,f:0,y:-.05}},
-  sideSweep:{hy:.9,sp:[0,.45,0],hd:[-.05,-.2,0],lSh:[1.3,0,.45],rSh:[1.55,0,-.7],lEl:[.35,0,0],rEl:[.2,0,0],lHip:[0,0,0],rHip:[-.1,0,0],lKnee:[-.2,0,0],rKnee:[-.2,0,0],rod:{p:135,f:0,y:.75}},
+  sideSweep:{hy:.9,sp:[0,.45,0],hd:[-.05,-.2,0],lSh:[1.3,0,.45],rSh:[1.55,0,-.7],lEl:[.35,0,0],rEl:[.2,0,0],lHip:[0,0,0],rHip:[-.1,0,0],lKnee:[-.2,0,0],rKnee:[-.2,0,0],rod:{p:165,f:0,y:.75}},
   otgAddress:{hy:.8,sp:[.35,1.5,0],hd:[-.25,-1.1,0],lSh:[.9,0,.6],rSh:[1.1,0,-1.0],lEl:[.25,0,0],rEl:[.15,0,0],lHip:[.6,0,0],rHip:[-.2,0,0],lKnee:[-.85,0,0],rKnee:[-.45,0,0],rod:{p:172,f:0,y:1.1}},
   otgTurn:{hy:.86,sp:[.15,.8,0],hd:[-.15,-.4,0],lSh:[1.4,0,.5],rSh:[1.8,0,-.8],lEl:[.3,0,0],rEl:[.2,0,0],lHip:[.25,0,0],rHip:[-.1,0,0],lKnee:[-.45,0,0],rKnee:[-.3,0,0],rod:{p:140,f:0,y:.7}},
   pendStart:{hy:.95,sp:[-.05,0,0],hd:[-.25,0,0],lSh:[1.6,0,.2],rSh:[1.9,0,-.2],lEl:[.6,0,0],rEl:[.4,0,0],lHip:[0,0,0],rHip:[0,0,0],lKnee:[0,0,0],rKnee:[0,0,0],rod:{p:85,f:0,y:0}},
@@ -1227,18 +1227,18 @@ const CAT=[
   {k:'canne',n:'🎣 Canne',items:[
     {id:'beach390',rod:1,n:'Canna Beach 3,90 m · 3 pezzi',d:'Vetro pieno, 80-150 g: indistruttibile, perfetta per la pesca sotto riva (-10% distanza).',p:()=>39},
     {id:'tele420',rod:1,n:'Canna telescopica 4,20 m · da viaggio',d:'Si chiude in 1,2 m, sta nel bagagliaio. Lancia un po\' meno (-8%).',p:()=>45},
-    {id:'surf420',rod:1,n:'Canna surfcasting 4,20 m · 3 pezzi',d:'Vetro-carbonio, lancio 100-200 g. Robusta, ideale per iniziare.',p:()=>69},
-    {id:'surf420s',rod:1,n:'Canna Spiaggia 4,20 m leggera · 3 pezzi',d:'Carbonio, 50-150 g, vetta in fibra piena sensibile: mormore e orate con mare calmo.',p:()=>89},
-    {id:'surf420c',rod:1,n:'Canna surfcasting 4,20 m carbonio · 3 pezzi',d:'Carbonio 30 t, 100-200 g, anelli SiC: leggera e reattiva (+4%).',p:()=>119},
-    {id:'surf420c2',rod:1,n:'Canna surfcasting 4,20 m carbonio · 2 pezzi',d:'Un solo innesto: azione più continua e sensibile (+6%). Si trasporta lunga 2,15 m.',p:()=>149},
+    {id:'surf420',rod:1,n:'Canna surfcasting 4,20 m · 3 pezzi',d:'Vetro-carbonio, lancio fino a 125 g. Robusta, ideale per iniziare.',p:()=>69},
+    {id:'surf420s',rod:1,n:'Canna Spiaggia 4,20 m leggera · 3 pezzi',d:'Carbonio, fino a 100 g, vetta in fibra piena sensibile: mormore e orate con mare calmo.',p:()=>89},
+    {id:'surf420c',rod:1,n:'Canna surfcasting 4,20 m carbonio · 3 pezzi',d:'Carbonio 30 t, fino a 125 g, anelli SiC: leggera e reattiva (+4%).',p:()=>119},
+    {id:'surf420c2',rod:1,n:'Canna surfcasting 4,20 m carbonio · 2 pezzi',d:'Fino a 125 g, un solo innesto: azione più continua e sensibile (+6%). Si trasporta lunga 2,15 m.',p:()=>149},
     {id:'surf450',rod:1,n:'Canna surfcasting 4,50 m carbonio · 3 pezzi',d:'Carbonio, 100-250 g, azione di punta: più distanza (+6%).',p:()=>139},
     {id:'surf450_2',rod:1,n:'Canna surfcasting 4,50 m carbonio · 2 pezzi',d:'Carbonio 36 t, 100-250 g, un solo innesto: più potenza nel lancio (+8%).',p:()=>189},
-    {id:'surf450h',rod:1,n:'Canna surfcasting 4,50 m ibrida · 3 pezzi',d:'Fusto tubolare e vetta in carbonio pieno: lancia lontano (+8%) e segnala le tocche delicate.',p:()=>169},
+    {id:'surf450h',rod:1,n:'Canna surfcasting 4,50 m ibrida · 3 pezzi',d:'Fusto tubolare e vetta in carbonio pieno, fino a 175 g: lancia lontano (+8%) e segnala le tocche delicate.',p:()=>169},
     {id:'surf470',rod:1,n:'Canna surfcasting 4,70 m parabolica · 3 pezzi',d:'Azione progressiva, 120-250 g: perdona gli errori nel lancio pendolare (+10%).',p:()=>199},
-    {id:'surf480',rod:1,n:'Canna Tournament 4,80 m · 3 pezzi',d:'Carbonio alto modulo, 150-250 g, per i lanci lunghi (+12%). Da veri agonisti.',p:()=>279},
-    {id:'surf480_2',rod:1,n:'Canna Tournament 4,80 m · 2 pezzi',d:'Carbonio alto modulo, 150-250 g, un solo innesto: la scelta dei campioni (+14%).',p:()=>339},
-    {id:'surf500',rod:1,n:'Canna Long Cast 5,00 m · 3 pezzi',d:'Carbonio 46 t, 175-275 g, anelli Low Rider: la regina della distanza (+16%).',p:()=>389},
-    {id:'surf500_2',rod:1,n:'Canna Long Cast 5,00 m · 2 pezzi',d:'Carbonio 46 t, 175-275 g, un solo innesto da 2,55 m: il massimo della distanza (+18%).',p:()=>459}]},
+    {id:'surf480',rod:1,n:'Canna Tournament 4,80 m · 3 pezzi',d:'Carbonio alto modulo, fino a 200 g, per i lanci lunghi (+12%). Da veri agonisti.',p:()=>279},
+    {id:'surf480_2',rod:1,n:'Canna Tournament 4,80 m · 2 pezzi',d:'Carbonio alto modulo, fino a 200 g, un solo innesto: la scelta dei campioni (+14%).',p:()=>339},
+    {id:'surf500',rod:1,n:'Canna Long Cast 5,00 m · 3 pezzi',d:'Carbonio 46 t, fino a 250 g, anelli Low Rider: la regina della distanza (+16%).',p:()=>389},
+    {id:'surf500_2',rod:1,n:'Canna Long Cast 5,00 m · 2 pezzi',d:'Carbonio 46 t, fino a 250 g, un solo innesto da 2,55 m: il massimo della distanza (+18%).',p:()=>459}]},
   {k:'mulinelli',n:'⚙️ Mulinelli',items:[
     {id:'reel',n:'Mulinello surfcasting bobina lunga',d:'Bobina conica in alluminio, frizione anteriore. Più grande = frizione più potente.',opts:[{k:'t',n:'Taglia',v:['6000','8000','10000','14000']}],p:o=>[45,69,119,189][o.t]},
     {id:'reelBase',reel:'r6000',n:'Mulinello 6000 base',d:'Semplice e robusto, frizione 8 kg.',p:()=>29},
@@ -1666,7 +1666,7 @@ const CSEQ={above:{drop:1.2,load:[['castBack',.5]],fire:[['castOverTop',.13],['c
   pendulum:{drop:2.2,load:[['pendStart',.45],['pendOut',.45],['castPend',.5]],fire:[['otgTurn',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3}};
 // ground e side: il piombo è appoggiato sulla sabbia oltre la cima della canna, un po' all'interno dell'arco che farà la cima
 function groundLead(){const L=st.castLead;if(!L||!(st.castStyle==='ground'||st.castStyle==='side'))return;const tip=new T.Vector3();L.r.obj.updateMatrixWorld(true);L.r.obj.userData.tip.getWorldPosition(tip);const P=AN.pos;
-  let dx=tip.x-P.x,dz=tip.z-P.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;const k=st.castStyle==='ground'?1.6:1.3,inX=-dz*.5*(st.castStyle==='ground'?1:0),inZ=dx*.5*(st.castStyle==='ground'?1:0);
+  let dx=tip.x-P.x,dz=tip.z-P.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;const k=st.castStyle==='ground'?1.6:2.6,inX=-dz*.5*(st.castStyle==='ground'?1:0),inZ=dx*.5*(st.castStyle==='ground'?1:0);
   const p=new T.Vector3(tip.x+dx*k+inX,0,tip.z+dz*k+inZ);p.y=sandY(p.z)+.04;L.p.copy(p);L.q.copy(p);L.drop=p.distanceTo(tip)+.1;L.r.sinker.position.copy(p);}
 function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=0;}const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
   const r=st.rods[st.sel];if(phase==='load'&&r){const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const p=tip.clone();p.y-=q.drop;
@@ -1684,8 +1684,9 @@ function updCastAnim(dt){const A=st.castAnim;if(A){const seq=A.q[A.phase];A.t+=d
 G.cstyle=k=>{st.castStyle=k;LSS('cstyle',k);setUI();};
 // probabilità degli imprevisti: scogli, sabbia smossa dalle onde, alghe, lenza che si spezza
 function riskOf(){const w=wxAt(st.gt),rk=SPOT.rocks||0,wv=w.wave||0;return {rocks:rk,wave:wv,snag:.05+.1*rk+.035*wv,weed:.05+(wv>1?.06:0)+(SPOT.veg||0)*.02,brk:.015+.04*rk+(wv>1.5?.04:0),sand:wv>.8?.05+.03*wv:.02};}
-const ROD_MAXG={beach390:150,tele420:150,surf420:200,surf420s:150,surf420c:200,surf420c2:200,surf450:250,surf450_2:250,surf450h:220,surf470:250,surf480:250,surf480_2:250,surf500:275,surf500_2:275};
+const ROD_MAXG={beach390:150,tele420:150,surf420:125,surf420s:100,surf420c:125,surf420c2:125,surf450:250,surf450_2:250,surf450h:175,surf470:250,surf480:200,surf480_2:200,surf500:250,surf500_2:250};
 function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.gt),S=cSty();
+  if((r.rodId||st.gear.rod)==='tele420'&&st.castStyle==='pendulum'){const rid='tele420';st.cast=null;seq(async()=>{st.phase='busy';setUI();castAnimStart('fire');await sleep(.35);whoosh();st.castLead=null;await sleep(.3);st.castAnim=null;st.castCam=false;st.replayCam=false;st.camYaw=null;CAM.cl=null;vib([300,80,300]);r.bait=null;r.state='idle';r.dist=0;r.sinker.visible=false;pose('hold');loseGear('rod',rid);r.dismantled=true;r.obj.visible=false;r.held=false;AN.holding=-1;st.needShop=true;st.msg='💥 Crack! La canna telescopica non regge il lancio a pendolo: si è spezzata. Con la telescopica usa above o side, o compra una canna a innesti.';st.phase='wait';setUI();});return;}
   // piombo troppo pesante per la canna: oltre il 50% in più si spezza il terminale; vicino al doppio può spezzarsi la canna
   {const rid=r.rodId||st.gear.rod,mx=ROD_MAXG[rid]||200,lw=r.lead||st.lead,ov=(lw-mx)/mx;if(ov>0&&Math.random()<Math.min(1,ov*2)){const rodBreak=ov>=.8&&Math.random()<.5;st.cast=null;
     seq(async()=>{st.phase='busy';setUI();castAnimStart('fire');await sleep(.3);whoosh();st.castLead=null;await sleep(.4);st.castAnim=null;st.castCam=false;st.replayCam=false;st.camYaw=null;CAM.cl=null;click();vib([200,60,200]);r.bait=null;r.state='idle';r.dist=0;r.sinker.visible=false;pose('hold');
