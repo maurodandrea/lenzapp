@@ -156,16 +156,16 @@ async function loadThree(){if(window.THREE&&THREE.Water&&THREE.Sky)return THREE;
 
 // personaggi realistici (Mixamo): modelli glb e animazioni condivise, caricati una volta sola
 let CHARS=null;
-function loadChars(){if(CHARS)return CHARS;const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';CHARS=(async()=>{await loadScript(B+'examples/js/loaders/GLTFLoader.js');await loadScript(B+'examples/js/utils/SkeletonUtils.js');
-  const gl=u=>new Promise((res,rej)=>new T.GLTFLoader().load(GBASE+u,res,undefined,rej));const [A,remy,boss]=await Promise.all([fetch(GBASE+'chars/anims.json').then(r=>r.json()),gl('chars/remy.glb'),gl('chars/boss.glb')]);
+function loadChars(){if(CHARS)return CHARS;const B='https://cdn.jsdelivr.net/npm/three@0.128.0/';CHARS=(async()=>{await loadScript(B+'examples/js/loaders/GLTFLoader.js');await loadScript(B+'examples/js/utils/SkeletonUtils.js');await loadScript(B+'examples/js/libs/meshopt_decoder.js');
+  const gl=u=>new Promise((res,rej)=>{const L=new T.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);L.load(GBASE+u,res,undefined,rej);});const NAMES=['remy','boss','ch01','ch12','ch13','ch22','ch33','ch38'];const [A,...G]=await Promise.all([fetch(GBASE+'chars/anims.json').then(r=>r.json()),...NAMES.map(n=>gl('chars/'+n+'.glb').catch(()=>null))]);const models={};NAMES.forEach((n,i)=>{if(G[i]){const sc=G[i].scene;sc.traverse(o=>{if(o.isBone)o.name=o.name.replace(/^mixamorig\d*/,'mixamorig');});models[n]=sc;}});
   const clips={};for(const k in A){const c=T.AnimationClip.parse(A[k]);for(const t of c.tracks)if(/Hips\.position$/.test(t.name)){const v=t.values,x0=v[0],z0=v[2];for(let i=0;i<v.length;i+=3){v[i]=x0;v[i+2]=z0;}}clips[k]=c;}
   // l'altezza dei fianchi nelle animazioni va riportata alla scala di ogni personaggio
-  const per={};for(const [nm,sc] of [['remy',remy.scene],['boss',boss.scene]]){let hy=null;sc.traverse(o=>{if(o.isBone&&o.name==='mixamorigHips'&&hy==null)hy=o.position.y;});per[nm]={};
+  const per={};for(const [nm,sc] of Object.entries(models)){let hy=null;sc.traverse(o=>{if(o.isBone&&o.name==='mixamorigHips'&&hy==null)hy=o.position.y;});per[nm]={};
     for(const k in clips){const c=clips[k].clone(),t=c.tracks.find(t=>/Hips\.position$/.test(t.name));if(t&&hy){const r0=hy/(t.values[1]||1);t.values=Float32Array.from(t.values,v=>v*r0);}per[nm][k]=c;}}
-  return {clips:per,models:{remy:remy.scene,boss:boss.scene}};})().catch(e=>{console.warn('personaggi',e);return null;});return CHARS;}
+  return {clips:per,models,names:Object.keys(models)};})().catch(e=>{console.warn('personaggi',e);return null;});return CHARS;}
 // le mesh esportate hanno copie dello scheletro: le ricollego tutte alle ossa principali così l'animazione muove tutto il corpo
 function charFix(root){const prim={};root.traverse(o=>{if(o.isBone&&!/_\d+$/.test(o.name)&&!prim[o.name])prim[o.name]=o;});root.traverse(m=>{if(m.isSkinnedMesh){const sk=m.skeleton,nb=sk.bones.map(b=>prim[b.name.replace(/_\d+$/,'')]||b);m.bind(new T.Skeleton(nb,sk.boneInverses),m.bindMatrix);m.frustumCulled=false;m.castShadow=true;}});}
-function makeChar(C,which,h){const o=T.SkeletonUtils.clone(C.models[which]);charFix(o);const b=new T.Box3().setFromObject(o),s=b.getSize(new T.Vector3());o.scale.setScalar(h/s.y);const g=new T.Group();g.add(o);const b2=new T.Box3().setFromObject(o);o.position.y=-b2.min.y;
+function makeChar(C,which,h){if(!C.models[which])which=C.names[0];const o=T.SkeletonUtils.clone(C.models[which]);charFix(o);o.updateMatrixWorld(true);let hp=null;o.traverse(b=>{if(b.isBone&&b.name==='mixamorigHips'&&!hp)hp=b;});const hw=hp?hp.getWorldPosition(new T.Vector3()).y:1;o.scale.setScalar(h*.55/(hw||1));const g=new T.Group();g.add(o);
   const mx=new T.AnimationMixer(o);g.userData.mixer=mx;g.userData.play=(k,ts=1)=>{const c=C.clips[which][k];if(!c)return;if(g.userData.cur===k)return;const a=mx.clipAction(c);a.reset().setEffectiveTimeScale(ts).fadeIn(.3).play();if(g.userData.act)g.userData.act.fadeOut(.3);g.userData.act=a;g.userData.cur=k;};return g;}
 
 /* ---------- texture generate al volo ---------- */
@@ -773,8 +773,8 @@ function buildBeachLife(){WALKERS=[];const M=(c,o={})=>new T.MeshStandardMateria
       for(const ex of[-1,1]){const ear=new T.Mesh(new T.BoxGeometry(.04,.09,.05),c);ear.position.set(ex*.06,.63,-.3);d.add(ear);}d.userData.legs=[];for(const [lx,lz] of [[-.06,-.2],[.06,-.2],[-.06,.2],[.06,.2]]){const lg=new T.Group();lg.position.set(lx,.3,lz);const m=new T.Mesh(new T.BoxGeometry(.05,.3,.05),c);m.position.y=-.15;lg.add(m);d.add(lg);d.userData.legs.push(lg);}
       const tl=new T.Mesh(new T.BoxGeometry(.03,.03,.22),c);tl.position.set(0,.5,.33);tl.rotation.x=-.7;d.add(tl);scene.add(d);a.dog=d;}
     WALKERS.push(a);}
-  loadChars().then(C=>{if(!C||!scene)return;WALKERS.forEach((a,i)=>{const g=makeChar(C,i%3===2?'boss':'remy',i%3===2?1.72:1.78);scene.add(g);a.real=g;a.obj.visible=false;a.obj.position.y=-50;g.userData.play(a.speed>3?'run':'walk',a.speed>3?.9:a.speed/1.3);});
-    const ks=[...scene.children].filter(o=>o.userData?.kiosk);ks.forEach((k,i)=>{const g=makeChar(C,i%2?'remy':'boss',1.75);g.position.set(k.position.x+1.2,k.position.y+.48,k.position.z-2.6);g.rotation.y=Math.PI;g.userData.play(i%2?'idle':'sit');if(!(i%2))g.position.y-=.05;scene.add(g);WALKERS.push({still:g});});});}
+  loadChars().then(C=>{if(!C||!scene)return;WALKERS.forEach((a,i)=>{const g=makeChar(C,['ch13','ch33','ch22','ch38','ch12','ch01'][i%6],1.75);scene.add(g);a.real=g;a.obj.visible=false;a.obj.position.y=-50;g.userData.play(a.speed>3?'run':'walk',a.speed>3?.9:a.speed/1.3);});
+    const ks=[...scene.children].filter(o=>o.userData?.kiosk);ks.forEach((k,i)=>{const g=makeChar(C,['remy','ch01','ch12'][i%3],1.76);g.position.set(k.position.x+1.2,k.position.y+.48,k.position.z-2.6);g.rotation.y=Math.PI;g.userData.play(i%2?'idle':'sit');if(!(i%2))g.position.y-=.05;scene.add(g);WALKERS.push({still:g});});});}
 function updBeachLife(dt,t){const day=night()<.45;for(const a of WALKERS){if(a.still){a.still.visible=day;a.still.userData.mixer.update(dt);continue;}if(!a.real)a.obj.visible=day;else a.real.visible=day;if(a.dog)a.dog.visible=day;if(!day)continue;
     const sp=a.speed;a.pos.x+=a.dir*sp*dt;if(Math.abs(a.pos.x)>190){a.dir*=-1;}a.pos.y=Math.max(sandY(a.z0),0)+(a.z0<0?0:0);a.pos.z=a.z0;a.walk+=dt*sp*5.2;a.moving=true;a.rotY=lerpAng(a.rotY,a.dir>0?-Math.PI/2:Math.PI/2,1-Math.exp(-6*dt));
     if(a.real){a.real.position.copy(a.pos);a.real.rotation.y=a.rotY+Math.PI;a.real.userData.mixer.update(dt);}else{lerpPose(dt,6,a);applyPose(t,a);}
