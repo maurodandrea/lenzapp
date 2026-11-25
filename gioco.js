@@ -373,7 +373,7 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   for(let i=0;i<SEG;i++){const u=i/SEG,len=ROD_LEN/SEG,r1=lerp(.017,.004,u),r2=lerp(.017,.004,(i+1)/SEG),s=new T.Group();s.position.y=i?len:0;parent.add(s);
     const m=new T.Mesh(new T.CylinderGeometry(r2,r1,len,8),u<.13?MAT.blank:u<.8?MAT.blank2:MAT.tip);m.position.y=len/2;m.castShadow=true;s.add(m);
     if(i===2||i===3){const c=new T.Mesh(new T.CylinderGeometry(r1*1.5,r1*1.5,len,10),MAT.cork);c.position.y=len/2;s.add(c);}
-    if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.03,.008,u),.003,6,12),MAT.alu);ring.position.set(0,len*.5,lerp(.05,.015,u));s.add(ring);}
+    if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.03,.008,u),.003,6,12),MAT.alu);ring.position.set(0,len*.5,-lerp(.05,.015,u));s.add(ring);}
     segs.push(s);parent=s;}
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
   const reel=new T.Group();reel.position.set(0,.1,0);reel.rotation.y=Math.PI;segs[3].add(reel);
@@ -733,7 +733,7 @@ function setupRods(){if(TRIG){scene.remove(TRIG);TRIG=null;}if(holder().k==='tri
     const hit=new T.Mesh(new T.CylinderGeometry(.6,.6,4.6,8),new T.MeshBasicMaterial({visible:false}));hit.position.set(x,2.2,ROD_Z-.3);hit.rotation.x=-8*R;scene.add(hit);
     return {rodId:rid,reelId:lid,lineT:PQ.lineT||'nylon',leadT:PQ.leadT||'piramidale',hookT:PQ.hookT||'aberdeen',grip:PQ.leadT==='ragno',lead:PQ.lead??st.lead,hook:PQ.hook??st.hook,rig:PQ.rig||'lungo',broken:false,dismantled:false,i,x,spike,obj,line,sinker,hit,bait:null,dist:0,state:'idle',baitLeft:0,bend:0,bitePlan:null,held:false,sx:x,sz:-1};});}
 function placeRodOnSpike(r){const by=ROD_Z*.035,cy=r.spike?.userData.cupY??.62,t=SPIKE_TILT*R;// calcio nella tazza, fusto parallelo al picchetto
-  r.obj.position.set(r.x,by+cy*Math.cos(t)+.035*Math.sin(t),ROD_Z+cy*Math.sin(t)-.035*Math.cos(t));r.obj.rotation.set(-t,Math.PI,0,'YXZ');}
+  r.obj.position.set(r.x,by+cy*Math.cos(t)+.035*Math.sin(t),ROD_Z+cy*Math.sin(t)-.035*Math.cos(t));r.obj.rotation.set(t,0,0,'YXZ');}
 function rodInHand(r,a=AN){const J=a.obj.userData.J,hp=new T.Vector3();J.rHand.getWorldPosition(hp);const p=a.pose.rod||{p:45,f:0,y:0};
   r.obj.rotation.set((p.p-90)*R,a.rotY+(p.y||0),0,'YXZ');const dir=new T.Vector3(0,1,0).applyEuler(r.obj.rotation);r.obj.position.copy(hp).addScaledVector(dir,-.5);}
 
@@ -1663,8 +1663,8 @@ const cSty=()=>CSTY[st.castStyle]||CSTY.above;
 const CSEQ={above:{drop:1.2,load:[['castBack',.5]],fire:[['castOverTop',.13],['castFwd',.11],['castFollow',.7]],hit:.2},
   side:{drop:1.6,load:[['castSide',.6]],fire:[['sideSweep',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3},
   ground:{drop:2,load:[['otgAddress',.7]],fire:[['otgTurn',.16],['castOverTop',.12],['castFwd',.1],['castFollow',.7]],hit:.34},
-  pendulum:{drop:1.5,load:[['pendStart',.45],['pendOut',.45],['castPend',.5]],fire:[['otgTurn',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3}};
-function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=0;if(st.castStyle==='ground'){AN.faceTo=st.camYaw+Math.atan2(.6,.85);AN.rotY=AN.faceTo;}}if(phase==='fire'&&st.camYaw!=null)AN.faceTo=st.camYaw;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
+  pendulum:{drop:2.2,load:[['pendStart',.45],['pendOut',.45],['castPend',.5]],fire:[['otgTurn',.13],['castOverTop',.11],['castFwd',.1],['castFollow',.7]],hit:.3}};
+function castAnimStart(phase){st.castCam=true;if(phase==='load'){if(st.camYaw==null)st.camYaw=0;if(st.castStyle==='ground'){AN.faceTo=st.camYaw+Math.atan2(.6,.85);AN.rotY=AN.faceTo;}else if(st.castStyle==='side'){AN.faceTo=st.camYaw+Math.PI/2;AN.rotY=AN.faceTo;}}if(phase==='fire'&&st.camYaw!=null)AN.faceTo=st.camYaw;const q=CSEQ[st.castStyle]||CSEQ.above;st.castAnim={q,phase,i:0,t:0};AN.target=q[phase][0][0];
   const r=st.rods[st.sel];if(phase==='load'&&r){const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const p=tip.clone();p.y-=q.drop;
     // ground: piombo appoggiato sulla sabbia a ore 3 (ore 6 = mare, ore 12 = spiaggia); side: a ore 12, dietro al pescatore
     let drop=q.drop;if(st.castStyle==='ground'||st.castStyle==='side'){const a=st.camYaw??AN.rotY,fx=-Math.sin(a),fz=-Math.cos(a),rx=-fz,rz=fx,P=AN.pos,D=3.2;
@@ -1676,7 +1676,7 @@ function updCastAnim(dt){const A=st.castAnim;if(A){const seq=A.q[A.phase];A.t+=d
   // piombo: pendolo appeso alla cima, che si appoggia sulla sabbia
   const L=st.castLead;if(!L)return;const r=L.r,tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);
   // ground: in carica il pescatore si gira finché la canna punta verso il piombo appoggiato sulla sabbia
-  if(A&&A.phase==='load'&&st.castStyle==='ground'&&AN.faceTo!=null){const P=AN.pos,at=Math.atan2(tip.x-P.x,tip.z-P.z),al=Math.atan2(L.p.x-P.x,L.p.z-P.z);let dd=al-at;dd=Math.atan2(Math.sin(dd),Math.cos(dd));AN.faceTo+=dd*Math.min(1,dt*4);}const h=Math.min(dt,.033);
+  if(A&&A.phase==='load'&&(st.castStyle==='ground'||st.castStyle==='side')&&AN.faceTo!=null){const P=AN.pos,at=Math.atan2(tip.x-P.x,tip.z-P.z),al=Math.atan2(L.p.x-P.x,L.p.z-P.z);let dd=al-at;dd=Math.atan2(Math.sin(dd),Math.cos(dd));AN.faceTo+=dd*Math.min(1,dt*4);}const h=Math.min(dt,.033);
   const v=L.p.clone().sub(L.q).multiplyScalar(.985);L.q.copy(L.p);L.p.add(v);L.p.y-=9.8*h*h;
   const d=L.p.clone().sub(tip);if(d.length()>L.drop)L.p.copy(tip).add(d.setLength(L.drop));
   const gy=sandY(L.p.z)+.04;if(L.p.y<gy){L.p.y=gy;L.q.x=lerp(L.q.x,L.p.x,.3);L.q.z=lerp(L.q.z,L.p.z,.3);}
