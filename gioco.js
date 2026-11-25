@@ -971,12 +971,12 @@ async function approachRoute(pos){const q=PJ(pos.lat,pos.lon),nr=nearRoad(q),dis
 // immagini satellitari (le stesse della mappa degli spot) caricate a tessere attorno all'auto
 const SAT={cache:new Map(),any:false};
 function satLoad(z,x,y,k){const o={m:null,ok:false,t:M3.t};SAT.cache.set(k,o);
-  const n=2**z,lo=i=>i/n*360-180,la=j=>Math.atan(Math.sinh(Math.PI*(1-2*j/n)))/R,a=PJ(la(y),lo(x)),b=PJ(la(y+1),lo(x+1)),h=z<15?-.001:0;
+  const n=2**z,lo=i=>i/n*360-180,la=j=>Math.atan(Math.sinh(Math.PI*(1-2*j/n)))/R,a=PJ(la(y),lo(x)),b=PJ(la(y+1),lo(x+1)),h=z<11?-.003:z<15?-.001:0;
   const m=new T.Mesh(flatGeo([a[0],h,-a[1],b[0],h,-a[1],a[0],h,-b[1],b[0],h,-b[1]],[0,1,1,1,0,0,1,0],[0,2,1,1,2,3]),new T.MeshBasicMaterial({color:M3.tint?M3.tint.clone():0xffffff,side:T.DoubleSide,toneMapped:false}));m.visible=false;M3.S.add(m);o.m=m;
   new T.TextureLoader().setCrossOrigin('anonymous').load(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,t=>{if(!M3.S||!o.m){t.dispose();return;}t.encoding=T.sRGBEncoding;t.anisotropy=4;m.material.map=t;m.material.needsUpdate=true;o.ok=true;SAT.any=true;},undefined,()=>{});}
 function satTiles(cx,cy,z,rad,on,need){const lat=cy/KY+LAT0,lon=cx/KX+LON0,n=2**z,tx=Math.floor((lon+180)/360*n),ty=Math.floor((1-Math.log(Math.tan(lat*R)+1/Math.cos(lat*R))/Math.PI)/2*n);
   if(!on)return;for(let dx=-rad;dx<=rad;dx++)for(let dy=-rad;dy<=rad;dy++){const k=z+'/'+(tx+dx)+'/'+(ty+dy);need.add(k);if(!SAT.cache.has(k))satLoad(z,tx+dx,ty+dy,k);}}
-function satUpdate(cx,cy,fast){const need=new Set();satTiles(cx,cy,13,2,true,need);satTiles(cx,cy,15,2,!fast,need);
+function satUpdate(cx,cy,fast){const need=new Set();satTiles(cx,cy,10,2,true,need);satTiles(cx,cy,13,2,true,need);satTiles(cx,cy,15,2,!fast,need);
   for(const [k,o] of SAT.cache){const v=need.has(k);if(o.m)o.m.visible=v&&o.ok;if(v)o.t=M3.t;}
   if(SAT.cache.size>170){[...SAT.cache].filter(([k])=>!need.has(k)).sort((a,b)=>a[1].t-b[1].t).slice(0,SAT.cache.size-140).forEach(([k,o])=>{if(o.m){M3.S.remove(o.m);o.m.geometry.dispose();o.m.material.map?.dispose();o.m.material.dispose();o.m=null;}SAT.cache.delete(k);});}
   if(M3.deco)M3.deco.visible=!SAT.any;}
@@ -1005,7 +1005,7 @@ function build3D(){SAT.cache.clear();SAT.any=false;
   const cs=MP.coast,sn=MP.sn,ext=(a,b,k)=>{const x=a[0]-b[0],y=a[1]-b[1],l=Math.hypot(x,y)||1;return [a[0]+x/l*k,a[1]+y/l*k];};
   const C2=[ext(cs[0],cs[6],40),ext(cs[0],cs[6],6),...cs,ext(cs[cs.length-1],cs[cs.length-7],6),ext(cs[cs.length-1],cs[cs.length-7],40)];
   const off=(P,k)=>P.map(q=>[q[0]+sn[0]*k,q[1]+sn[1]*k]);
-  const deco=new T.Group();S.add(deco);M3.deco=deco;const lt=landTex3();S.add(new T.Mesh(stripGeo(off(C2,-.06),off(C2,-45),-.003,.9),new T.MeshLambertMaterial({map:lt,side:T.DoubleSide})));
+  const deco=new T.Group();S.add(deco);M3.deco=deco;const lt=landTex3();S.add(new T.Mesh(stripGeo(off(C2,-.06),off(C2,-45),-.006,.9),new T.MeshLambertMaterial({map:lt,color:0x8f8a78,side:T.DoubleSide})));
   const st2=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#e6d09c';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.fillStyle=`rgba(${Math.random()<.5?'160,130,80':'255,245,215'},${Math.random()*.35})`;g.fillRect(Math.random()*w,Math.random()*h,1.5,1.5);}},[1,1]);st2.wrapS=st2.wrapT=T.RepeatWrapping;
   deco.add(new T.Mesh(stripGeo(off(C2,.018),off(C2,-.12),.0015,.08),new T.MeshLambertMaterial({map:st2,side:T.DoubleSide})));
   // schiuma della battigia
