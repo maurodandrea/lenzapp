@@ -1216,9 +1216,9 @@ G._rp=RP;G._chair=()=>CHAIR;G._cast=(style,pw,ms=1600)=>{st.castStyle=style;st.c
 const today=()=>new Date().toISOString().slice(0,10);
 // kit di partenza: il minimo indispensabile. Tutto il resto si compra al negozio
 const GEAR0={v:2,rod:'beach390',rods:['beach390'],rodCnt:{beach390:1},reel:'r5000',reels:['r5000'],reelCnt:{r5000:1},drag:7,line:.25,leader:5,fluo:.30,term:10,
-  baits:{koreano:15},hooks:{4:10},leads:{80:1,100:1,125:1},grip:{},ogiva:{},forged:{},starlight:0,swivels:15,snaps:15,needle:true,elastic:false,lamp:false,torch:0,spikes:1,spikeT:'pvc',
+  baits:{koreano:15},hooks:{4:10},leads:{80:1,100:1,125:1},grip:{},ogiva:{},forged:{},starlight:2,swivels:15,snaps:15,needle:true,elastic:false,lamp:false,torch:0,spikes:1,spikeT:'pvc',
   chair:'',chairs:[],hat:'none',hats:['none'],outfits:[],shelters:[],shelter:'',boots:false,own:{},bought:{scis:true}};
-function gearLoad(){let g=LSG('gear',null);const G0=JSON.parse(JSON.stringify(GEAR0));if(!g||g.v!==2){LSS('outfit','jeans');LSS('nrods',1);return G0;}if(!g.triFix){g.triFix=true;if(g.bought?.tripod)g.spikes=Math.max(1,Math.min(3,(g.spikes||0)-3));}if(!g.boxFix){g.boxFix=true;if(g.bought)delete g.bought.box;}for(const k in G0)if(g[k]===undefined)g[k]=G0[k];return g;}
+function gearLoad(){let g=LSG('gear',null);const G0=JSON.parse(JSON.stringify(GEAR0));if(!g||g.v!==2){LSS('outfit','jeans');LSS('nrods',1);return G0;}if(!g.star2){g.star2=true;g.starlight=Math.max(g.starlight||0,2);}if(!g.triFix){g.triFix=true;if(g.bought?.tripod)g.spikes=Math.max(1,Math.min(3,(g.spikes||0)-3));}if(!g.boxFix){g.boxFix=true;if(g.bought)delete g.bought.box;}for(const k in G0)if(g[k]===undefined)g[k]=G0[k];return g;}
 st.gear=gearLoad();st.money=LSG('money',10000);if(!LSG('eco10k',0)){st.money=Math.max(st.money,10000);LSS('eco10k',1);LSS('eco3',1);LSS('money',st.money);}// per le prove si parte con 10.000 € virtuali
 // guadagni: tempo di pesca nel gioco, catture e uso dell'app (con un tetto al giorno)
 const EARN={fish:2,fishMax:1e9};function earnDay(){const e=LSG('earn',{});if(e.d!==today())return {d:today(),fish:0,app:0};return e;}
@@ -1714,7 +1714,7 @@ function doCast(){const c=st.cast;c.on=false;const r=st.rods[st.sel],w=wxAt(st.g
   const GR=st.gear,M=S.max*(ROD[r.rodId||GR.rod]?.mul||1)*(REELS[r.reelId||GR.reel]?.cast||1)*(1+gearTier(r).all*.08)*(1+(.25-GR.line)*.8)*(r.leadT==='ogiva'?1.05:1),base=green?M*(1-Math.abs(p-gm)*.45):p<g0?lerp(10,M*.92,Math.pow(p/g0,1.15)):lerp(M*.92,M*.4,(p-g1)/(1-g1));
   const leadF=clamp(1.15-((r.lead||st.lead)-100)/400,.85,1.1)*(r.rig==='2ami'?.93:r.rig==='corto'?1.04:1),baitF=r.bait==='cefalotto'?.55:r.bait==='sarda'||r.bait==='seppia'?.85:1,wind=1+windHelp(w.wd)*clamp(w.ws/60,0,.35);
   const dist=clamp(base*leadF*baitF*wind+rnd(-3,3),8,150+gearTier(r).all*35);st.cast=null;
-  r.star=night()>.25?(st.gear.starlight>0?(st.gear.starlight--,gearSave(),true):false):r.star;
+  if(night()>.25&&!r.star){if(st.gear.starlight>0){st.gear.starlight--;gearSave();r.star=true;}else{st.needShop=true;r.noStar=true;setTimeout(()=>{st.msg=`🌙 Starlight finiti: di notte la cima della canna ${r.i+1} non si vede e ti accorgi tardi delle tocche. Ricomprali al negozio (busta da 10).`;setUI();},2500);}}
   seq(async()=>{st.phase='busy';const q=CSEQ[st.castStyle]||CSEQ.above,H=q.hit,SL=window.__SL||.35,T0=x=>(x||[]).reduce((a,y)=>a+y[1],0);st.replayCam=true;st.slow=SL;st.msg='';setUI();if(POSES.hold)AN.pose=JSON.parse(JSON.stringify(POSES.hold));castAnimStart('load');await sleep((st.castStyle==='ground'||st.castStyle==='side')?1.4:T0(q.load)/SL+.4);castAnimStart('fire');await sleep(H*.6/SL);whoosh();await sleep(H*.4/SL);st.slow=1;st.msg='';setUI();const L0=st.castLead;st.castLead=null;
     // il piombo vola: parabola dalla cima al punto d'arrivo
     const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);if(L0)tip.copy(L0.p);const drift=(Math.sin((w.wd-FACE)*R))*w.ws/40*3;const dir=(st.castDir||0)*.21*dist,end=new T.Vector3(r.x+dir+drift*dist/120,0,-dist);
@@ -2044,7 +2044,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
     // mulinello: rotore e manovella girano quando si recupera
     if(r.held&&AN.holding===r.i&&AN.reelSpin>0){AN.tick=(AN.tick||0)+dt*AN.reelSpin*7;while(AN.tick>.75){AN.tick-=.75;reelTick();}}
     if(r.held&&AN.holding===r.i){const U=r.obj.userData;U.rotor.rotation.y+=dt*AN.reelSpin*22;U.lineOn.rotation.y+=dt*AN.reelSpin*22;U.crank.rotation.x+=dt*AN.reelSpin*7;AN.crank+=dt*AN.reelSpin*7;U.lineOn.position.y=.115+Math.sin(AN.crank*.5)*.008*(AN.reelSpin?1:0);}
-    r.obj.userData.glow.visible=night()>.25&&r.star!==false;r.obj.userData.glow.material.opacity=r.state==='bite'?(.6+.4*Math.sin(t*20)):.9;
+    r.obj.userData.glow.visible=night()>.25&&r.star===true;r.obj.userData.glow.material.opacity=r.state==='bite'?(.6+.4*Math.sin(t*20)):.9;
     // lenza
     const tip=new T.Vector3();r.obj.userData.tip.getWorldPosition(tip);const a=r.line.geometry.attributes.position;
     if(r.ride){r.sinker.position.copy(r.ride.position);if(VEH.type==='drone')r.sinker.position.y-=2.55;}
