@@ -1880,15 +1880,15 @@ function updFight(dt){const f=st.fight;if(!f||st.phase!=='fight')return;f.t+=dt;
     // la frizione cede: crepitio tanto più fitto quanto più filo esce, e vibrazione continua
     f.dAcc=(f.dAcc||0)+out;let n=0;while(f.dAcc>.05&&n<4){f.dAcc-=.05;n++;dragTick(n*.012);}f.dv=(f.dv||0)-dt;if(f.dv<=0){f.dv=.22;vib(Math.round(40+Math.min(80,out/dt*6)));}}
   else AN.reelSpin=f.reel?1:0;
-  if(f.reel&&f.run<=0)f.dist-=dt*(7-f.pow*1.5)*(1.15-f.drag*.02)*(.55+GP*1.6)*BIG;else if(f.reel)f.dist-=dt*1.2*(.55+GP*1.4)*BIG;
+  if(f.reel&&f.run<=0)f.dist-=dt*(7-f.pow*1.5)*(1.15-f.drag*.02)*(.55+GP*1.6)*BIG*(1+reelPow(r)*2);else if(f.reel)f.dist-=dt*1.2*(.55+GP*1.4)*BIG*(1+reelPow(r)*2);
   f.ten=lerp(f.ten,clamp(ten,0,1.2),.15);r.dist=Math.max(0,f.dist);
-  const lim=(f.sp.teeth&&hookCat(st.hook)!=='grande'?.92:1)*(.82+GP*.4)*(r.termT==='nylon'?.88:1)*Math.min(1.12,Math.pow((st.gear.line||.25)/.25,.5))*(r.lineT==='braid'?1.08:1);if(f.ten>lim){f.over=(f.over||0)+dt;if(f.over>(r.lineT==='braid'?.7:.35))return endFight(false,f.sp.teeth?'Il serra ha tranciato la lenza con i denti!':'Lenza rotta: troppa tensione. Apri un po\' la frizione.');}else f.over=0;
+  const lim=(f.sp.teeth&&hookCat(st.hook)!=='grande'?.92:1)*(.82+GP*.4+reelPow(r)*.15)*(r.termT==='nylon'?.88:1)*Math.min(1.12,Math.pow((st.gear.line||.25)/.25,.5))*(r.lineT==='braid'?1.08:1);if(f.ten>lim){f.over=(f.over||0)+dt;if(f.over>(r.lineT==='braid'?.7:.35))return endFight(false,f.sp.teeth?'Il serra ha tranciato la lenza con i denti!':'Lenza rotta: troppa tensione. Apri un po\' la frizione.');}else f.over=0;
   if(f.ten<.16)f.slack+=dt;else f.slack=Math.max(0,f.slack-dt*2);if(f.slack>1.6+GP*3.6)return endFight(false,'Slamato: con la lenza lenta il pesce si è liberato.');
   if(hookCat(st.hook)==='piccolo'&&r.hookT!=='forgiato'&&f.w>2.5&&f.ten>.85&&Math.random()<dt*.6)return endFight(false,'L\'amo piccolo si è aperto: pesce troppo grosso.');
   if(f.run>0&&Math.random()<dt*4)burst(new T.Vector3(r.sx*(f.dist/Math.max(1,-r.sz))+r.x*(1-f.dist/Math.max(1,-r.sz)),0,-f.dist),.4);
   if(!f.sp.crab&&!f.jump&&(f.jumps||0)<2&&f.w>=Math.max(1.1,f.sp.w[1]*1.25)&&f.dist<32&&f.dist>7&&Math.random()<dt*.22){f.jumps=(f.jumps||0)+1;f.jump={t:0};if(!f.obj){f.obj=makeFish3D(f.sp,f.len/100);f.obj.visible=false;scene.add(f.obj);}burst(lineEnd(r,f.dist),.6);splash(.2);}
   if(f.ten>.9&&Math.random()<dt*.01*(1-GT.rod*.8)*(f.w>2?1.6:1)){const id=r.rodId||st.gear.rod;loseGear('rod',id);r.dismantled=true;r.obj.visible=false;return endFight(false,`💥 Crack! La canna ${ROD[id]?.n||''} si è spezzata sotto sforzo. Comprane un'altra al negozio.`);}
-  if(f.reel&&f.w>2.5&&f.ten>.75&&Math.random()<dt*.004*(1-GT.reel*.8)){const id=r.reelId||st.gear.reel;loseGear('reel',id);r.dismantled=true;return endFight(false,`⚙️ Il mulinello ${reelN(id)} si è bloccato: ingranaggi rotti. Serve un mulinello nuovo.`);}
+  if(f.reel&&f.w>2.5&&f.ten>.75&&reelPow(r)<.85&&Math.random()<dt*.006*(1-reelPow(r))){const id=r.reelId||st.gear.reel;loseGear('reel',id);r.dismantled=true;return endFight(false,`⚙️ Il mulinello ${reelN(id)} si è bloccato: ingranaggi rotti. Serve un mulinello nuovo.`);}
   if(f.dist<=0)return endFight(true);
   const Te=document.getElementById('gten'),D=document.getElementById('gdis'),DT=document.getElementById('gdt'),TI=document.getElementById('gfti');
   if(Te){Te.style.width=clamp(f.ten*100,0,100)+'%';Te.style.background=f.ten>.85?'#ff4d5e':f.ten>.6?'#ffb547':'#2fe0cf';}
@@ -1965,7 +1965,7 @@ function makeCrab3D(L){const g=new T.Group(),W=L,m=new T.MeshStandardMaterial({c
 function gearWear(f,r){const g=st.gear,b=g.bought=g.bought||{},T=[['scis','le forbici'],['slam','lo slamatore'],['needle','l\'ago da innesco'],['elastic','il filo elastico']].filter(([k])=>k==='needle'?g.needle:k==='elastic'?g.elastic:b[k]);let txt='';
   if(T.length&&Math.random()<.025){const [k,n]=T[Math.floor(Math.random()*T.length)];if(k==='needle')g.needle=false;else if(k==='elastic')g.elastic=false;b[k]=false;txt=`😬 Hai perso ${n} in spiaggia: ricompralo al negozio.`;}
   const id=r.reelId||g.reel,pw=reelPow(r);g.reelUse=g.reelUse||{};g.reelUse[id]=(g.reelUse[id]||0)+1;const u=g.reelUse[id];
-  const pr=(1-pw)*.015+(f&&f.w>3?(1-pw)*.04+.005:0)+(u>200?.04:0);if(g.reelCnt?.[id]>0&&Math.random()<pr){loseGear('reel',id);g.reelUse[id]=0;r.dismantled=true;txt=`⚙️ Il mulinello ${reelN(id)} si è rotto${u>200?' dopo '+u+' recuperi':''}: comprane un altro al negozio.`;}
+  const pr=pw>=.85?0:(1-pw)*(1-pw)*.05+(f&&f.w>3?(1-pw)*.07:0)+(u>200?.05*(1-pw):0);if(g.reelCnt?.[id]>0&&Math.random()<pr){loseGear('reel',id);g.reelUse[id]=0;r.dismantled=true;txt=`⚙️ Il mulinello ${reelN(id)} si è rotto${u>200?' dopo '+u+' recuperi':''}: comprane un altro al negozio.`;}
   if(txt){st.needShop=true;gearSave();setTimeout(()=>{st.msg=txt;setUI();},3500);}}
 function endFight(ok,why){const f=st.fight;if(f)try{gearWear(f,f.r);}catch(e){}st.fight=null;AN.reelSpin=0;if(f.obj){scene.remove(f.obj);f.obj=null;}const r=f.r,bait=B[r.bait]?.n||'';r.state='idle';r.bait=null;r.dist=0;r.sinker.visible=false;
   if(!ok){pose('hold');showCatch({fish:false,txt:'Perso!',why});return;}
