@@ -404,6 +404,7 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   for(let i=0;i<SEG;i++){const u=i/SEG,len=ROD_LEN/SEG,r1=lerp(.017,.004,u),r2=lerp(.017,.004,(i+1)/SEG),s=new T.Group();s.position.y=i?len:0;parent.add(s);
     const m=new T.Mesh(new T.CylinderGeometry(r2,r1,len,8),u<.13?MAT.blank:u<.8?MAT.blank2:MAT.tip);m.position.y=len/2;m.castShadow=true;s.add(m);
     if(i===2||i===3){const c=new T.Mesh(new T.CylinderGeometry(r1*1.5,r1*1.5,len,10),MAT.cork);c.position.y=len/2;s.add(c);}
+    if(i===4){const lb=new T.Mesh(new T.CylinderGeometry(r1*1.04,r1*1.04,len*.8,12,1,true),trabMat());lb.position.y=len/2;s.add(lb);}
     if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.03,.008,u),.003,6,12),MAT.alu);ring.position.set(0,len*.5,-lerp(.05,.015,u));s.add(ring);}
     segs.push(s);parent=s;}
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
@@ -796,6 +797,7 @@ function makeBadBass(){const g=new T.Group(),t=canvasTex(512,256,(c,w,h)=>{c.fil
 const CLOTHM={};function clothMat(kind){if(CLOTHM[kind])return CLOTHM[kind];const t=canvasTex(512,512,(c,w,h)=>{if(kind==='jacket'){c.fillStyle='#1b1c1e';c.fillRect(0,0,w,h);c.fillStyle='#f0d21a';c.fillRect(0,h*.62,w,h*.38);c.fillRect(0,0,w*.14,h);c.fillRect(w*.86,0,w*.14,h);c.fillStyle='#5b5e62';c.beginPath();c.moveTo(w*.18,h*.38);c.lineTo(w*.82,h*.38);c.lineTo(w*.82,h*.58);c.lineTo(w/2,h*.68);c.lineTo(w*.18,h*.58);c.fill();c.fillStyle='#f0d21a';c.fillRect(w*.18,h*.37,w*.64,4);c.fillStyle='#111';c.fillRect(w*.49,0,6,h);c.fillStyle='#f0d21a';c.font='900 26px Outfit,sans-serif';c.fillText('TUBERTINI',w*.56,h*.5);}
     else{c.fillStyle='#1d1e20';c.fillRect(0,0,w,h);c.fillStyle='#f0d21a';c.fillRect(0,0,w,h*.22);c.fillStyle='#1d1e20';c.fillRect(w*.45,0,w*.1,h*.22);c.fillStyle='#2a2b2e';c.fillRect(w*.08,h*.3,w*.25,h*.2);c.fillRect(w*.67,h*.3,w*.25,h*.2);c.fillStyle='#141516';for(let y=h*.65;y<h;y+=18)c.fillRect(0,y,w,6);}
     for(let i=0;i<4000;i++){c.fillStyle=`rgba(0,0,0,${Math.random()*.05})`;c.fillRect(Math.random()*w,Math.random()*h,2,2);}});return CLOTHM[kind]=new T.MeshStandardMaterial({map:t,roughness:.75});}
+let TRAB=null;function trabMat(){if(TRAB)return TRAB;const t=canvasTex(64,512,(c,w,h)=>{c.fillStyle='#111';c.fillRect(0,0,w,h);c.fillStyle='#d8ff1a';c.fillRect(0,0,w,6);c.fillRect(0,h-6,w,6);c.save();c.translate(w*.62,h/2);c.rotate(-Math.PI/2);c.fillStyle='#e9ecef';c.font='900 40px Outfit,sans-serif';c.textAlign='center';c.fillText('TRABUCCO',0,0);c.restore();});return TRAB=new T.MeshStandardMaterial({map:t,roughness:.3,metalness:.2});}
 let SHIM=null;function shimanoMat(){if(SHIM)return SHIM;const t=canvasTex(128,128,(c,w,h)=>{c.fillStyle='#c9ced3';c.fillRect(0,0,w,h);c.fillStyle='#1b2a6b';c.beginPath();c.arc(w/2,h/2,w/2,0,7);c.fill();c.fillStyle='#fff';c.font='900 22px Outfit,sans-serif';c.textAlign='center';c.fillText('SHIMANO',w/2,h/2+8);});return SHIM=new T.MeshStandardMaterial({map:t,metalness:.5,roughness:.35});}
 const LBLM={};function labelMat(base,band,txt,w=512,h=256){const k=base+band+txt;if(LBLM[k])return LBLM[k];const t=canvasTex(w,h,(c,W,H)=>{c.fillStyle=base;c.fillRect(0,0,W,H);for(let i=0;i<5000;i++){const l=Math.random()*30-15;c.fillStyle=`rgba(${l>0?255:0},${l>0?255:0},${l>0?255:0},${Math.abs(l)/300})`;c.fillRect(Math.random()*W,Math.random()*H,1.5,1.5);}
   c.fillStyle=band;c.fillRect(0,H*.18,W,H*.12);c.fillRect(0,H*.72,W,H*.06);c.fillStyle=band;c.font=`900 ${Math.round(H*.16)}px Outfit,sans-serif`;c.textAlign='center';c.fillText(txt,W*.25,H*.55);c.fillText(txt,W*.75,H*.55);const g2=c.createLinearGradient(0,0,0,H);g2.addColorStop(0,'rgba(255,255,255,.15)');g2.addColorStop(1,'rgba(0,0,0,.18)');c.fillStyle=g2;c.fillRect(0,0,W,H);});
@@ -1517,7 +1519,7 @@ const CAT=[
     {id:'elastic',n:'Filo elastico per esche · bobina',d:'Avvolto sull\'esca morbida la fa durare il 30% in più.',p:()=>3.9},
     {id:'beads',n:'Perline fosforescenti e salvanodo · busta da 20',d:'Proteggono i nodi e attirano il pesce di notte. Se il terminale si spezza ne perdi una.',p:()=>2},
     {id:'box',n:'Cassetta portaminuteria',d:'Tutto in ordine: ami, girelle, moschettoni, starlight.',p:()=>12.9},
-    {id:'bucket',n:'Secchio portaesche con coperchio',d:'Tiene vive e fresche le esche.',p:()=>9.9},
+    {id:'bucket',n:'Secchio pieghevole Bad Bass con corda',d:'Per prendere l\'acqua di mare e tenere vivi i pesci catturati.',p:()=>19.9},
     {id:'cooler',n:'Frigo portatile 25 l e thermos',d:'Bibite fresche e caffè caldo in postazione.',p:()=>39},
     {id:'slam',n:'Slamatore',d:'Per togliere l\'amo al pesce senza ferirlo: senza non puoi pescare.',p:()=>2.9},
     {id:'scis',n:'Forbici da pesca',d:'Servono per fare i terminali; tagliano anche il trecciato.',p:()=>8.9}]},
@@ -1683,6 +1685,12 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
   const lab=(t,x,y,z,ry=0)=>{const p=new T.Mesh(new T.PlaneGeometry(1.6,.36),new T.MeshBasicMaterial({map:shopTex(t,{bg:'#1d5f8a',fs:70})}));p.position.set(x,y,z);p.rotation.y=ry;scene.add(p);};
   // rastrelliera delle canne sulla parete sinistra
   lab('CANNE',-4.95,2.4,-4.2,Math.PI/2);
+  // insegne degli sponsor sopra ogni reparto (loghi veri)
+  {const TL=new T.TextureLoader(),logo=(f,w,x,y,z,ry)=>{const t=TL.load(GBASE+'img/logo/'+f+'.jpg',tx=>{const a=tx.image.height/tx.image.width;m.scale.y=a;});t.encoding=T.sRGBEncoding;const m=new T.Mesh(new T.PlaneGeometry(w,w),new T.MeshBasicMaterial({map:t,toneMapped:false}));m.scale.y=.4;m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);const fr=new T.Mesh(new T.BoxGeometry(w+.08,.02,.06),new T.MeshStandardMaterial({color:'#2b2f36'}));fr.position.set(x,y+.02,z);fr.rotation.y=ry;return m;};
+    logo('trabucco',1,-4.92,2.05,-2.6,Math.PI/2);logo('trabucco',.9,-1.9,2.05,-3.43,0);
+    logo('shimano',.9,4.55,2.05,-6.15,-Math.PI/2);logo('shimano',.8,3.33,.55,-2.6,-Math.PI/2);
+    logo('maver',1,1.8,2.32,-7.96,0);logo('daiwa',1,-2.6,2.32,-7.96,0);logo('daiwa',1,-.4,2.32,-7.96,0);
+    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.9,3.55,1.6,-7.1,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
     // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
