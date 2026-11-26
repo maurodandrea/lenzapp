@@ -1743,14 +1743,8 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     const rk=new T.Group();box(1.4,.03,.03,M('#9aa3ad',{metalness:.7}),0,1.7,0,rk);for(const x of[-.65,.65])box(.03,1.7,.03,M('#9aa3ad',{metalness:.7}),x,.85,0,rk);
     ['#c0392b','#2f6fb5','#3a5a2a','#e67e22','#2b2f36'].forEach((cl,i)=>{const j=box(.26,.6,.1,M(cl),-.5+i*.25,1.32,0,rk);j.rotation.y=.3;});rk.position.set(-3.2,0,-1.2);rk.rotation.y=.4;scene.add(rk);
     ['#3d434b','#5a3a2a','#2f6fb5'].forEach((cl,i)=>box(.5,.32,.3,M(cl),-3.4+i*.55,.16,-.3));}
-  // negozio pieno: isola di canne, torre dei mulinelli, stand di vestiti e scafandri, borse, ombrelloni, sedie, frigo, cassette e picchetti
-  {const RC=Object.values(ROD_COL),met=M('#9aa3ad',{metalness:.7,roughness:.3}),wood=M('#7a5a3a');
-    // isola centrale-sinistra con canne in piedi su due lati
-    box(.5,.12,3.4,wood,-1.9,.06,-5.2);box(.08,1.9,3.4,M('#d8cdb8'),-1.9,1.05,-5.2);box(.6,.05,3.4,wood,-1.9,1.9,-5.2);
-    for(let i=0;i<22;i++){const z=-6.75+(i>>1)*.29,sx=i%2?.18:-.18,c=RC[i%RC.length],g=new T.Group();g.position.set(-1.9+sx,.12,z);g.rotation.z=sx*.06;scene.add(g);
-      box(.022,1.5,.022,M(c[0]),0,.75,0,g);box(.02,1.1,.02,M('#f2f2f2'),0,2.05,0,g);box(.035,.28,.035,M('#141414'),0,.2,0,g);
-      const rl=new T.Mesh(new T.CylinderGeometry(.035,.032,.05,10),M(['#b8352a','#c0c4c8','#2b2f36','#d9b24a'][i%4],{metalness:.5}));rl.rotation.z=Math.PI/2;rl.position.set(sx>0?.04:-.04,.42,0);g.add(rl);}
-    lab('CANNE DA SURF',-1.9,2.2,-3.45,0);
+  // negozio pieno: torre dei mulinelli, stand di vestiti e scafandri, borse, ombrelloni, sedie, frigo, cassette e picchetti
+  {const met=M('#9aa3ad',{metalness:.7,roughness:.3});
     // torre a vetri con i mulinelli
     box(.7,2.2,1.4,M('#2b2f36'),4.6,1.1,-5.4);for(let r=0;r<5;r++){box(.6,.03,1.3,M('#e8f6ff',{transparent:true,opacity:.35}),4.55,.35+r*.4,-5.4);
       for(let k=0;k<4;k++){const g=new T.Group();g.position.set(4.45,.42+r*.4,-5.9+k*.33);g.rotation.y=-Math.PI/2;scene.add(g);const sp=new T.Mesh(new T.CylinderGeometry(.06,.055,.07,14),M(['#c0c4c8','#b8352a','#2b2f36','#d9b24a','#2f6fb5'][(r+k)%5],{metalness:.6,roughness:.3}));sp.rotation.x=Math.PI/2;g.add(sp);box(.03,.08,.06,M('#1d1d1d'),0,-.05,-.04,g);box(.08,.012,.012,met,.06,0,-.03,g);}}
@@ -1771,7 +1765,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     // cesto dei picchetti
     {const bin=new T.Mesh(new T.CylinderGeometry(.25,.22,.5,14,1,true),M('#3d434b',{side:T.DoubleSide}));bin.position.set(-3.8,.25,-7.2);scene.add(bin);for(let i=0;i<9;i++){const a=i*.7,r=.12;const sp=box(.03,1.5,.01,M(i%3?'#cfd5da':'#e8e8e2',{metalness:.4}),-3.8+Math.cos(a)*r,.75,-7.2+Math.sin(a)*r);sp.rotation.z=Math.cos(a)*.08;sp.rotation.x=Math.sin(a)*.08;}lab('PICCHETTI',-3.8,1.75,-6.9,0);}}
   // zone toccabili
-  SH.hits=[['canne',-4.8,1.3,-4.2,.6,2.6,5.6],['mulinelli',3.8,.9,-2.6,1,.9,3],['esche',3.9,1,-7.7,1.2,2.1,1.2],['ami',-2.6,1,-8.2,2,2,.6],['fili',-.4,1,-8.2,2,2,.6],['accessori',1.8,1,-8.2,2,2,.6],['cassa',4.4,1,-3.8,.8,2,1],['sedie',2.7,.6,-1,1.4,1.4,1.4],['abbigliamento',-3.2,1,-1.2,1.6,2,.8],['abbigliamento',-2.2,1,.3,1.6,2,.6],['canne',-1.9,1.1,-5.2,.7,2.2,3.4],['mulinelli',4.6,1.1,-5.4,.8,2.2,1.4],['veicoli',0,.4,-2.6,1.8,.6,1.1],['sedie',2.2,.8,.4,2.4,1.8,1.4],['borsoni',-4.8,1.2,-.9,.5,1.4,1.9]].map(([k,x,y,z,w,h,d])=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshBasicMaterial({visible:false}));m.position.set(x,y,z);m.userData.k=k;scene.add(m);return m;});
+  SH.hits=[['canne',-4.8,1.3,-4.2,.6,2.6,5.6],['mulinelli',3.8,.9,-2.6,1,.9,3],['esche',3.9,1,-7.7,1.2,2.1,1.2],['ami',-2.6,1,-8.2,2,2,.6],['fili',-.4,1,-8.2,2,2,.6],['accessori',1.8,1,-8.2,2,2,.6],['cassa',4.4,1,-3.8,.8,2,1],['sedie',2.7,.6,-1,1.4,1.4,1.4],['abbigliamento',-3.2,1,-1.2,1.6,2,.8],['abbigliamento',-2.2,1,.3,1.6,2,.6],['mulinelli',4.6,1.1,-5.4,.8,2.2,1.4],['veicoli',0,.4,-2.6,1.8,.6,1.1],['sedie',2.2,.8,.4,2.4,1.8,1.4],['borsoni',-4.8,1.2,-.9,.5,1.4,1.9]].map(([k,x,y,z,w,h,d])=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshBasicMaterial({visible:false}));m.position.set(x,y,z);m.userData.k=k;scene.add(m);return m;});
   SH.cam.p=new T.Vector3(0,1.7,2.4);SH.cam.l=new T.Vector3(0,1.3,-5);SH.go='ingresso';}
 async function openShop(){st.phase='shop';stop();root=null;mountShell();try{T=await (MP.three||loadThree());}catch(e){ui.innerHTML='<div class="gpanel">Negozio non disponibile</div>';return;}
   renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(1.6,devicePixelRatio||1));cvs=renderer.domElement;root.querySelector('#g3').appendChild(cvs);
