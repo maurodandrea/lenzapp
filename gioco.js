@@ -168,7 +168,30 @@ function loadChars(){if(CHARS)return CHARS;const B='https://cdn.jsdelivr.net/npm
 const PROPS={};function loadProp(n){if(PROPS[n])return PROPS[n];return PROPS[n]=loadChars().then(()=>new Promise(res=>{const L=new T.GLTFLoader();L.load(GBASE+'chars/'+n+'.glb',g=>res(g.scene),undefined,()=>res(null));}));}
 function propClone(src,len,axis='x'){const o=src.clone(true),b=new T.Box3().setFromObject(o),s=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3());const k=len/Math.max(s.x,s.z);o.scale.setScalar(k);o.position.set(-c.x*k,-b.min.y*k,-c.z*k);const g=new T.Group();g.add(o);g.userData.size=s.clone().multiplyScalar(k);o.traverse(m=>{if(m.isMesh){m.castShadow=true;}});return g;}
 // le mesh esportate hanno copie dello scheletro: le ricollego tutte alle ossa principali così l'animazione muove tutto il corpo
-function charFix(root){const prim={};root.traverse(o=>{if(o.isBone&&!/_\d+$/.test(o.name)&&!prim[o.name])prim[o.name]=o;});root.traverse(m=>{if(m.isSkinnedMesh){const sk=m.skeleton,nb=sk.bones.map(b=>prim[b.name.replace(/_\d+$/,'')]||b);m.bind(new T.Skeleton(nb,sk.boneInverses),m.bindMatrix);m.frustumCulled=false;m.castShadow=true;}});}
+function charFix(root){
+  const prim={};
+  root.traverse(o=>{if(o.isBone&&!/_\d+$/.test(o.name)&&!prim[o.name])prim[o.name]=o;});
+  root.traverse(m=>{
+    if(m.isSkinnedMesh){
+      const sk=m.skeleton,nb=sk.bones.map(b=>prim[b.name.replace(/_\d+$/,'')]||b);
+      m.bind(new T.Skeleton(nb,sk.boneInverses),m.bindMatrix);
+      m.frustumCulled=false;
+      m.castShadow=true;
+      if(m.material){
+        const mats=Array.isArray(m.material)?m.material:[m.material];
+        mats.forEach(mt=>{
+          if(!/lash|hair/i.test(m.name)){
+            mt.transparent=false;
+            mt.depthWrite=true;
+            mt.alphaTest=0;
+            mt.side=T.FrontSide;
+          }
+        });
+      }
+    }
+  });
+}
+
 function makeChar(C,which,h){if(!C.models[which])which=C.names[0];const o=T.SkeletonUtils.clone(C.models[which]);charFix(o);o.updateMatrixWorld(true);let hp=null;o.traverse(b=>{if(b.isBone&&b.name==='mixamorigHips'&&!hp)hp=b;});const hw=hp?hp.getWorldPosition(new T.Vector3()).y:1;o.scale.setScalar(h*.55/(hw||1));const g=new T.Group();g.add(o);
   o.traverse(b=>{if(b.isBone&&b.name==='mixamorigRightHand'&&!g.userData.rh)g.userData.rh=b;});const mx=new T.AnimationMixer(o);g.userData.mixer=mx;g.userData.play=(k,ts=1)=>{const c=C.clips[which][k];if(!c)return;if(g.userData.cur===k)return;const a=mx.clipAction(c);a.reset().setEffectiveTimeScale(ts).fadeIn(.3).play();if(g.userData.act)g.userData.act.fadeOut(.3);g.userData.act=a;g.userData.cur=k;};return g;}
 
