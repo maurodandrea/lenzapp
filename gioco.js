@@ -1757,7 +1757,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     // stand vestiti e scafandri
     for(const [x,z,ry] of [[-4.2,-.2,1.2],[-2.2,.3,.2]]){const rk=new T.Group();box(1.6,.03,.03,met,0,1.75,0,rk);for(const xx of[-.78,.78])box(.03,1.75,.03,met,xx,.88,0,rk);
       ['#2b2f36','#3a5a2a','#2f6fb5','#c0392b','#16191d','#e67e22','#4b5a36'].forEach((cl,i)=>{const j=box(.24,.75,.09,M(cl),-.66+i*.22,1.33,0,rk);j.rotation.y=.25;if(i%3===2){box(.2,.7,.08,M(cl),-.66+i*.22,.7,0,rk);}});rk.position.set(x,0,z);rk.rotation.y=ry;scene.add(rk);}
-    lab('ABBIGLIAMENTO',-4.88,2.4,.55,Math.PI/2);
+    lab('ABBIGLIAMENTO',-4.88,2.4,-.55,Math.PI/2);
     // borse e zaini appesi a un pannello forato
     box(.04,1.3,1.8,M('#c9b79a'),-4.93,1.25,-.9);['#3d434b','#5a3a2a','#2f6fb5','#4b5a36','#2b2f36','#7a2a2a'].forEach((cl,i)=>{box(.18,.32,.42,M(cl),-4.8,1.55-(i>>1)*.45+.2,-1.45+(i%2)*.55+((i>>1)%2)*.2);});
     // ombrelloni aperti e sedie in fila
