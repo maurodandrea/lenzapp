@@ -1684,7 +1684,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
   const sg=new T.Mesh(new T.PlaneGeometry(3.4,.6),new T.MeshBasicMaterial({map:shopTex('PESCA SPORT · LAZIO',{bg:'#0f3b57',col:'#ffd76a',border:'#ffd76a',w:1024,h:180,fs:90})}));sg.position.set(-.4,2.62,-8.44);sg.scale.set(.8,.8,1);scene.add(sg);
   const lab=(t,x,y,z,ry=0)=>{const p=new T.Mesh(new T.PlaneGeometry(1.6,.36),new T.MeshBasicMaterial({map:shopTex(t,{bg:'#1d5f8a',fs:70})}));p.position.set(x,y,z);p.rotation.y=ry;scene.add(p);};
   // rastrelliera delle canne sulla parete sinistra
-  lab('CANNE',-4.95,2.4,-4.2,Math.PI/2);
+  lab('CANNE',-4.88,2.4,-4.2,Math.PI/2);
   // insegne degli sponsor sopra ogni reparto (loghi veri)
   {const TL=new T.TextureLoader(),logo=(f,w,x,y,z,ry)=>{const t=TL.load(GBASE+'img/logo/'+f+'.jpg',tx=>{const a=tx.image.height/tx.image.width;m.scale.y=a;});t.encoding=T.sRGBEncoding;const m=new T.Mesh(new T.PlaneGeometry(w,w),new T.MeshBasicMaterial({map:t,toneMapped:false}));m.scale.y=.4;m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);const fr=new T.Mesh(new T.BoxGeometry(w+.08,.02,.06),new T.MeshStandardMaterial({color:'#2b2f36'}));fr.position.set(x,y+.02,z);fr.rotation.y=ry;return m;};
     logo('trabucco',.7,-4.92,2.4,-3.0,Math.PI/2);logo('trabucco',.55,-1.9,2.68,-3.43,0);
@@ -1757,7 +1757,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     // stand vestiti e scafandri
     for(const [x,z,ry] of [[-4.2,-.2,1.2],[-2.2,.3,.2]]){const rk=new T.Group();box(1.6,.03,.03,met,0,1.75,0,rk);for(const xx of[-.78,.78])box(.03,1.75,.03,met,xx,.88,0,rk);
       ['#2b2f36','#3a5a2a','#2f6fb5','#c0392b','#16191d','#e67e22','#4b5a36'].forEach((cl,i)=>{const j=box(.24,.75,.09,M(cl),-.66+i*.22,1.33,0,rk);j.rotation.y=.25;if(i%3===2){box(.2,.7,.08,M(cl),-.66+i*.22,.7,0,rk);}});rk.position.set(x,0,z);rk.rotation.y=ry;scene.add(rk);}
-    lab('ABBIGLIAMENTO',-4.95,2.4,.2,Math.PI/2);
+    lab('ABBIGLIAMENTO',-4.88,2.4,.2,Math.PI/2);
     // borse e zaini appesi a un pannello forato
     box(.04,1.3,1.8,M('#c9b79a'),-4.93,1.25,-.9);['#3d434b','#5a3a2a','#2f6fb5','#4b5a36','#2b2f36','#7a2a2a'].forEach((cl,i)=>{box(.18,.32,.42,M(cl),-4.8,1.55-(i>>1)*.45+.2,-1.45+(i%2)*.55+((i>>1)%2)*.2);});
     // ombrelloni aperti e sedie in fila
