@@ -1129,7 +1129,7 @@ function makeCar3(col,rods){const g=new T.Group(),m=c=>new T.MeshLambertMaterial
   if(M3.beamMat){const bg=new T.BufferGeometry(),z0=.021,z1=.07,y=.0056;bg.setAttribute('position',new T.Float32BufferAttribute([-.008,y,z0,.008,y,z0,-.026,y,z1,.026,y,z1],3));bg.setAttribute('color',new T.Float32BufferAttribute([1,.93,.7,1,.93,.7,0,0,0,0,0,0],3));bg.setIndex([0,2,1,1,2,3]);g.add(new T.Mesh(bg,M3.beamMat));}
   const sh=new T.Mesh(new T.PlaneGeometry(.03,.052),new T.MeshBasicMaterial({map:M3.blob,transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.0008;g.add(sh);
   // modello 3D vero del fuoristrada: sostituisce la carrozzeria disegnata (restano fari, frecce e ombra)
-  loadProp('car').then(src=>{if(!src)return;const m=propClone(src,.046),sz=m.userData.size;if(sz.x>sz.z)m.rotation.y=Math.PI/2;g.children.forEach(c=>{if(c.isMesh&&c.material&&c.material.isMeshLambertMaterial)c.visible=false;});g.add(m);g.userData.model=m;});
+  loadProp('car').then(src=>{if(!src)return;const m=propClone(src,.046),sz=m.userData.size;if(sz.x>sz.z)m.rotation.y=Math.PI/2;g.children.forEach(c=>{if(c.isMesh&&c.material&&(c.material.isMeshLambertMaterial||c.material.isMeshBasicMaterial&&c.geometry.type==='BoxGeometry'))c.visible=false;});g.userData.blink=[];g.add(m);g.userData.model=m;});
   return g;}
 function blobTex(){return canvasTex(64,64,(g)=>{const r=g.createRadialGradient(32,32,4,32,32,32);r.addColorStop(0,'rgba(0,0,0,.45)');r.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=r;g.fillRect(0,0,64,64);});}
 function exitSign(name,left){const t=canvasTex(512,256,(g,w,h)=>{g.fillStyle='#1450a8';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=10;g.strokeRect(12,12,w-24,h-24);
