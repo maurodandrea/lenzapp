@@ -409,12 +409,11 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   const reel=new T.Group();reel.position.set(0,.05,0);reel.rotation.y=Math.PI;segs[2].add(reel);
   // come un mulinello vero (tipo Trabucco Hydrus): piede sul fusto, gambo, corpo ingranaggi a goccia con piastra laterale, rotore con due bracci, archetto in filo con rullino, bobina con gonna e pomello frizione davanti, manovella laterale
   const foot=new T.Mesh(new T.BoxGeometry(.016,.075,.006),MAT.reel);foot.position.z=.008;reel.add(foot);
-  const stem=new T.Mesh(new T.BoxGeometry(.012,.022,.05),MAT.reel);stem.position.set(0,-.005,.03);stem.rotation.x=-.25;reel.add(stem);
-  const bsh=new T.Shape();bsh.moveTo(0,-.035);bsh.quadraticCurveTo(.05,-.035,.05,.01);bsh.quadraticCurveTo(.05,.045,.012,.05);bsh.lineTo(-.012,.05);bsh.quadraticCurveTo(-.05,.045,-.05,.01);bsh.quadraticCurveTo(-.05,-.035,0,-.035);
-  const bodyG=new T.ExtrudeGeometry(bsh,{depth:.05,bevelEnabled:true,bevelThickness:.006,bevelSize:.006,bevelSegments:3});bodyG.translate(0,0,-.025);bodyG.rotateY(Math.PI/2);bodyG.rotateZ(Math.PI/2);const body=new T.Mesh(bodyG,MAT.reel);body.position.set(0,.02,.07);reel.add(body);
-  const plate=new T.Mesh(new T.CylinderGeometry(.026,.026,.006,18),MAT.alu);plate.rotation.z=Math.PI/2;plate.position.set(.033,.015,.07);reel.add(plate);
+  const stem=new T.Mesh(new T.BoxGeometry(.01,.016,.05),MAT.reel);stem.position.set(0,-.012,.035);stem.rotation.x=-.35;reel.add(stem);
+  const prof=[[0,-.03],[.012,-.03],[.016,-.02],[.022,-.005],[.03,.01],[.036,.025],[.038,.035],[.03,.045],[0,.045]].map(([r,y])=>new T.Vector2(r,y));const body=new T.Mesh(new T.LatheGeometry(prof,20),MAT.reel);body.scale.set(1,1,1.25);body.position.set(0,.01,.07);reel.add(body);
+  const plate=new T.Mesh(new T.CylinderGeometry(.018,.018,.005,18),MAT.alu);plate.rotation.z=Math.PI/2;plate.position.set(.03,.03,.07);reel.add(plate);
   const rotor=new T.Group();rotor.position.set(0,.065,.07);reel.add(rotor);
-  const rm=new T.Mesh(new T.CylinderGeometry(.048,.038,.04,18,1,true),MAT.reel);rm.material=MAT.reel;rotor.add(rm);const rb=new T.Mesh(new T.CylinderGeometry(.038,.038,.006,18),MAT.reel);rb.position.y=-.02;rotor.add(rb);
+  const rm=new T.Mesh(new T.CylinderGeometry(.046,.036,.04,18,1,true),MAT.reel);rm.material=MAT.reel;rotor.add(rm);const rb=new T.Mesh(new T.CylinderGeometry(.038,.038,.006,18),MAT.reel);rb.position.y=-.02;rotor.add(rb);
   for(const sx of[-1,1]){const ar=new T.Mesh(new T.BoxGeometry(.012,.06,.018),MAT.reel);ar.position.set(sx*.05,.025,0);ar.rotation.z=sx*-.18;rotor.add(ar);}
   const bail=new T.Mesh(new T.TorusGeometry(.06,.0025,6,24,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.rotation.z=.15;bail.position.y=.05;rotor.add(bail);
   const roller=new T.Mesh(new T.CylinderGeometry(.008,.008,.012,10),MAT.alu);roller.rotation.z=Math.PI/2;roller.position.set(.06,.05,0);rotor.add(roller);
@@ -2404,9 +2403,13 @@ function wadersFollow(g,on){const W=g.userData.wad;if(!on){if(W)W.visible=false;
     seg('mixamorigHips','mixamorigSpine2',.17,.15);for(const sd of ['Left','Right'])seg('mixamorigSpine2','mixamorig'+sd+'Shoulder',.012,.012);g.add(G2);g.userData.wad=G2;}
   const G2=g.userData.wad;G2.visible=true;g.updateMatrixWorld(true);const B=G2.userData.B,a=new T.Vector3(),b=new T.Vector3(),up=new T.Vector3(0,1,0);
   G2.children.forEach(ms=>{const [na,nb]=ms.userData.seg;if(!B[na]||!B[nb])return;B[na].getWorldPosition(a);B[nb].getWorldPosition(b);g.worldToLocal(a);g.worldToLocal(b);const v=b.clone().sub(a),L=v.length();ms.position.copy(a).addScaledVector(v,.5);ms.scale.set(1,L+(na.endsWith('Foot')?.06:0),1);ms.quaternion.setFromUnitVectors(up,v.normalize());if(na==='mixamorigHips'){ms.scale.set(1,L*.9,.75);}});}
+// pantaloni strappati o corti: copro i polpacci con un gambale del colore dei pantaloni
+function legCover(g){const B={};g.traverse(b=>{if(b.isBone&&!B[b.name])B[b.name]=b;});if(!g.userData.legc){let col='#1d1d1d';g.traverse(m=>{if(m.isMesh&&/Pants|Bottoms/i.test(m.name)&&m.material?.color)col='#'+m.material.color.getHexString();});const m=new T.MeshStandardMaterial({color:col,roughness:.9,map:txz().fab});const G2=new T.Group();
+  for(const sd of ['Left','Right']){const ms=new T.Mesh(new T.CylinderGeometry(.06,.05,1,10),m);ms.userData.seg=['mixamorig'+sd+'Leg','mixamorig'+sd+'Foot'];G2.add(ms);}g.add(G2);g.userData.legc=G2;}
+  const G2=g.userData.legc,a=new T.Vector3(),b=new T.Vector3(),up=new T.Vector3(0,1,0);G2.visible=!g.userData.wad?.visible;G2.children.forEach(ms=>{const [na,nb]=ms.userData.seg;if(!B[na]||!B[nb])return;B[na].getWorldPosition(a);B[nb].getWorldPosition(b);g.worldToLocal(a);g.worldToLocal(b);const v=b.clone().sub(a),L=v.length();ms.position.copy(a).addScaledVector(v,.45);ms.scale.set(1,L*.85,1);ms.quaternion.setFromUnitVectors(up,v.normalize());});}
 function playerReal(dt){if(!AN.obj)return;if(!PREAL&&!PREALP&&T){PREALP=loadChars().then(C=>{if(!C||!scene)return;PREAL=makeChar(C,st.gear.char||'remy',1.78);PREAL.userData.ch=st.gear.char||'remy';scene.add(PREAL);});}
   if(!PREAL)return;if(PREAL.userData.ch!==(st.gear.char||'remy')){PREAL.parent?.remove(PREAL);PREAL=null;PREALP=null;return;}if(PREAL.parent!==scene)scene.add(PREAL);if(AN._hid!==AN.obj){AN.obj.traverse(o=>{if(o.isMesh&&!o.userData.keep&&!o.userData.onHand)o.visible=false;});AN._hid=AN.obj;}
-  dressReal(PREAL);wadersFollow(PREAL,(OUTF[st.outfit]||{}).suit==='waders');if(PREAL.userData.hat){const H=PREAL.userData.hat;if(!PREAL.userData.headB)PREAL.traverse(b=>{if(b.isBone&&b.name==='mixamorigHead'&&!PREAL.userData.headB)PREAL.userData.headB=b;});const hb=PREAL.userData.headB;
+  dressReal(PREAL);wadersFollow(PREAL,(OUTF[st.outfit]||{}).suit==='waders');if(['ch08','ch12','ch31'].includes(st.gear.char)||COLD())legCover(PREAL);if(PREAL.userData.hat){const H=PREAL.userData.hat;if(!PREAL.userData.headB)PREAL.traverse(b=>{if(b.isBone&&b.name==='mixamorigHead'&&!PREAL.userData.headB)PREAL.userData.headB=b;});const hb=PREAL.userData.headB;
     // il cappello è figlio dell'osso della testa: segue ogni movimento; la scala compensa quella del modello
     if(hb&&H.parent!==hb){hb.add(H);PREAL.updateMatrixWorld(true);const ws=hb.getWorldScale(new T.Vector3()).x||1,top=PREAL.userData.headTop||null;H.scale.setScalar(1/ws);H.userData.k=1/ws;}
     if(hb){const k=H.userData.k||1;H.position.set(0,.085*k,.015*k);H.rotation.set(0,0,0);}}
@@ -2463,12 +2466,12 @@ function updEnv(w,t,dt){const d=gameDate(),s0=sunPos(d,SPOT.lat,SPOT.lon),sun=su
   const per=Math.max(3,w.wper||5),wh=w.wave||.3,nb=wh<.2?1:wh<.6?2:wh<1.2?3:4;
   const nf=Math.min(foams.length,2+Math.round(wh*4));
   foams.forEach((f,i)=>{const u=f.userData,on=i<nf;f.visible=on;if(!on)return;u.cyc+=dt/(per*u.rate*(1.4+u.d0/30));if(u.cyc>=1){u.cyc=0;newWave(f);}
-    const cyc=u.cyc,a=f.geometry.attributes.position,b=u.base,d=lerp(u.d0*(1+wh*.4),-.4,cyc);
+    const cyc=u.cyc,a=f.geometry.attributes.position,b=u.base,d=lerp(u.d0*(1+wh*.4),.6,cyc);
     if(!u.crashed&&cyc>.8){u.crashed=true;const now=performance.now();if(wh>=.4&&now-(AU.lastCrash||0)>Math.max(7,per*1.2)*1000){AU.lastCrash=now;surfCrash(clamp((wh-.3)*.09,.015,.18)*(.8+Math.random()*.4));}}if(cyc<.1)u.crashed=false;
     for(let j=0;j<a.count;j++){const x=b[j*3],bend=u.a[0]*Math.sin(x*u.k[0]+u.ph[0]+t*u.w[0])+u.a[1]*Math.sin(x*u.k[1]+u.ph[1]+t*u.w[1])+u.a[2]*Math.sin(x*u.k[2]+u.ph[2]+t*u.w[2]*2)+x*u.tilt;
       a.setZ(j,b[j*3+2]*(1+wh*1.2*(1-cyc))+bend*(1-cyc*.6));}a.needsUpdate=true;
     f.position.z=-d;f.position.y=.05+Math.sin(cyc*Math.PI)*wh*.18;
-    f.material.opacity=clamp(.55+wh*.6,.55,1)*u.str*Math.pow(Math.sin(cyc*Math.PI),.6)*(NIGHT>.6?.4:1);f.material.map.offset.x+=dt*u.w[1]*.004;});
+    f.material.opacity=clamp(.55+wh*.6,.55,1)*u.str*Math.pow(Math.sin(cyc*Math.PI),.6)*(NIGHT>.6?.4:1)*clamp(d/1.5,0,1);f.material.map.offset.x+=dt*u.w[1]*.004;});
   const sw=(Math.sin(t*2*Math.PI/per)*.5+.5);swash.position.set(0,.02+sw*.03,-.4-wh*.5+sw*(1.2+wh*2.2));swash.material.opacity=(.25+wh*.3)*(1-sw*.5)*(NIGHT>.6?.35:1);
   // pioggia
   // piove solo se c'è davvero precipitazione; con 'possibile pioggia' o rovesci va e viene, e l'intensità segue i mm/h
