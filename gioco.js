@@ -506,7 +506,7 @@ function buildWorld(){
   const lm=new T.MeshStandardMaterial({map:sandTex(),color:'#b9a57f',roughness:1}),lm2=new T.MeshStandardMaterial({color:'#6f7a52',roughness:1});
   const back=new T.Mesh(new T.PlaneGeometry(8000,4000),lm2);back.rotation.x=-Math.PI/2;back.position.set(0,.7,24+2000);scene.add(back);
   for(const sx of[-1,1]){const side=new T.Mesh(new T.PlaneGeometry(3800,26),lm);side.rotation.x=-Math.PI/2;side.position.set(sx*(208+1900),.12,13);scene.add(side);}}
-buildBeachLife();if(GFX()==='alta'){loadHDRI();addGlare();}buildPlanes();
+buildBeachLife();buildBoats();if(GFX()==='alta'){loadHDRI();addGlare();}buildPlanes();
   // frangenti: strisce di schiuma che avanzano verso riva, e risacca sulla sabbia
   const ft=foamTex();for(let i=0;i<9;i++){const g=new T.PlaneGeometry(420,3.4,160,2);g.rotateX(-Math.PI/2);const base=Float32Array.from(g.attributes.position.array);
     const tx=foamTex2();const m=new T.Mesh(g,new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,opacity:0}));m.position.y=.06;m.userData={base,cyc:Math.random(),rate:rnd(.75,1.35)};newWave(m);scene.add(m);foams.push(m);}
@@ -835,6 +835,21 @@ let GLARE=null;function addGlare(){const gt=glowTex('rgba(255,244,214,1)'),m=new
   if(scene.fog)scene.fog.density=(scene.fog.density||0)*1.15;}
 function updGlare(){if(!GLARE||!sunLight)return;const d=sunLight.position.clone().normalize(),up=Math.max(0,d.y),day=night()<.5;GLARE.visible=day&&up>.02;GLARE.position.copy(camera.position).addScaledVector(d,3000);GLARE.material.opacity=.25+.45*(1-up);
   const rf=GLARE.userData.rf;rf.visible=false;rf.position.set(camera.position.x+d.x*600,.12,camera.position.z+d.z*600);rf.rotation.z=Math.atan2(d.x,-d.z);rf.material.opacity=.15+.3*(1-up);}
+// barche in mare: gozzi da pesca e pescherecci a strascico che passano ogni tanto, con luci di via di notte (rossa a sinistra, verde a destra, bianca in testa d'albero)
+let BOATS=[];function makeSeaBoat(big){const g=new T.Group(),L=big?22:6,W=L*(big?.28:.36),H=L*(big?.17:.14),col=big?pick(['#1f4fa0','#c0392b','#2e7d32']):pick(['#f2f2f2','#2f6fb5','#d9c27a']);
+  const sh=new T.Shape();sh.moveTo(0,L*.5);sh.quadraticCurveTo(W*.55,L*.25,W*.5,0);sh.lineTo(W*.46,-L*.45);sh.quadraticCurveTo(0,-L*.52,-W*.46,-L*.45);sh.lineTo(-W*.5,0);sh.quadraticCurveTo(-W*.55,L*.25,0,L*.5);
+  const hg=new T.ExtrudeGeometry(sh,{depth:H,bevelEnabled:false,curveSegments:8});hg.rotateX(-Math.PI/2);const hm=labelMat(col,'#ffffff',big?'LT 2131':'RM 482',256,64);g.add(new T.Mesh(hg,hm));
+  const dk=new T.Mesh(new T.ShapeGeometry(sh,8),texMat(new T.MeshStandardMaterial({color:'#b08a62',roughness:.9}),'wood_planks',[1,2],{k:1.5}));dk.rotation.x=-Math.PI/2;dk.position.y=H*.92;g.add(dk);
+  const wh=new T.Mesh(new T.BoxGeometry(W*.6,H*(big?2.2:1.3),L*(big?.22:.18)),shipMat('deck'));wh.position.set(0,H*(big?2:1.5),L*(big?.12:-.05));g.add(wh);
+  const mast=new T.Mesh(new T.CylinderGeometry(.06*L/6,.08*L/6,L*(big?.55:.4),6),new T.MeshStandardMaterial({color:'#e9eef2'}));mast.position.set(0,H+L*(big?.27:.2),L*(big?.25:.1));g.add(mast);
+  if(big){for(const sx of[-1,1]){const gal=new T.Mesh(new T.BoxGeometry(.18,L*.35,.18),new T.MeshStandardMaterial({color:'#9aa3ad',metalness:.6}));gal.position.set(sx*W*.45,H+L*.15,-L*.3);gal.rotation.z=sx*.5;g.add(gal);}const net=new T.Mesh(new T.CylinderGeometry(W*.18,W*.18,W*.7,10),new T.MeshStandardMaterial({color:'#2e6b4a',roughness:1}));net.rotation.z=Math.PI/2;net.position.set(0,H*1.3,-L*.38);g.add(net);}
+  const lm=(c,x,y,z)=>{const l=new T.Sprite(new T.SpriteMaterial({map:glowTex(c),transparent:true,depthWrite:false,blending:T.AdditiveBlending,fog:false}));l.position.set(x,y,z);l.scale.set(L*.6,L*.6,1);g.add(l);return l;};
+  g.userData.lights=[lm('rgba(255,50,40,1)',-W*.5,H*1.4,L*.1),lm('rgba(60,255,90,1)',W*.5,H*1.4,L*.1),lm('rgba(255,250,230,1)',0,H+L*(big?.55:.4),L*(big?.25:.1))];if(big)g.userData.lights.push(lm('rgba(255,245,210,1)',0,H*2.6,-L*.1));
+  g.traverse(m=>{if(m.isMesh)m.castShadow=false;});return g;}
+function buildBoats(){BOATS=[];for(let i=0;i<3;i++){const big=i===2,b=makeSeaBoat(big);b.visible=false;scene.add(b);BOATS.push({g:b,big,t:-rnd(20,120)-i*50});}}
+function updBoats(dt){const nt=night();for(const B of BOATS){B.t+=dt;if(B.t<0){B.g.visible=false;continue;}const D=B.big?260:130,T0=B.big?420:240;if(B.t>T0){B.t=-rnd(120,400);B.dir=null;continue;}
+    if(B.dir==null){B.dir=Math.random()<.5?1:-1;B.z=-(B.big?rnd(500,1200):rnd(120,400));}const u=B.t/T0;B.g.visible=true;B.g.position.set(B.dir*(-D*4+u*D*8),Math.sin(performance.now()/900+B.z)*.15,B.z);B.g.rotation.set(Math.sin(performance.now()/1300)*.03,B.dir>0?-Math.PI/2:Math.PI/2,Math.sin(performance.now()/1100)*.04);
+    B.g.userData.lights.forEach(l=>{l.visible=nt>.25;});}}
 let PLANES=[];function buildPlanes(){PLANES=[];const sid=String(SPOT.id||'').replace(/^g_/,'');if(!['fiumicino','ostia','focene','passoscuro','fregene','castelfusano','darzagaia','cancello7','castelporziano'].includes(sid))return;loadProp('plane').then(src=>{if(!src||!scene)return;src.traverse(o=>{if(o.isMesh&&o.material){o.material.side=T.DoubleSide;o.material.emissive=new T.Color('#5a6068');o.material.emissiveIntensity=.6;if(o.material.color)o.material.color.lerp(new T.Color('#e8ecef'),.6);}});for(let i=0;i<2;i++){const m=propClone(src,38);const sz=m.userData.size;m.userData.fwd=sz.z>sz.x;m.visible=false;scene.add(m);const span=(m.userData.fwd?sz.x:sz.z)/2*.95;m.userData.lights=[['rgba(255,60,40,1)',-1],['rgba(255,210,60,1)',1]].map(([c,sd])=>{const l=new T.Sprite(new T.SpriteMaterial({map:glowTex(c),transparent:true,depthWrite:false,blending:T.AdditiveBlending,fog:false}));l.scale.set(9,9,1);if(m.userData.fwd)l.position.set(sd*span,sz.y*.35,0);else l.position.set(0,sz.y*.35,sd*span);m.add(l);return l;});PLANES.push({m,t:-rnd(10,80)-i*60});}});}
 // rombo dei motori: rumore filtrato che sale quando l'aereo è vicino
 let PSND=null;function planeSound(v){const c=ac();if(!c||!AU.on)return;if(!PSND){const s2=c.createBufferSource();s2.buffer=noiseBuf(c);s2.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=380;const g=c.createGain();g.gain.value=0;s2.connect(f).connect(g).connect(c.destination);s2.start();PSND={g,f};}PSND.g.gain.setTargetAtTime(v,c.currentTime,.3);PSND.f.frequency.setTargetAtTime(280+v*900,c.currentTime,.3);}
@@ -2349,7 +2364,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
   const gmul=(st.phase==='wait'&&!st.busy&&!st.rods.some(r=>r.state==='bite'))?st.speed:1;st.gmul=gmul;st.gt+=dt*1000*gmul;const gmin=dt*gmul/60;const w=wxAt(st.gt);
   // pescatore e vicini di spiaggia
   joyMove(dt,t);moveActor(AN,dt);lerpPose(dt,st.castAnim?(st.castAnim.phase==='fire'?16:7):/Fwd$|^strike$/.test(AN.target)?14:6);applyPose(t);if(AN.holding>=0&&(st.phase==='fight'||AN.reelSpin!==0||AN.target==='reel'))reelIK();playerReal(dt);updCrabs(dt,t);nearUI(t);
-  updNpcs(dt,t);updBeachLife(dt,t);updPlanes(dt);updGlare();rpUpd(dt,t);
+  updNpcs(dt,t);updBeachLife(dt,t);updPlanes(dt);updGlare();updBoats(dt);rpUpd(dt,t);
   if(st.cast?.on){st.cast.p+=st.cast.dir*dt*1.15;if(st.cast.p>1){st.cast.p=1;st.cast.dir=-1;}if(st.cast.p<0){st.cast.p=0;st.cast.dir=1;}const el=document.getElementById('gpw');if(el)el.style.width=(st.cast.p*100)+'%';}
   // canne
   for(const r of st.rods){
@@ -2527,7 +2542,7 @@ function updCam(dt,t){let p,l;const a=AN.pos;
 function drawHud(w){const d=gameDate(),mp=moonPosG(d,SPOT.lat,SPOT.lon);
   const wi=w.code>=95?'⛈️':w.code>=80?'🌦️':w.code>=51?'🌧️':w.code>=45?'🌫️':w.cc>75?'☁️':w.cc>35?'⛅':sunPos(d,SPOT.lat,SPOT.lon).alt>0?'☀️':'🌙';
   const h=`<div>📍 ${escH(SPOT.name.split(' · ')[0])} · <b>${d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</b>${st.speed>1&&st.phase==='wait'&&!st.busy?' ⏩':''}</div><div>${wi} ${Math.round(w.temp)}° ${['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.round(mp.ph/45)%8]} 🎣${w.idx}${st.sim?' ⚠️':''}</div><br><div>🌬️ ${Math.round(w.ws)} ${windName(w.wd)}</div><div>🌊 ${(w.wave||0).toFixed(1).replace('.',',')} m · ${Math.round(w.sst)}°</div><div>💶 ${eur(st.money)}</div>`;if(hud.innerHTML!==h)hud.innerHTML=h;}
-G._bite=i=>startBite(st.rods[i]);G._walkers=()=>WALKERS;G._sc=()=>scene;G._planes=()=>PLANES;G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
+G._bite=i=>startBite(st.rods[i]);G._walkers=()=>WALKERS;G._sc=()=>scene;G._planes=()=>PLANES;G._boats=()=>BOATS;G._sp=n=>SP.find(x=>x.n===n);G._ui=()=>setUI();G._an=AN;G._cam=()=>camera;G._npcs=()=>NPCS;G._crabs=()=>CRABS;G._tangle=r=>checkTangle(r);G._look=(y,p)=>{LOOK.yaw=y;LOOK.pitch=p;};
 /* ---------- meteo reale per l'ora di gioco ---------- */
 async function loadWx(){
   try{const r=await window.fetchRaw(SPOT);st.sim=!!r.sim;st.X=window.build(r.w,r.m,SPOT,'coast');}catch(e){st.X=null;st.sim=true;}
