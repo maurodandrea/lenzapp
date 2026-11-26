@@ -1664,7 +1664,7 @@ function dailyBonus(){if(LSG('bonusDay','')!==today()){LSS('bonusDay',today());s
 
 /* ---------- la scena del negozio ---------- */
 const SH={cart:[],cat:'canne',sel:{},cam:{p:null,l:null},hits:[]};
-const SHCAM={ingresso:[[0.0,1.45,1.2],[0.0,1.1,-5.0]],canne:[[-1.3,1.6,-3.5],[-4.9,1.9,-4.2]],mulinelli:[[1.4,1.35,-1.4],[3.6,0.85,-2.4]],esche:[[2.0,1.35,-5.0],[3.9,1.0,-7.4]],ami:[[-2.4,1.35,-5.0],[-2.6,1.2,-7.9]],piombi:[[-2.4,1.35,-5.0],[-2.6,1.0,-7.9]],fili:[[-0.4,1.35,-5.0],[-0.4,1.2,-7.9]],accessori:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],cassa:[[1.6,1.45,-3.0],[4.2,1.2,-4.1]],sedie:[[0.6,1.35,0.6],[2.8,0.05,-1.2]],ombrelloni:[[0.6,1.45,0.6],[2.8,1.2,-1.2]],abbigliamento:[[-0.6,1.35,0.6],[-3.2,1.0,-1.2]],borsoni:[[-0.6,1.35,0.6],[-3.2,0.05,-1.2]],picchetti:[[-2.1,1.35,-3.6],[-4.9,1.0,-4.2]],torce:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],veicoli:[[0,1.25,-.5],[0,.15,-2.6]]};
+const SHCAM={ingresso:[[0.0,1.45,1.2],[0.0,1.1,-5.0]],canne:[[-2.9,1.55,-1.4],[-4.9,1.7,-3.6]],mulinelli:[[1.4,1.35,-1.4],[3.6,0.85,-2.4]],esche:[[2.0,1.35,-5.0],[3.9,1.0,-7.4]],ami:[[-2.4,1.35,-5.0],[-2.6,1.2,-7.9]],piombi:[[-2.4,1.35,-5.0],[-2.6,1.0,-7.9]],fili:[[-0.4,1.35,-5.0],[-0.4,1.2,-7.9]],accessori:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],cassa:[[1.6,1.45,-3.0],[4.2,1.2,-4.1]],sedie:[[0.6,1.35,0.6],[2.8,0.05,-1.2]],ombrelloni:[[0.6,1.45,0.6],[2.8,1.2,-1.2]],abbigliamento:[[-1.4,1.5,-.6],[-4.9,1.5,.5]],borsoni:[[-0.6,1.35,0.6],[-3.2,0.05,-1.2]],picchetti:[[-2.1,1.35,-3.6],[-4.9,1.0,-4.2]],torce:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],veicoli:[[0,1.25,-.5],[0,.15,-2.6]]};
 function shopTex(txt,o={}){return canvasTex(o.w||512,o.h||128,(g,W,H)=>{g.fillStyle=o.bg||'#12324a';g.fillRect(0,0,W,H);if(o.border){g.strokeStyle=o.border;g.lineWidth=8;g.strokeRect(6,6,W-12,H-12);}g.fillStyle=o.col||'#fff';g.textAlign='center';g.textBaseline='middle';let fs=o.fs||64;g.font=`800 ${fs}px Outfit,sans-serif`;while(g.measureText(txt).width>W-40&&fs>20){fs-=4;g.font=`800 ${fs}px Outfit,sans-serif`;}g.fillText(txt,W/2,H/2+3);});}
 function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612');camera=new T.PerspectiveCamera(60,1,.05,80);
   renderer.toneMapping=T.ACESFilmicToneMapping;renderer.outputEncoding=T.sRGBEncoding;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;
@@ -1687,10 +1687,10 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
   lab('CANNE',-4.95,2.4,-4.2,Math.PI/2);
   // insegne degli sponsor sopra ogni reparto (loghi veri)
   {const TL=new T.TextureLoader(),logo=(f,w,x,y,z,ry)=>{const t=TL.load(GBASE+'img/logo/'+f+'.jpg',tx=>{const a=tx.image.height/tx.image.width;m.scale.y=a;});t.encoding=T.sRGBEncoding;const m=new T.Mesh(new T.PlaneGeometry(w,w),new T.MeshBasicMaterial({map:t,toneMapped:false}));m.scale.y=.4;m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);const fr=new T.Mesh(new T.BoxGeometry(w+.08,.02,.06),new T.MeshStandardMaterial({color:'#2b2f36'}));fr.position.set(x,y+.02,z);fr.rotation.y=ry;return m;};
-    logo('trabucco',1,-4.92,2.05,-2.6,Math.PI/2);logo('trabucco',.9,-1.9,2.05,-3.43,0);
+    logo('trabucco',.7,-4.92,2.4,-3.0,Math.PI/2);logo('trabucco',.55,-1.9,2.68,-3.43,0);
     logo('shimano',.9,4.55,2.05,-6.15,-Math.PI/2);logo('shimano',.8,3.33,.55,-2.6,-Math.PI/2);
-    logo('maver',.75,1.8,2.62,-8.38,0);logo('daiwa',.75,-2.6,2.62,-8.38,0);logo('daiwa',.75,-.4,2.62,-8.38,0);
-    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.5,3.75,2.85,-7.45,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
+    logo('maver',.6,2.42,2.22,-7.94,0);logo('daiwa',.6,-1.98,2.22,-7.94,0);logo('daiwa',.6,.22,2.22,-7.94,0);
+    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.42,3.9-.36,1.98,-7.7+.36,-Math.PI/4);logo('tubertini',.6,-4.92,2.4,1.25,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
     // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
@@ -1707,7 +1707,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     const cork=new T.Mesh(new T.CylinderGeometry(.019,.019,.45,10),M('#b98d58'));cork.position.y=.35;g.add(cork);for(let k=1;k<6;k++){const ri=new T.Mesh(new T.TorusGeometry(.012+.02*(1-k/6),.003,6,12),M('#c0c4c8',{metalness:.9,roughness:.2}));ri.rotation.y=Math.PI/2;ri.position.set(.03,.6+k*.3,0);g.add(ri);}
     g.position.set(-4.82,.05,z);g.rotation.z=-.08;scene.add(g);}
   // scaffali sulla parete di fondo con le confezioni
-  const shelf=(x,title)=>{lab(title,x,2.22,-7.96);const fr=M('#7a5a3a');box(.05,2,.45,fr,x-.95,1,-8.2);box(.05,2,.45,fr,x+.95,1,-8.2);box(1.95,2,.03,M('#d8cdb8'),x,1,-8.42);
+  const shelf=(x,title)=>{lab(title,x-.3,2.22,-7.96);scene.children[scene.children.length-1].scale.x=.78;const fr=M('#7a5a3a');box(.05,2,.45,fr,x-.95,1,-8.2);box(.05,2,.45,fr,x+.95,1,-8.2);box(1.95,2,.03,M('#d8cdb8'),x,1,-8.42);
     for(let k=0;k<5;k++){const y=.15+k*.42;box(1.9,.03,.45,fr,x,y,-8.2);for(let i=0;i<8;i++){const w=rnd(.12,.2),h=rnd(.16,.32),c=new T.Color().setHSL(Math.random(),.55,.5);const pk=box(w,h,rnd(.05,.12),M(c,{roughness:.6}),x-.82+i*.235,y+.015+h/2,-8.16+rnd(-.05,.05));
       const lb=box(w*.8,h*.3,.002,M('#ffffff',{roughness:.4}),0,h*.12,0,pk);lb.position.z=pk.geometry.parameters.depth/2+.001;}}};
   shelf(-2.6,'AMI · PIOMBI');shelf(-.4,'FILI · TERMINALI');shelf(1.8,'MINUTERIE');
