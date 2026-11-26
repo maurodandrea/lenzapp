@@ -480,7 +480,7 @@ function buildWorld(){
   const sg=new T.PlaneGeometry(420,90,140,60);sg.rotateX(-Math.PI/2);const pa=sg.attributes.position,col=[];
   const DK=SPOT.dune??1;
   for(let i=0;i<pa.count;i++){const x=pa.getX(i),z=pa.getZ(i)+30;let y=z<-6?-1.2+(z+6)*.05:z<0?z*.06-.15:z<24?z*.035+Math.sin(x*.21+z*.3)*.015:.84+(Math.pow((z-24)/10,1.6)*1.4+Math.sin(x*.07)*.8+Math.sin(x*.19+1)*.35)*DK;
-    if(z>24)y+=Math.max(0,Math.sin(x*.13+z*.2))*.6*DK;pa.setXYZ(i,x,y,z);const wet=clamp(1-(z+1)/5,0,1);col.push(lerp(1,.62,wet),lerp(1,.56,wet),lerp(1,.48,wet));}
+    if(z>24)y=Math.max(.75,y+Math.max(0,Math.sin(x*.13+z*.2))*.6*DK);pa.setXYZ(i,x,y,z);const wet=clamp(1-(z+1)/5,0,1);col.push(lerp(1,.62,wet),lerp(1,.56,wet),lerp(1,.48,wet));}
   sg.setAttribute('color',new T.Float32BufferAttribute(col,3));sg.computeVertexNormals();
   SAND=new T.Mesh(sg,new T.MeshStandardMaterial({map:sandTex(),vertexColors:true,roughness:1}));
   // sabbia fotografica (Poly Haven, CC0): colore e rilievo dei granelli, ripetuta ogni 2,5 m e tinta col colore della spiaggia
