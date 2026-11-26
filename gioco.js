@@ -1664,7 +1664,7 @@ function dailyBonus(){if(LSG('bonusDay','')!==today()){LSS('bonusDay',today());s
 
 /* ---------- la scena del negozio ---------- */
 const SH={cart:[],cat:'canne',sel:{},cam:{p:null,l:null},hits:[]};
-const SHCAM={ingresso:[[0.0,1.45,1.2],[0.0,0.55,-5.0]],canne:[[-1.3,1.6,-3.5],[-4.9,1.35,-4.2]],mulinelli:[[1.4,1.35,-1.4],[3.6,0.3,-2.4]],esche:[[2.0,1.35,-5.0],[3.9,0.45,-7.4]],ami:[[-2.4,1.35,-5.0],[-2.6,0.65,-7.9]],piombi:[[-2.4,1.35,-5.0],[-2.6,0.45,-7.9]],fili:[[-0.4,1.35,-5.0],[-0.4,0.65,-7.9]],accessori:[[1.3,1.35,-5.2],[1.4,0.65,-7.9]],cassa:[[1.6,1.45,-3.0],[4.2,0.65,-4.1]],sedie:[[0.6,1.35,0.6],[2.8,0.05,-1.2]],ombrelloni:[[0.6,1.45,0.6],[2.8,0.65,-1.2]],abbigliamento:[[-0.6,1.35,0.6],[-3.2,0.45,-1.2]],borsoni:[[-0.6,1.35,0.6],[-3.2,0.05,-1.2]],picchetti:[[-2.1,1.35,-3.6],[-4.9,0.45,-4.2]],torce:[[1.3,1.35,-5.2],[1.4,0.65,-7.9]],veicoli:[[0,1.25,-.5],[0,.15,-2.6]]};
+const SHCAM={ingresso:[[0.0,1.45,1.2],[0.0,1.1,-5.0]],canne:[[-1.3,1.6,-3.5],[-4.9,1.9,-4.2]],mulinelli:[[1.4,1.35,-1.4],[3.6,0.85,-2.4]],esche:[[2.0,1.35,-5.0],[3.9,1.0,-7.4]],ami:[[-2.4,1.35,-5.0],[-2.6,1.2,-7.9]],piombi:[[-2.4,1.35,-5.0],[-2.6,1.0,-7.9]],fili:[[-0.4,1.35,-5.0],[-0.4,1.2,-7.9]],accessori:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],cassa:[[1.6,1.45,-3.0],[4.2,1.2,-4.1]],sedie:[[0.6,1.35,0.6],[2.8,0.05,-1.2]],ombrelloni:[[0.6,1.45,0.6],[2.8,1.2,-1.2]],abbigliamento:[[-0.6,1.35,0.6],[-3.2,1.0,-1.2]],borsoni:[[-0.6,1.35,0.6],[-3.2,0.05,-1.2]],picchetti:[[-2.1,1.35,-3.6],[-4.9,1.0,-4.2]],torce:[[1.3,1.35,-5.2],[1.4,1.2,-7.9]],veicoli:[[0,1.25,-.5],[0,.15,-2.6]]};
 function shopTex(txt,o={}){return canvasTex(o.w||512,o.h||128,(g,W,H)=>{g.fillStyle=o.bg||'#12324a';g.fillRect(0,0,W,H);if(o.border){g.strokeStyle=o.border;g.lineWidth=8;g.strokeRect(6,6,W-12,H-12);}g.fillStyle=o.col||'#fff';g.textAlign='center';g.textBaseline='middle';let fs=o.fs||64;g.font=`800 ${fs}px Outfit,sans-serif`;while(g.measureText(txt).width>W-40&&fs>20){fs-=4;g.font=`800 ${fs}px Outfit,sans-serif`;}g.fillText(txt,W/2,H/2+3);});}
 function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612');camera=new T.PerspectiveCamera(60,1,.05,80);
   renderer.toneMapping=T.ACESFilmicToneMapping;renderer.outputEncoding=T.sRGBEncoding;renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=false;
@@ -1689,8 +1689,8 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
   {const TL=new T.TextureLoader(),logo=(f,w,x,y,z,ry)=>{const t=TL.load(GBASE+'img/logo/'+f+'.jpg',tx=>{const a=tx.image.height/tx.image.width;m.scale.y=a;});t.encoding=T.sRGBEncoding;const m=new T.Mesh(new T.PlaneGeometry(w,w),new T.MeshBasicMaterial({map:t,toneMapped:false}));m.scale.y=.4;m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);const fr=new T.Mesh(new T.BoxGeometry(w+.08,.02,.06),new T.MeshStandardMaterial({color:'#2b2f36'}));fr.position.set(x,y+.02,z);fr.rotation.y=ry;return m;};
     logo('trabucco',1,-4.92,2.05,-2.6,Math.PI/2);logo('trabucco',.9,-1.9,2.05,-3.43,0);
     logo('shimano',.9,4.55,2.05,-6.15,-Math.PI/2);logo('shimano',.8,3.33,.55,-2.6,-Math.PI/2);
-    logo('maver',1,1.8,2.32,-7.96,0);logo('daiwa',1,-2.6,2.32,-7.96,0);logo('daiwa',1,-.4,2.32,-7.96,0);
-    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.6,3.85,2.42,-7.55,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
+    logo('maver',.75,1.8,2.62,-8.38,0);logo('daiwa',.75,-2.6,2.62,-8.38,0);logo('daiwa',.75,-.4,2.62,-8.38,0);
+    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.5,3.75,2.85,-7.45,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
     // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
@@ -1707,7 +1707,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     const cork=new T.Mesh(new T.CylinderGeometry(.019,.019,.45,10),M('#b98d58'));cork.position.y=.35;g.add(cork);for(let k=1;k<6;k++){const ri=new T.Mesh(new T.TorusGeometry(.012+.02*(1-k/6),.003,6,12),M('#c0c4c8',{metalness:.9,roughness:.2}));ri.rotation.y=Math.PI/2;ri.position.set(.03,.6+k*.3,0);g.add(ri);}
     g.position.set(-4.82,.05,z);g.rotation.z=-.08;scene.add(g);}
   // scaffali sulla parete di fondo con le confezioni
-  const shelf=(x,title)=>{lab(title,x,2.14,-8.4);const fr=M('#7a5a3a');box(.05,2,.45,fr,x-.95,1,-8.2);box(.05,2,.45,fr,x+.95,1,-8.2);box(1.95,2,.03,M('#d8cdb8'),x,1,-8.42);
+  const shelf=(x,title)=>{lab(title,x,2.22,-7.96);const fr=M('#7a5a3a');box(.05,2,.45,fr,x-.95,1,-8.2);box(.05,2,.45,fr,x+.95,1,-8.2);box(1.95,2,.03,M('#d8cdb8'),x,1,-8.42);
     for(let k=0;k<5;k++){const y=.15+k*.42;box(1.9,.03,.45,fr,x,y,-8.2);for(let i=0;i<8;i++){const w=rnd(.12,.2),h=rnd(.16,.32),c=new T.Color().setHSL(Math.random(),.55,.5);const pk=box(w,h,rnd(.05,.12),M(c,{roughness:.6}),x-.82+i*.235,y+.015+h/2,-8.16+rnd(-.05,.05));
       const lb=box(w*.8,h*.3,.002,M('#ffffff',{roughness:.4}),0,h*.12,0,pk);lb.position.z=pk.geometry.parameters.depth/2+.001;}}};
   shelf(-2.6,'AMI · PIOMBI');shelf(-.4,'FILI · TERMINALI');shelf(1.8,'MINUTERIE');
@@ -1753,7 +1753,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     // torre a vetri con i mulinelli
     box(.7,2.2,1.4,M('#2b2f36'),4.6,1.1,-5.4);for(let r=0;r<5;r++){box(.6,.03,1.3,M('#e8f6ff',{transparent:true,opacity:.35}),4.55,.35+r*.4,-5.4);
       for(let k=0;k<4;k++){const g=new T.Group();g.position.set(4.45,.42+r*.4,-5.9+k*.33);g.rotation.y=-Math.PI/2;scene.add(g);const sp=new T.Mesh(new T.CylinderGeometry(.06,.055,.07,14),M(['#c0c4c8','#b8352a','#2b2f36','#d9b24a','#2f6fb5'][(r+k)%5],{metalness:.6,roughness:.3}));sp.rotation.x=Math.PI/2;g.add(sp);box(.03,.08,.06,M('#1d1d1d'),0,-.05,-.04,g);box(.08,.012,.012,met,.06,0,-.03,g);}}
-    lab('MULINELLI',4.55,2.35,-5.4,-Math.PI/2);
+    
     // stand vestiti e scafandri
     for(const [x,z,ry] of [[-4.2,-.2,1.2],[-2.2,.3,.2]]){const rk=new T.Group();box(1.6,.03,.03,met,0,1.75,0,rk);for(const xx of[-.78,.78])box(.03,1.75,.03,met,xx,.88,0,rk);
       ['#2b2f36','#3a5a2a','#2f6fb5','#c0392b','#16191d','#e67e22','#4b5a36'].forEach((cl,i)=>{const j=box(.24,.75,.09,M(cl),-.66+i*.22,1.33,0,rk);j.rotation.y=.25;if(i%3===2){box(.2,.7,.08,M(cl),-.66+i*.22,.7,0,rk);}});rk.position.set(x,0,z);rk.rotation.y=ry;scene.add(rk);}
