@@ -1495,7 +1495,11 @@ const GEAR0={v:2,rod:'beach390',rods:['beach390'],rodCnt:{beach390:1},reel:'r500
   baits:{koreano:15},hooks:{4:10},leads:{80:2,100:2,125:2},grip:{},ogiva:{},forged:{},starlight:2,swivels:15,snaps:15,needle:true,elastic:false,lamp:false,torch:0,spikes:1,spikeT:'pvc',
   chair:'',chairs:[],hat:'none',hats:['none'],outfits:[],shelters:[],shelter:'',boots:false,own:{},bought:{scis:true,slam:true}};
 function gearLoad(){let g=LSG('gear',null);const G0=JSON.parse(JSON.stringify(GEAR0));if(!g||g.v!==2){LSS('outfit','jeans');LSS('nrods',1);return G0;}if(!g.kitFix){g.kitFix=1;if(g.beadsN==null)g.beadsN=20;g.bought=g.bought||{};if(g.bought.scis==null)g.bought.scis=true;}if(!g.slamFix){g.slamFix=1;g.bought=g.bought||{};if(g.bought.slam==null)g.bought.slam=true;}if(!g.termFix){g.termFix=1;if(g.bought?.fluo){g.termF=Math.max(0,(g.term||0)-10);g.term=(g.term||0)-g.termF;}}if(!g.star2){g.star2=true;g.starlight=Math.max(g.starlight||0,2);}if(!g.triFix){g.triFix=true;if(g.bought?.tripod)g.spikes=Math.max(1,Math.min(3,(g.spikes||0)-3));}if(!g.boxFix){g.boxFix=true;if(g.bought)delete g.bought.box;}for(const k in G0)if(g[k]===undefined)g[k]=G0[k];return g;}
-st.gear=gearLoad();st.money=LSG('money',10000);if(!LSG('eco10k',0)){st.money=Math.max(st.money,10000);LSS('eco10k',1);LSS('eco3',1);LSS('money',st.money);}// per le prove si parte con 10.000 € virtuali
+const isAdmin=()=>/^(admin)$/i.test((window.GP_NAME||window.CLOUD?.name?.()||'').trim());
+const startMoney=()=>isAdmin()?100000:100;
+st.gear=gearLoad();st.money=LSG('money',startMoney());
+if(isAdmin()&&st.money<100000){st.money=100000;LSS('money',st.money);}
+
 // guadagni: tempo di pesca nel gioco, catture e uso dell'app (con un tetto al giorno)
 const EARN={fish:2,fishMax:1e9};function earnDay(){const e=LSG('earn',{});if(e.d!==today())return {d:today(),fish:0,app:0};return e;}
 function earn(kind,v,why){const e=earnDay(),max=kind==='fish'?EARN.fishMax:1e9,add=Math.max(0,Math.min(v,max-(e[kind]||0)));if(add<=0)return 0;e[kind]=(e[kind]||0)+add;LSS('earn',e);st.money+=add;gearSave();moneyPop(add,why);return add;}
