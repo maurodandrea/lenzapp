@@ -417,8 +417,16 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   s.add(leg);
 }
 
-    if(i===SEG-1){const cap=new T.Mesh(new T.CylinderGeometry(r2*1.15,r2*1.15,.02,16),MAT.cork);cap.position.y=-.01;s.add(cap);}
-    segs.push(s);parent=s;}
+
+if(i===SEG-1){
+  const cap=new T.Mesh(new T.CylinderGeometry(r2*1.15,r2*1.15,.02,16),MAT.cork);cap.position.y=-.01;s.add(cap);
+  const tipTube=new T.Mesh(new T.CylinderGeometry(r2*1.4,r2*1.5,.022,12),MAT.alu);tipTube.position.set(0,len-.005,0);s.add(tipTube);
+  const tipRing=new T.Mesh(new T.TorusGeometry(.012,.0035,8,16),MAT.alu);tipRing.rotation.x=Math.PI/2.3;tipRing.position.set(0,len+.006,-.01);s.add(tipRing);
+}
+segs.push(s);parent=s;}
+
+
+
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
   const reel=new T.Group();reel.position.set(0,.05,0);reel.rotation.y=Math.PI;segs[2].add(reel);
   // come un mulinello vero (tipo Trabucco Hydrus): piede sul fusto, gambo, corpo ingranaggi a goccia con piastra laterale, rotore con due bracci, archetto in filo con rullino, bobina con gonna e pomello frizione davanti, manovella laterale
