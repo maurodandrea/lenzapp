@@ -2394,7 +2394,7 @@ function loop(){raf=requestAnimationFrame(loop);if(!renderer)return;const dt=Mat
     renderer.setScissor(x,y,sz,sz);renderer.setViewport(x,y,sz,sz);renderer.render(scene,G.rc);renderer.setScissorTest(false);}}
 function moveActor(a,dt){
   if(a.moving&&a.walkTarget){const wt=a.walkTarget,dx=wt.x-a.pos.x,dz=wt.z-a.pos.z,d=Math.hypot(dx,dz);
-    if(d<.05){a.moving=false;a.walkTarget=null;wt.res();}else{const vs=a===AN?a.speed*.6:a.speed,s=Math.min(d,vs*dt);a.pos.x+=dx/d*s;a.pos.z+=dz/d*s;a.walk+=dt*vs*4.3;const ty=Math.atan2(-dx,-dz);a.rotY=lerpAng(a.rotY,ty,1-Math.exp(-10*dt));}
+    if(d<.05){a.moving=false;a.walkTarget=null;wt.res();}else{const vs=a===AN?a.speed*1.2:a.speed,s=Math.min(d,vs*dt);a.pos.x+=dx/d*s;a.pos.z+=dz/d*s;a.walk+=dt*vs*4.3;const ty=Math.atan2(-dx,-dz);a.rotY=lerpAng(a.rotY,ty,1-Math.exp(-10*dt));}
     if(a===AN){const dp=sandY(a.pos.z);a.swim=dp<-.85;a.pos.y=a.swim?(a.dive?-1.6:-.95):dp;}else a.pos.y=Math.max(0,a.pos.z*.035);if(a.target==='sit'||a.target==='bend')a.target=a.holding>=0?'hold':'stand';}
   else if(a.faceTo!=null){a.rotY=lerpAng(a.rotY,a.faceTo,1-Math.exp(-(a===AN&&st.castAnim?6*(st.slow||1):8)*dt));}}
 function maxDepth(){const o=st.outfit,g=st.gear;if(o==='wetsuit')return 99;if(o==='waders'||o==='neo')return 1.05;if(g.boots)return .45;return .12;}
@@ -2430,13 +2430,13 @@ function playerReal(dt){if(!AN.obj)return;if(!PREAL&&!PREALP&&T){PREALP=loadChar
     if(hb){const k=H.userData.k||1;H.position.set(0,.105*k,-.005*k);H.rotation.x=-.12;H.rotation.set(0,0,0);}}
   PREAL.position.copy(AN.pos);if(!AN.swim&&AN.pos.z<0)PREAL.position.y=Math.min(AN.pos.y,0)-Math.max(0,-sandY(AN.pos.z))*0;PREAL.rotation.y=AN.rotY+Math.PI;PREAL.visible=AN.obj.visible!==false;
   const tg=AN.target||'',k=AN.moving||AN.joying?((AN.speed||1)>3.2?'run':'walk'):tg==='sit'?'sit':st.castAnim?'cast':AN.swim?'swim':(AN.holding>=0||/reel|hold|strike|bend/.test(tg))?'fishidle':'idle';
-  PREAL.userData.play(k,k==='walk'?clamp((AN.speed||1.2)/1.3,.6,1.4):1);PREAL.userData.mixer.update(dt*(st.slow||1));}
+  PREAL.userData.play(k,k==='walk'?clamp((AN.speed||1.2)*(AN.joying?1:1.2)/1.6,.8,2):1);PREAL.userData.mixer.update(dt*(st.slow||1));}
 function joyMove(dt,t){const m=Math.hypot(JOY.x,JOY.y);const free=st.phase==='wait'&&!st.busy;
   if(!JOY.on||m<.15||!free){if(AN.joying){AN.joying=false;AN.moving=false;}return;}
   if(AN.target==='sit'){pose('stand');AN.pos.z-=.35;}
   const fw=new T.Vector3().subVectors(CAM.l||new T.Vector3(0,0,-10),camera.position);fw.y=0;fw.normalize();const rt=new T.Vector3(-fw.z,0,fw.x);
   const dir=fw.multiplyScalar(-JOY.y).add(rt.multiplyScalar(JOY.x));if(dir.lengthSq()<1e-4)return;dir.normalize();
-  const inWater=AN.pos.z<-.1,deep=sandY(AN.pos.z)<-1,sp=(deep?1.1:inWater?.9:1.75)*Math.min(1,m);AN.joying=true;AN.moving=true;AN.walkTarget=null;AN.speed=sp;AN.faceTo=null;
+  const inWater=AN.pos.z<-.1,deep=sandY(AN.pos.z)<-1,sp=(deep?1.6:inWater?1.6:3.5)*Math.min(1,m);AN.joying=true;AN.moving=true;AN.walkTarget=null;AN.speed=sp;AN.faceTo=null;
   {const nz=clamp(AN.pos.z+dir.z*sp*dt,-150,26),mx=maxDepth();if(-sandY(nz)>mx&&nz<AN.pos.z){if(!AN.depthMsg){AN.depthMsg=1;st.msg=mx<.2?'🥾 Senza stivali puoi entrare in acqua solo fino alle caviglie.':mx<.6?'🥾 Con gli stivali arrivi fino alle ginocchia: con lo scafandro andresti fino alla pancia.':mx<2?'🦺 Con lo scafandro arrivi fino alla pancia: per nuotare serve la muta.':'';setUI();}}else{AN.pos.z=nz;AN.depthMsg=0;}}
   AN.pos.x=clamp(AN.pos.x+dir.x*sp*dt,-110,110);AN.swim=sandY(AN.pos.z)<-.85;AN.pos.y=AN.swim?-.95:sandY(AN.pos.z);AN.walk+=dt*sp*4.3;
   AN.rotY=lerpAng(AN.rotY,Math.atan2(-dir.x,-dir.z),1-Math.exp(-10*dt));
