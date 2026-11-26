@@ -794,7 +794,7 @@ function lmModel(L){const g=new T.Group(),m=(c,o={})=>new T.MeshStandardMaterial
     const ring=[];for(let k=0;k<64;k++){const a=k/64*Math.PI*2;if(Math.abs(Math.sin(a/2))<.12)continue;ring.push([Math.sin(a)*18,3.85,-L0-16+Math.cos(a)*18]);}inst(new T.BoxGeometry(.08,1.1,.08),rail,ring);
     add(new T.TorusGeometry(18,.06,6,48),rail,0,4.4,-L0-16).rotation.x=Math.PI/2;
     for(let k=0;k<10;k++){const a=k/10*Math.PI*2;add(new T.CylinderGeometry(.6,.7,6,10),pm,Math.sin(a)*12,-.6,-L0-16+Math.cos(a)*12);}
-    add(new T.BoxGeometry(6,3.2,4),m('#f2efe6'),0,4.9,-L0-22);add(new T.BoxGeometry(6.6,.3,4.6),m('#7a8a96'),0,6.6,-L0-22);}
+}
   else if(t==='canal'){const bw=texMat(m('#a8a398'),'concrete_wall_008',[4,30],{k:1.5}),qy=texMat(m('#b3ab9c'),'concrete_wall_008',[2,40],{k:1.5}),wat=m('#2f5d6e',{roughness:.2,metalness:.3});
     // porto canale di Fiumicino: due moli paralleli che entrano in mare, canale largo 40 m con barche ormeggiate, fanali rosso e verde in punta
     for(const sx of[-1,1]){add(new T.BoxGeometry(10,3,260),bw,sx*25,.8,-80);add(new T.BoxGeometry(8,.4,300),qy,sx*24,2.5,40);
