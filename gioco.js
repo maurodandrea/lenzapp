@@ -405,7 +405,18 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
     const m=new T.Mesh(new T.CylinderGeometry(r2,r1,len,16),u<.13?MAT.blank:u<.8?MAT.blank2:MAT.tip);m.position.y=len/2;m.castShadow=true;s.add(m);
     if(i===2||i===3){const c=new T.Mesh(new T.CylinderGeometry(r1*1.6,r1*1.6,len,16),MAT.cork);c.position.y=len/2;s.add(c);}
     if(i===4){const lb=new T.Mesh(new T.CylinderGeometry(r1*1.05,r1*1.05,len*.9,16,1,true),trabMat());lb.position.y=len/2;s.add(lb);}
-    if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.035,.01,u),.004,8,16),MAT.alu);ring.position.set(0,len*.5,-lerp(.06,.02,u));s.add(ring);}
+    if(i>=4&&i%2===0){
+  const rSize = lerp(.035,.01,u);
+  const rDist = -lerp(.045,.015,u);
+  const ring = new T.Mesh(new T.TorusGeometry(rSize,.004,8,16), MAT.alu);
+  ring.rotation.x = Math.PI/2;
+  ring.position.set(0, len*.5, rDist);
+  s.add(ring);
+  const leg = new T.Mesh(new T.BoxGeometry(.004,.012,Math.abs(rDist)), MAT.alu);
+  leg.position.set(0, len*.5 - .004, rDist/2);
+  s.add(leg);
+}
+
     if(i===SEG-1){const cap=new T.Mesh(new T.CylinderGeometry(r2*1.15,r2*1.15,.02,16),MAT.cork);cap.position.y=-.01;s.add(cap);}
     segs.push(s);parent=s;}
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
