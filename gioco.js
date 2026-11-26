@@ -402,10 +402,11 @@ function applyPose(t,a=AN){const J=a.obj.userData.J,p=a.pose,set=(o,v)=>o.rotati
 const ROD_LEN=4.2,SEG=14;
 function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   for(let i=0;i<SEG;i++){const u=i/SEG,len=ROD_LEN/SEG,r1=lerp(.017,.004,u),r2=lerp(.017,.004,(i+1)/SEG),s=new T.Group();s.position.y=i?len:0;parent.add(s);
-    const m=new T.Mesh(new T.CylinderGeometry(r2,r1,len,8),u<.13?MAT.blank:u<.8?MAT.blank2:MAT.tip);m.position.y=len/2;m.castShadow=true;s.add(m);
-    if(i===2||i===3){const c=new T.Mesh(new T.CylinderGeometry(r1*1.5,r1*1.5,len,10),MAT.cork);c.position.y=len/2;s.add(c);}
-    if(i===4){const lb=new T.Mesh(new T.CylinderGeometry(r1*1.04,r1*1.04,len*.8,12,1,true),trabMat());lb.position.y=len/2;s.add(lb);}
-    if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.03,.008,u),.003,6,12),MAT.alu);ring.position.set(0,len*.5,-lerp(.05,.015,u));s.add(ring);}
+    const m=new T.Mesh(new T.CylinderGeometry(r2,r1,len,16),u<.13?MAT.blank:u<.8?MAT.blank2:MAT.tip);m.position.y=len/2;m.castShadow=true;s.add(m);
+    if(i===2||i===3){const c=new T.Mesh(new T.CylinderGeometry(r1*1.6,r1*1.6,len,16),MAT.cork);c.position.y=len/2;s.add(c);}
+    if(i===4){const lb=new T.Mesh(new T.CylinderGeometry(r1*1.05,r1*1.05,len*.9,16,1,true),trabMat());lb.position.y=len/2;s.add(lb);}
+    if(i>=4&&i%2===0){const ring=new T.Mesh(new T.TorusGeometry(lerp(.035,.01,u),.004,8,16),MAT.alu);ring.position.set(0,len*.5,-lerp(.06,.02,u));s.add(ring);}
+    if(i===SEG-1){const cap=new T.Mesh(new T.CylinderGeometry(r2*1.15,r2*1.15,.02,16),MAT.cork);cap.position.y=-.01;s.add(cap);}
     segs.push(s);parent=s;}
   // mulinello sotto il fusto: corpo, rotore e bobina che girano, manovella
   const reel=new T.Group();reel.position.set(0,.05,0);reel.rotation.y=Math.PI;segs[2].add(reel);
@@ -415,13 +416,13 @@ function makeRod(){const g=new T.Group(),segs=[];let parent=g;
   const prof=[[0,-.03],[.012,-.03],[.016,-.02],[.022,-.005],[.03,.01],[.036,.025],[.038,.035],[.03,.045],[0,.045]].map(([r,y])=>new T.Vector2(r,y));const body=new T.Mesh(new T.LatheGeometry(prof,20),MAT.reel);body.scale.set(1,1,1.25);body.position.set(0,.01,.07);reel.add(body);
   const plate=new T.Mesh(new T.CylinderGeometry(.018,.018,.005,18),shimanoMat());plate.rotation.z=Math.PI/2;plate.position.set(.03,.03,.07);reel.add(plate);
   const rotor=new T.Group();rotor.position.set(0,.065,.07);reel.add(rotor);
-  const rm=new T.Mesh(new T.CylinderGeometry(.046,.036,.04,18,1,true),MAT.reel);rm.material=MAT.reel;rotor.add(rm);const rb=new T.Mesh(new T.CylinderGeometry(.038,.038,.006,18),MAT.reel);rb.position.y=-.02;rotor.add(rb);
+  const rm=new T.Mesh(new T.CylinderGeometry(.046,.036,.04,24,1,true),MAT.reel);rm.material=MAT.reel;rotor.add(rm);const rb=new T.Mesh(new T.CylinderGeometry(.038,.038,.006,24),MAT.reel);rb.position.y=-.02;rotor.add(rb);
   for(const sx of[-1,1]){const ar=new T.Mesh(new T.BoxGeometry(.012,.06,.018),MAT.reel);ar.position.set(sx*.05,.025,0);ar.rotation.z=sx*-.18;rotor.add(ar);}
-  const bail=new T.Mesh(new T.TorusGeometry(.06,.0025,6,24,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.rotation.z=.15;bail.position.y=.05;rotor.add(bail);
-  const roller=new T.Mesh(new T.CylinderGeometry(.008,.008,.012,10),MAT.alu);roller.rotation.z=Math.PI/2;roller.position.set(.06,.05,0);rotor.add(roller);
-  const spool=new T.Mesh(new T.CylinderGeometry(.052,.05,.05,24),MAT.spool);spool.position.set(0,.115,.07);reel.add(spool);
-  const lip=new T.Mesh(new T.CylinderGeometry(.056,.056,.006,24),MAT.reel);lip.position.set(0,.142,.07);reel.add(lip);const skirt=new T.Mesh(new T.CylinderGeometry(.054,.05,.02,24,1,true),(()=>{const t=canvasTex(512,32,(c,w,h)=>{c.fillStyle='#1d1f22';c.fillRect(0,0,w,h);c.fillStyle='#e9ecef';c.font='900 22px Outfit,sans-serif';c.textAlign='center';for(let i=0;i<3;i++)c.fillText('SHIMANO',w*(i+.5)/3,h*.8);});return new T.MeshStandardMaterial({map:t,roughness:.35,metalness:.4});})());skirt.position.set(0,.085,.07);reel.add(skirt);
-  const drag=new T.Mesh(new T.CylinderGeometry(.02,.024,.022,10),MAT.reel);drag.position.set(0,.156,.07);reel.add(drag);const fin=new T.Mesh(new T.BoxGeometry(.03,.012,.006),MAT.reel);fin.position.set(0,.17,.07);reel.add(fin);
+  const bail=new T.Mesh(new T.TorusGeometry(.06,.0025,8,24,Math.PI),MAT.alu);bail.rotation.x=Math.PI/2;bail.rotation.z=.15;bail.position.y=.05;rotor.add(bail);
+  const roller=new T.Mesh(new T.CylinderGeometry(.008,.008,.012,16),MAT.alu);roller.rotation.z=Math.PI/2;roller.position.set(.06,.05,0);rotor.add(roller);
+  const spool=new T.Mesh(new T.CylinderGeometry(.052,.05,.05,32),MAT.spool);spool.position.set(0,.115,.07);reel.add(spool);
+  const lip=new T.Mesh(new T.CylinderGeometry(.056,.056,.006,32),MAT.reel);lip.position.set(0,.142,.07);reel.add(lip);const skirt=new T.Mesh(new T.CylinderGeometry(.054,.05,.02,32,1,true),(()=>{const t=canvasTex(512,32,(c,w,h)=>{c.fillStyle='#1d1f22';c.fillRect(0,0,w,h);c.fillStyle='#e9ecef';c.font='900 22px Outfit,sans-serif';c.textAlign='center';for(let i=0;i<3;i++)c.fillText('SHIMANO',w*(i+.5)/3,h*.8);});return new T.MeshStandardMaterial({map:t,roughness:.35,metalness:.4});})());skirt.position.set(0,.085,.07);reel.add(skirt);
+  const drag=new T.Mesh(new T.CylinderGeometry(.02,.024,.022,16),MAT.reel);drag.position.set(0,.156,.07);reel.add(drag);const fin=new T.Mesh(new T.BoxGeometry(.03,.012,.006),MAT.reel);fin.position.set(0,.17,.07);reel.add(fin);
   const lt=canvasTex(64,16,(g)=>{for(let x=0;x<64;x+=8){g.fillStyle=x%16?'#f2f6f8':'#ff7a3c';g.fillRect(x,0,8,16);}});
   const lineOn=new T.Mesh(new T.CylinderGeometry(.051,.051,.036,24),new T.MeshStandardMaterial({map:lt,roughness:.4}));lineOn.position.copy(spool.position);reel.add(lineOn);reel.scale.setScalar(1.35);
   const crank=new T.Group();crank.position.set(.045,.0,.07);reel.add(crank);
