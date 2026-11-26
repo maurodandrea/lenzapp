@@ -1690,7 +1690,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     logo('trabucco',1,-4.92,2.05,-2.6,Math.PI/2);logo('trabucco',.9,-1.9,2.05,-3.43,0);
     logo('shimano',.9,4.55,2.05,-6.15,-Math.PI/2);logo('shimano',.8,3.33,.55,-2.6,-Math.PI/2);
     logo('maver',1,1.8,2.32,-7.96,0);logo('daiwa',1,-2.6,2.32,-7.96,0);logo('daiwa',1,-.4,2.32,-7.96,0);
-    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.9,3.55,1.6,-7.1,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
+    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.6,3.85,2.42,-7.55,-Math.PI/4);logo('tubertini',.9,-4.92,1.9,.6,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
     // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
@@ -1712,8 +1712,18 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
       const lb=box(w*.8,h*.3,.002,M('#ffffff',{roughness:.4}),0,h*.12,0,pk);lb.position.z=pk.geometry.parameters.depth/2+.001;}}};
   shelf(-2.6,'AMI · PIOMBI');shelf(-.4,'FILI · TERMINALI');shelf(1.8,'MINUTERIE');
   // frigo delle esche vive
-  lab('ESCHE VIVE',3.9,2.45,-7.6,-Math.PI/4);const fr=box(1.1,2.1,.8,M('#dfe6ea',{metalness:.4,roughness:.3}),3.9,1.05,-7.7);fr.rotation.y=-Math.PI/4;
-  const gl=new T.Mesh(new T.PlaneGeometry(.95,1.7),new T.MeshStandardMaterial({color:'#bfe9ff',emissive:'#9fe0ff',emissiveIntensity:.8,transparent:true,opacity:.55}));gl.position.set(3.9+Math.sin(-Math.PI/4)*.41,1.15,-7.7+Math.cos(-Math.PI/4)*.41);gl.rotation.y=-Math.PI/4;scene.add(gl);
+  lab('ESCHE VIVE',3.9,2.45,-7.6,-Math.PI/4);const fr=box(1.1,2.1,.8,M('#a9aeb3',{metalness:.6,roughness:.35}),3.9,1.05,-7.7);fr.rotation.y=-Math.PI/4;fr.scale.z=.01;fr.position.z-=.3;fr.position.x+=.28;
+    // armadio frigorifero a vetro: luce in alto, ripiani a griglia con le vaschette bianche delle esche, maniglia nera, piedini
+  {const F=new T.Group();F.position.set(3.9,0,-7.7);F.rotation.y=-Math.PI/4;scene.add(F);const inox=new T.MeshStandardMaterial({color:'#b9bec3',metalness:.7,roughness:.35,map:rodTex().brush});
+    const inn=new T.Mesh(new T.BoxGeometry(.98,1.78,.05),new T.MeshStandardMaterial({color:'#2b3036',roughness:.6}));inn.position.set(0,1.12,-.3);F.add(inn);
+    const lamp=new T.Mesh(new T.BoxGeometry(.7,.05,.1),new T.MeshStandardMaterial({color:'#fff',emissive:'#eaf6ff',emissiveIntensity:1.5}));lamp.position.set(0,1.95,.05);F.add(lamp);
+    for(let k=0;k<6;k++){const y=.32+k*.27,sh=new T.Mesh(new T.BoxGeometry(.94,.01,.66),new T.MeshStandardMaterial({color:'#8a9096',metalness:.6,roughness:.4,wireframe:false}));sh.position.set(0,y,0);F.add(sh);
+      const tb=new T.Mesh(new T.BoxGeometry(.66,.1,.5),new T.MeshStandardMaterial({color:'#eef0f2',roughness:.5,map:txz().pla}));tb.position.set((k%2?-.04:.04),y+.055,0);F.add(tb);const fill=new T.Mesh(new T.BoxGeometry(.6,.02,.44),new T.MeshStandardMaterial({color:['#6b4a3a','#c9a074','#3a3020','#8a5a4a'][k%4],roughness:1}));fill.position.set(tb.position.x,y+.1,0);F.add(fill);}
+    const frame=(w,h,x,y)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,.06),inox);b.position.set(x,y,.41);F.add(b);};frame(1.1,.08,0,2.05);frame(1.1,.08,0,.2);frame(.07,1.9,-.52,1.12);frame(.07,1.9,.52,1.12);
+    const glass=new T.Mesh(new T.PlaneGeometry(.98,1.78),new T.MeshStandardMaterial({color:'#dff2ff',transparent:true,opacity:.18,roughness:.05,metalness:.2}));glass.position.set(0,1.12,.42);F.add(glass);
+    const hd=new T.Mesh(new T.BoxGeometry(.04,.5,.05),new T.MeshStandardMaterial({color:'#151515'}));hd.position.set(-.44,1.2,.47);F.add(hd);
+    for(const sx of[-.45,.45])for(const sz of[-.3,.3]){const ft=new T.Mesh(new T.CylinderGeometry(.03,.03,.12,8),inox);ft.position.set(sx,.06,sz);F.add(ft);}
+    const lg=new T.PointLight(0xeaf6ff,.6,3);lg.position.set(0,1.8,.2);F.add(lg);}
   // bancone di vetro con i mulinelli, cassa e commesso
   lab('MULINELLI',3.6,1.6,-1.6,-Math.PI/2);box(.9,.9,3,M('#6b4a32'),3.8,.45,-2.6);const glass=new T.Mesh(new T.BoxGeometry(.9,.3,3),new T.MeshStandardMaterial({color:'#e8f6ff',transparent:true,opacity:.25,roughness:.05,metalness:.2}));glass.position.set(3.8,1.05,-2.6);scene.add(glass);
   for(let i=0;i<5;i++){const g=new T.Group(),bd=new T.Mesh(new T.CylinderGeometry(.06,.06,.08,16),M(['#2b2f36','#c0392b','#c9c9c9','#1d5f8a','#d4a017'][i],{metalness:.7,roughness:.3}));bd.rotation.z=Math.PI/2;g.add(bd);
