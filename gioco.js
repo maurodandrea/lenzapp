@@ -501,7 +501,11 @@ function buildWorld(){
   const tm=texMat(new T.MeshStandardMaterial({color:'#8a6a50',roughness:1}),'pine_bark',[1,4],{k:1.4}),needT=canvasTex(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);for(let i=0;i<9000;i++){const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random()),x=w/2+Math.cos(a)*r*w*.48,y=h/2+Math.sin(a)*r*h*.46;const l=60+Math.random()*70;g.strokeStyle=`rgb(${l*.45},${l*.75},${l*.35})`;g.lineWidth=1.2;g.beginPath();g.moveTo(x,y);g.lineTo(x+(Math.random()-.5)*8,y+(Math.random()-.5)*5);g.stroke();}}),pm=new T.MeshStandardMaterial({map:needT,alphaTest:.25,side:T.DoubleSide,roughness:1});
   for(let i=0;i<Math.round(26*(SPOT.pines??0));i++){const x=rnd(-220,220),z=rnd(62,90),h=rnd(9,15),p=new T.Group();const tr=new T.Mesh(new T.CylinderGeometry(.25,.4,h,6),tm);tr.position.y=h/2;p.add(tr);
     const R0=rnd(4,6.5);for(let k=0;k<12;k++){const c=new T.Mesh(new T.PlaneGeometry(R0*2*rnd(.7,1),R0*2*rnd(.7,1)),pm);c.rotation.x=-Math.PI/2+rnd(-.5,.5);c.rotation.z=rnd(0,6);c.position.set(rnd(-R0*.35,R0*.35),h-.6+k*.28,rnd(-R0*.35,R0*.35));p.add(c);}for(let k=0;k<3;k++){const br=new T.Mesh(new T.CylinderGeometry(.08,.14,R0*.8,5),tm);br.position.set(0,h-.8,0);br.rotation.z=.9;br.rotation.y=k*2.1;br.translateY(R0*.35);p.add(br);}p.position.set(x,2,z);scene.add(p);}
-  buildLandmarks();buildBeachLife();if(GFX()==='alta'){loadHDRI();addGlare();}buildPlanes();
+  buildLandmarks();{// terraferma oltre la spiaggia: niente più palazzi o case che sembrano nell'acqua
+  const lm=new T.MeshStandardMaterial({map:sandTex(),color:'#b9a57f',roughness:1}),lm2=new T.MeshStandardMaterial({color:'#6f7a52',roughness:1});
+  const back=new T.Mesh(new T.PlaneGeometry(8000,4000),lm2);back.rotation.x=-Math.PI/2;back.position.set(0,.7,24+2000);scene.add(back);
+  for(const sx of[-1,1]){const side=new T.Mesh(new T.PlaneGeometry(3800,26),lm);side.rotation.x=-Math.PI/2;side.position.set(sx*(208+1900),.12,13);scene.add(side);}}
+buildBeachLife();if(GFX()==='alta'){loadHDRI();addGlare();}buildPlanes();
   // frangenti: strisce di schiuma che avanzano verso riva, e risacca sulla sabbia
   const ft=foamTex();for(let i=0;i<9;i++){const g=new T.PlaneGeometry(420,3.4,160,2);g.rotateX(-Math.PI/2);const base=Float32Array.from(g.attributes.position.array);
     const tx=foamTex2();const m=new T.Mesh(g,new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,opacity:0}));m.position.y=.06;m.userData={base,cyc:Math.random(),rate:rnd(.75,1.35)};newWave(m);scene.add(m);foams.push(m);}
