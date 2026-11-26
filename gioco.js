@@ -1690,7 +1690,7 @@ function buildShop(){scene=new T.Scene();scene.background=new T.Color('#1a1612')
     logo('trabucco',.7,-4.92,2.4,-3.0,Math.PI/2);logo('trabucco',.55,-1.9,2.68,-3.43,0);
     logo('shimano',.9,4.55,2.05,-6.15,-Math.PI/2);logo('shimano',.8,3.33,.55,-2.6,-Math.PI/2);
     logo('maver',.6,2.42,2.22,-7.94,0);logo('daiwa',.6,-1.98,2.22,-7.94,0);logo('daiwa',.6,.22,2.22,-7.94,0);
-    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.42,3.9-.36,1.98,-7.7+.36,-Math.PI/4);logo('tubertini',.6,-4.92,2.4,1.25,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
+    logo('colmic',1,2.2,1.75,-.05,Math.PI);logo('caperlan',.42,3.9-.36,1.98,-7.7+.36,-Math.PI/4);logo('tubertini',.6,-4.92,2.4,-1.68,Math.PI/2);logo('badbass',1.4,4.93,1.9,-3.6,-Math.PI/2);}
   // vetrina barchino e drone al centro del negozio
   {box(1.7,.22,1,M('#2a3138'),0,.11,-2.6);const B=new T.Group();B.position.set(-.38,.22,-2.6);scene.add(B);const Y=M('#f2c230'),K=M('#1c2024'),W=M('#e9eef2');
     // barchino portaesche: scafo a V affusolato in vetroresina gialla, coperta bianca con tramoggia, elica e antenna
