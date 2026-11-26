@@ -2429,7 +2429,7 @@ function playerReal(dt){if(!AN.obj)return;if(!PREAL&&!PREALP&&T){PREALP=loadChar
     if(hb&&H.parent!==hb){hb.add(H);PREAL.updateMatrixWorld(true);const ws=hb.getWorldScale(new T.Vector3()).x||1,top=PREAL.userData.headTop||null;H.scale.setScalar(1/ws);H.userData.k=1/ws;}
     if(hb){const k=H.userData.k||1;H.position.set(0,.105*k,-.005*k);H.rotation.x=-.12;H.rotation.set(0,0,0);}}
   PREAL.position.copy(AN.pos);if(!AN.swim&&AN.pos.z<0)PREAL.position.y=Math.min(AN.pos.y,0)-Math.max(0,-sandY(AN.pos.z))*0;PREAL.rotation.y=AN.rotY+Math.PI;PREAL.visible=AN.obj.visible!==false;
-  const tg=AN.target||'',k=AN.moving||AN.joying?((AN.speed||1)>3.2?'run':'walk'):tg==='sit'?'sit':st.castAnim?'cast':AN.swim?'swim':(AN.holding>=0||/reel|hold|strike|bend/.test(tg))?'fishidle':'idle';
+  const tg=AN.target||'',k=AN.swim||sandY(AN.pos.z)<-.85?'swim':AN.moving||AN.joying?((AN.speed||1)>3.2?'run':'walk'):tg==='sit'?'sit':st.castAnim?'cast':AN.swim?'swim':(AN.holding>=0||/reel|hold|strike|bend/.test(tg))?'fishidle':'idle';
   PREAL.userData.play(k,k==='walk'?clamp((AN.speed||1.2)*(AN.joying?1:1.2)/1.6,.8,2):1);PREAL.userData.mixer.update(dt*(st.slow||1));}
 function joyMove(dt,t){const m=Math.hypot(JOY.x,JOY.y);const free=st.phase==='wait'&&!st.busy;
   if(!JOY.on||m<.15||!free){if(AN.joying){AN.joying=false;AN.moving=false;}return;}
